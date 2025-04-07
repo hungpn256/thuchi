@@ -6,8 +6,6 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-
 export const useAuth = (): UseAuthReturn => {
   const router = useRouter();
   const [error, setError] = useState<Error | null>(null);

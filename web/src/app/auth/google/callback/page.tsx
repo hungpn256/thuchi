@@ -1,9 +1,7 @@
 "use client";
 
+import axiosClient from "@/lib/axios-client";
 import { useEffect } from "react";
-import axios from "axios";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function GoogleCallback() {
   useEffect(() => {
@@ -18,12 +16,9 @@ export default function GoogleCallback() {
         }
 
         // Exchange code for tokens
-        const { data } = await axios.get(
-          `${API_URL}/auth/login/google/callback`,
-          {
-            params: { code },
-          }
-        );
+        const { data } = await axiosClient.get(`/auth/login/google/callback`, {
+          params: { code },
+        });
 
         // Send data to parent window
         if (window.opener) {
