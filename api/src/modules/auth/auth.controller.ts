@@ -1,6 +1,5 @@
 import { Controller, Post, Body, UseGuards, Get, Query, HttpStatus, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthGuard } from '@nestjs/passport';
 import {
   ApiTags,
   ApiOperation,
@@ -138,7 +137,8 @@ export class AuthController {
   })
   async loginByGoogleRedirect() {
     try {
-      return await this.authService.getLinkLoginGoogle();
+      const url = await this.authService.getLinkLoginGoogle();
+      return { url };
     } catch (error) {
       throw new BadRequestException('Failed to get Google login URL', { error: error.message });
     }
