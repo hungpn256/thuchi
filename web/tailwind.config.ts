@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config = {
+  darkMode: ["class"],
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     container: {
@@ -47,6 +48,19 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+      },
+      boxShadow: {
+        neumorphic: "20px 20px 60px #d1d1d1, -20px -20px 60px #ffffff",
+        "neumorphic-dark": "20px 20px 60px #1a1a1a, -20px -20px 60px #262626",
+        "neumorphic-sm": "5px 5px 15px #d1d1d1, -5px -5px 15px #ffffff",
+        "neumorphic-dark-sm": "5px 5px 15px #1a1a1a, -5px -5px 15px #262626",
+      },
+      backgroundImage: {
+        "grid-primary":
+          "linear-gradient(to right, #42969020 1px, transparent 1px), linear-gradient(to bottom, #42969020 1px, transparent 1px)",
+      },
+      backgroundSize: {
+        grid: "24px 24px",
       },
       keyframes: {
         "accordion-down": {
