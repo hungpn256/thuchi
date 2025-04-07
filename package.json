@@ -1,0 +1,17 @@
+{
+  "name": "thuchi-app",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "web",
+    "api"
+  ],
+  "dependencies": {
+    "axios": "1.5.0",
+    "dayjs": "1.11.10"
+  },
+  "devDependencies": {
+    "typescript": "5.3.3",
+    "eslint": "8.55.0"
+  }
+}

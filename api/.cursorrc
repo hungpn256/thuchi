@@ -1,0 +1,172 @@
+{
+  "project": {
+    "name": "thuchi-be",
+    "type": "nestjs",
+    "description": "Backend service for financial management application"
+  },
+  "structure": {
+    "src": {
+      "modules": "Feature modules của ứng dụng",
+      "entities": "TypeORM entities",
+      "constants": "Các hằng số và enums",
+      "configs": "Cấu hình cho các service/module",
+      "shared": "Các components dùng chung",
+      "auth": "Authentication module",
+      "utils": "Utility functions"
+    }
+  },
+  "conventions": {
+    "naming": {
+      "files": {
+        "modules": "{name}.module.ts",
+        "controllers": "{name}.controller.ts",
+        "services": "{name}.service.ts",
+        "dtos": "{name}.dto.ts",
+        "entities": "{name}.entity.ts",
+        "interfaces": "{name}.interface.ts",
+        "constants": "{name}.constant.ts",
+        "enums": "{name}.enum.ts",
+        "guards": "{name}.guard.ts",
+        "decorators": "{name}.decorator.ts",
+        "pipes": "{name}.pipe.ts",
+        "filters": "{name}.filter.ts",
+        "interceptors": "{name}.interceptor.ts"
+      },
+      "classes": {
+        "modules": "{Name}Module",
+        "controllers": "{Name}Controller",
+        "services": "{Name}Service",
+        "dtos": "{Name}Dto",
+        "entities": "{Name}",
+        "interfaces": "I{Name}",
+        "guards": "{Name}Guard",
+        "decorators": "{name}",
+        "pipes": "{Name}Pipe",
+        "filters": "{Name}Filter",
+        "interceptors": "{Name}Interceptor"
+      }
+    },
+    "imports": {
+      "alias": {
+        "@/*": [
+          "src/*"
+        ]
+      },
+      "ordering": [
+        "node built-in modules",
+        "npm packages",
+        "@nestjs packages",
+        "project modules (using @/ alias)",
+        "relative imports"
+      ]
+    }
+  },
+  "documentation": {
+    "swagger": {
+      "required": true,
+      "decorators": [
+        "@ApiTags",
+        "@ApiOperation",
+        "@ApiResponse",
+        "@ApiBody",
+        "@ApiQuery",
+        "@ApiParam"
+      ]
+    }
+  },
+  "testing": {
+    "unit": "{name}.spec.ts",
+    "e2e": "{name}.e2e-spec.ts",
+    "coverage": {
+      "statements": 80,
+      "branches": 80,
+      "functions": 80,
+      "lines": 80
+    }
+  },
+  "linting": {
+    "rules": {
+      "import/order": [
+        "error",
+        {
+          "groups": [
+            "builtin",
+            "external",
+            "internal",
+            [
+              "parent",
+              "sibling"
+            ],
+            "index"
+          ],
+          "newlines-between": "always",
+          "alphabetize": {
+            "order": "asc",
+            "caseInsensitive": true
+          }
+        }
+      ],
+      "prettier/prettier": [
+        "error",
+        {
+          "singleQuote": true,
+          "trailingComma": "all",
+          "printWidth": 100,
+          "semi": true,
+          "bracketSpacing": true
+        }
+      ]
+    }
+  },
+  "git": {
+    "commitlint": {
+      "types": [
+        "feat",
+        "fix",
+        "docs",
+        "style",
+        "refactor",
+        "perf",
+        "test",
+        "build",
+        "ci",
+        "chore",
+        "revert"
+      ],
+      "format": "<type>(<scope>): <description>"
+    },
+    "branches": {
+      "main": "main",
+      "develop": "develop",
+      "feature": "feature/*",
+      "bugfix": "bugfix/*",
+      "release": "release/*"
+    }
+  },
+  "scripts": {
+    "recommended": {
+      "dev": "nest start --watch",
+      "build": "nest build",
+      "format": "prettier --write \"src/**/*.ts\"",
+      "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+      "test": "jest",
+      "test:watch": "jest --watch",
+      "test:cov": "jest --coverage",
+      "test:e2e": "jest --config ./test/jest-e2e.json"
+    }
+  },
+  "vscode": {
+    "extensions": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "firsttris.vscode-jest-runner",
+      "ms-vscode.vscode-typescript-tslint-plugin"
+    ],
+    "settings": {
+      "editor.formatOnSave": true,
+      "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+      }
+    }
+  }
+}
