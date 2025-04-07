@@ -11,7 +11,7 @@ async function bootstrap() {
 
   // Configure CORS
   app.enableCors({
-    origin: ['http://localhost:3000'], // Frontend URL
+    origin: ['http://localhost:3000', 'thuchi-web.vercel.app'], // Frontend URL
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
