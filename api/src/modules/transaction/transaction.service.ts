@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { Transaction } from './entities/transaction.entity';
+import { TransactionType } from '@/constants/transaction.enum';
 
 export interface PaginatedTransactions {
   items: Transaction[];
@@ -116,5 +117,34 @@ export class TransactionService {
       totalExpense,
       balance: totalIncome - totalExpense,
     };
+  }
+
+  async getExpensesByCategory(
+    userId: number,
+    startDate?: Date,
+    endDate?: Date,
+  ): Promise<{ categoryid: number; categoryname: string; total: number }[]> {
+    const query = this.transactionRepository
+      .createQueryBuilder('transaction')
+      .select([
+        'category.id as categoryId',
+        'category.name as categoryName',
+        'SUM(transaction.amount) as total',
+      ])
+      .leftJoin('transaction.category', 'category')
+      .where('transaction.userId = :userId', { userId })
+      .andWhere('transaction.type = :type', { type: TransactionType.EXPENSE })
+      .groupBy('category.id')
+      .orderBy('total', 'DESC');
+
+    if (startDate) {
+      query.andWhere('transaction.date >= :startDate', { startDate });
+    }
+
+    if (endDate) {
+      query.andWhere('transaction.date <= :endDate', { endDate });
+    }
+
+    return query.getRawMany();
   }
 }

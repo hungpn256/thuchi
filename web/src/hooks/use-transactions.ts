@@ -5,12 +5,12 @@ import axiosClient from "@/lib/axios-client";
 import { TransactionType } from "@/types/transaction";
 
 export interface Transaction {
-  id: string;
+  id: number;
   type: TransactionType;
   amount: number;
   description: string;
   date: string;
-  categoryId: string;
+  categoryId: number;
   category: {
     id: number;
     name: string;
@@ -41,6 +41,12 @@ interface CreateTransactionDTO {
   description: string;
   date: string;
   categoryId: string;
+}
+
+export interface CategoryExpense {
+  categoryId: number;
+  categoryName: string;
+  total: number;
 }
 
 // Custom hook for fetching transaction list
@@ -148,3 +154,26 @@ export const useDeleteTransaction = () => {
     },
   });
 };
+
+export function useExpensesByCategory(params?: {
+  startDate?: Date;
+  endDate?: Date;
+}) {
+  return useQuery<CategoryExpense[]>({
+    queryKey: ["expenses-by-category", params?.startDate, params?.endDate],
+    queryFn: async () => {
+      const searchParams = new URLSearchParams();
+      if (params?.startDate) {
+        searchParams.append("startDate", params.startDate.toISOString());
+      }
+      if (params?.endDate) {
+        searchParams.append("endDate", params.endDate.toISOString());
+      }
+
+      const { data } = await axiosClient.get<CategoryExpense[]>(
+        `/transactions/expenses-by-category?${searchParams.toString()}`
+      );
+      return data;
+    },
+  });
+}

@@ -82,6 +82,28 @@ export class TransactionController {
     }
   }
 
+  @Get('expenses-by-category')
+  @ApiOperation({
+    summary: 'Lấy danh sách chi tiêu theo danh mục',
+    description: 'API lấy danh sách chi tiêu theo danh mục có phân trang và lọc theo ngày',
+  })
+  async getExpensesByCategory(
+    @Request() req,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    const transactions = await this.transactionService.getExpensesByCategory(
+      req.user.id,
+      startDate ? new Date(startDate) : undefined,
+      endDate ? new Date(endDate) : undefined,
+    );
+    return transactions.map((item) => ({
+      categoryId: item.categoryid,
+      categoryName: item.categoryname,
+      total: Number(item.total),
+    }));
+  }
+
   @Get()
   @ApiOperation({
     summary: 'Lấy danh sách giao dịch',

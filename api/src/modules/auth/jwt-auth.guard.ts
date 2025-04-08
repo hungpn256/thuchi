@@ -7,10 +7,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
 
-    console.log('🚀 JWT Guard - Request Path:', request.path);
-    console.log('🚀 JWT Guard - Authorization Header:', request.headers.authorization);
-    console.log('🚀 JWT Guard - Extracted Token:', token);
-
     return super.canActivate(context);
   }
 
@@ -20,10 +16,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   }
 
   handleRequest(err: any, user: any, info: any) {
-    console.log('🚀 JWT Guard - Error:', err);
-    console.log('🚀 JWT Guard - User:', user);
-    console.log('🚀 JWT Guard - Info:', info);
-
     if (err || !user) {
       throw err || new UnauthorizedException('Invalid token or no token provided');
     }

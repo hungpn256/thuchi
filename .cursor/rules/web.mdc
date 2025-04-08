@@ -6,8 +6,9 @@ alwaysApply: true
 
 # Your rule content
 Đối với phần web, xây dựng web để quản lý thu chi
-- Sử dụng nhiều const thay vì để string or number magic
+- Nếu cần tạo mới gì, hãy tìm xem nó đã tồn tại chưa rồi hãy tạo
 - Kiểm tra các service đã tạo sẵn chưa, nếu cần thì mới tạo mới
+- Tạo const thay vì để string or number magic ví dụ như route, key storage.
 - Để ý component từ server và client, code ít client nhất có thể
 - hãy sử dụng style neumorphism, shadow hiện đại, các hiệu ứng gradient đẹp mắt
 - hãy sử dụng theo theme, các màu trong theme để có thể darkmode, khi cần màu khác hãy config tailwind
@@ -16,3 +17,4 @@ alwaysApply: true
 - sử dụng axios + tanstack query để call api
 - tách phần xử lý thành hook, trong component thì sử dụng hook để lấy hàm
 - tối ưu re-render nhất có thể
+- sử dụng yarn, shadcn (không dùng shadcn-ui)
