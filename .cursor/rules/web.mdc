@@ -6,6 +6,9 @@ alwaysApply: true
 
 # Your rule content
 Đối với phần web, xây dựng web để quản lý thu chi
+- Sử dụng nhiều const thay vì để string or number magic
+- Kiểm tra các service đã tạo sẵn chưa, nếu cần thì mới tạo mới
+- Để ý component từ server và client, code ít client nhất có thể
 - hãy sử dụng style neumorphism, shadow hiện đại, các hiệu ứng gradient đẹp mắt
 - hãy sử dụng theo theme, các màu trong theme để có thể darkmode, khi cần màu khác hãy config tailwind
 - hãy code sử dụng nextjs, tailwind, shadcn để viết component

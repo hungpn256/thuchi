@@ -2,6 +2,7 @@
 
 import axiosClient from "@/lib/axios-client";
 import { AuthResponse, LoginCredentials, UseAuthReturn } from "@/types/auth";
+import { STORAGE_KEYS, ROUTES, API_ENDPOINTS } from "@/constants/app.constant";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -14,15 +15,15 @@ export const useAuth = (): UseAuthReturn => {
     mutationFn: async (credentials: LoginCredentials) => {
       try {
         const { data } = await axiosClient.post<AuthResponse>(
-          `/auth/login`,
+          API_ENDPOINTS.AUTH.LOGIN,
           credentials
         );
 
         // Store the token in localStorage
-        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken);
 
         // Redirect to dashboard
-        router.push("/dashboard");
+        router.push(ROUTES.DASHBOARD);
       } catch (err) {
         const error = err as Error;
         setError(error);
@@ -38,7 +39,7 @@ export const useAuth = (): UseAuthReturn => {
           // Get Google login URL
           const {
             data: { url },
-          } = await axiosClient.get(`/auth/login/google`);
+          } = await axiosClient.get(API_ENDPOINTS.AUTH.LOGIN_GOOGLE);
 
           // Open popup for Google login
           const popup = window.open(
@@ -87,8 +88,8 @@ export const useAuth = (): UseAuthReturn => {
           );
 
           // Store token and redirect
-          localStorage.setItem("accessToken", response.accessToken);
-          router.push("/dashboard");
+          localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.accessToken);
+          router.push(ROUTES.DASHBOARD);
         } catch (err) {
           const error = err as Error;
           setError(error);
