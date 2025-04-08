@@ -8,13 +8,14 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { User } from '@/modules/auth/entities/user.entity';
+import { Category } from './category.entity';
 
 export type TransactionType = 'INCOME' | 'EXPENSE';
 
 @Entity('transactions')
 export class Transaction {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column({
     type: 'enum',
@@ -34,9 +35,16 @@ export class Transaction {
   @Column()
   userId: number;
 
+  @Column({ nullable: true })
+  categoryId: number;
+
   @ManyToOne(() => User)
   @JoinColumn({ name: 'userId' })
   user: User;
+
+  @ManyToOne(() => Category, (category) => category.transactions)
+  @JoinColumn({ name: 'categoryId' })
+  category: Category;
 
   @CreateDateColumn()
   createdAt: Date;

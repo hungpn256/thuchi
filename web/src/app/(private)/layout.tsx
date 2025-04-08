@@ -1,19 +1,11 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { API_ENDPOINTS, ROUTES, STORAGE_KEYS } from "@/constants/app.constant";
-import axiosClient from "@/lib/axios-client";
+import { ROUTES, STORAGE_KEYS } from "@/constants/app.constant";
 import { useUserProfile } from "@/hooks/use-user";
+import { useRouter } from "next/navigation";
 
 interface PrivateLayoutProps {
   children: React.ReactNode;
-}
-
-interface UserProfile {
-  id: string;
-  email: string;
-  name: string;
 }
 
 export default function PrivateLayout({ children }: PrivateLayoutProps) {

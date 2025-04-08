@@ -1,18 +1,21 @@
 export const QUERY_KEYS = {
   TRANSACTIONS: {
-    ALL: ["transactions"],
+    ALL: ["transactions"] as const,
     LIST: (params?: {
       startDate?: string;
       endDate?: string;
       limit?: number;
       page?: number;
-    }) => [...QUERY_KEYS.TRANSACTIONS.ALL, "list", params],
-    SUMMARY: (params?: { startDate?: string; endDate?: string }) => [
-      ...QUERY_KEYS.TRANSACTIONS.ALL,
-      "summary",
-      params,
-    ],
-    DETAIL: (id: string) => [...QUERY_KEYS.TRANSACTIONS.ALL, "detail", id],
+    }) => ["transactions", "list", params] as const,
+    SUMMARY: (params?: { startDate?: string; endDate?: string }) =>
+      ["transactions", "summary", params] as const,
+    DETAIL: (id: string) => ["transactions", "detail", id] as const,
+  },
+  CATEGORIES: {
+    ALL: ["categories"] as const,
+  },
+  AUTH: {
+    PROFILE: ["auth", "profile"] as const,
   },
   USER: {
     ALL: ["user"],

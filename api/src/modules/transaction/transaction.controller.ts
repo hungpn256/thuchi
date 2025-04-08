@@ -140,7 +140,7 @@ export class TransactionController {
     description: 'Lấy chi tiết giao dịch thành công',
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Không tìm thấy giao dịch' })
-  async getTransactionById(@Request() req, @Param('id') id: string) {
+  async getTransactionById(@Request() req, @Param('id') id: number) {
     try {
       const transaction = await this.transactionService.findOne(id);
       if (!transaction) {
@@ -171,7 +171,7 @@ export class TransactionController {
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Dữ liệu không hợp lệ' })
   async updateTransaction(
     @Request() req,
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() updateTransactionDto: UpdateTransactionDto,
   ) {
     try {
@@ -208,7 +208,7 @@ export class TransactionController {
     description: 'Xóa giao dịch thành công',
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Không tìm thấy giao dịch' })
-  async deleteTransaction(@Request() req, @Param('id') id: string) {
+  async deleteTransaction(@Request() req, @Param('id') id: number) {
     try {
       const transaction = await this.transactionService.findOne(id);
       if (!transaction) {

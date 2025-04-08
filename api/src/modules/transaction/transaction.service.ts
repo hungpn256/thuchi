@@ -1,11 +1,11 @@
+import { DateRangeQueryDto } from '@/shared/dto/date-range-query.dto';
+import { PaginationQueryDto } from '@/shared/dto/pagination-query.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Transaction } from './entities/transaction.entity';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
-import { DateRangeQueryDto } from '@/shared/dto/date-range-query.dto';
-import { PaginationQueryDto } from '@/shared/dto/pagination-query.dto';
+import { Transaction } from './entities/transaction.entity';
 
 export interface PaginatedTransactions {
   items: Transaction[];
@@ -36,6 +36,7 @@ export class TransactionService {
 
     const queryBuilder = this.transactionRepository
       .createQueryBuilder('transaction')
+      .leftJoinAndSelect('transaction.category', 'category')
       .where('transaction.userId = :userId', { userId });
 
     if (startDate && endDate) {
@@ -60,9 +61,10 @@ export class TransactionService {
     };
   }
 
-  async findOne(id: string): Promise<Transaction> {
+  async findOne(id: number): Promise<Transaction> {
     const transaction = await this.transactionRepository.findOne({
       where: { id },
+      relations: ['category'],
     });
 
     if (!transaction) {
@@ -72,13 +74,13 @@ export class TransactionService {
     return transaction;
   }
 
-  async update(id: string, data: UpdateTransactionDto): Promise<Transaction> {
+  async update(id: number, data: UpdateTransactionDto): Promise<Transaction> {
     const transaction = await this.findOne(id);
     Object.assign(transaction, data);
     return this.transactionRepository.save(transaction);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const result = await this.transactionRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException('Transaction not found');

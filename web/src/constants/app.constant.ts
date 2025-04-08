@@ -23,11 +23,16 @@ export const API_ENDPOINTS = {
     DELETE: "/transactions",
     DETAIL: "/transactions",
   },
+  CATEGORIES: {
+    LIST: "/categories",
+    CREATE: "/categories",
+  },
   AUTH: {
     LOGIN: "/auth/login",
     REGISTER: "/auth/register",
     FORGOT_PASSWORD: "/auth/forgot-password",
     PROFILE: "/auth/profile",
     LOGIN_GOOGLE: "/auth/login/google",
+    GOOGLE: "/auth/google",
   },
 } as const;

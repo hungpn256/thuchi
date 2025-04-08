@@ -3,7 +3,15 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
-import { addDays } from "date-fns";
+import {
+  addDays,
+  endOfDay,
+  format,
+  isEqual,
+  parseISO,
+  startOfDay,
+} from "date-fns";
+import { vi } from "date-fns/locale";
 import { formatCurrency } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import { Header } from "@/components/layout/Header";
@@ -15,18 +23,20 @@ import {
   Wallet,
   Clock,
   TrendingUp,
+  Tag,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/constants/app.constant";
 import {
   useTransactionList,
   useTransactionSummary,
+  type Transaction,
 } from "@/hooks/use-transactions";
 
 export default function DashboardContent() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: addDays(new Date(), -30),
-    to: new Date(),
+    from: startOfDay(addDays(new Date(), -30)),
+    to: endOfDay(new Date()),
   });
 
   const router = useRouter();
@@ -63,7 +73,7 @@ export default function DashboardContent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-neumorphic-dark border-white/20 border bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl overflow-clip overflow-clip">
+            <Card className="relative border bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
               <div className="p-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-medium text-muted-foreground">
@@ -78,7 +88,7 @@ export default function DashboardContent() {
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500/40 via-emerald-500/20 to-emerald-500/40" />
             </Card>
 
-            <Card className="shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-neumorphic-dark border-white/20 border bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl overflow-clip">
+            <Card className="relative border bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
               <div className="p-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-medium text-muted-foreground">
@@ -93,7 +103,7 @@ export default function DashboardContent() {
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500/40 via-rose-500/20 to-rose-500/40" />
             </Card>
 
-            <Card className="shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-neumorphic-dark border-white/20 border bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl overflow-clip">
+            <Card className="relative border bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
               <div className="p-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-medium text-muted-foreground">
@@ -121,7 +131,7 @@ export default function DashboardContent() {
             </Card>
           </div>
 
-          <Card className="border bg-card/50 backdrop-blur-sm shadow-xl shadow-background/10">
+          <Card className="border bg-card/50 backdrop-blur-sm shadow-sm">
             <div className="p-6">
               <div className="flex items-center gap-2 mb-6">
                 <Clock className="w-5 h-5 text-muted-foreground" />
@@ -129,39 +139,75 @@ export default function DashboardContent() {
                   Giao dịch gần đây
                 </h2>
               </div>
-              <div className="space-y-4">
-                {transactions?.items.map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className="flex items-center justify-between p-4 rounded-lg border bg-background/50 hover:bg-accent/40 transition-colors backdrop-blur-sm"
-                  >
-                    <div className="flex items-center gap-3">
-                      {transaction.type === "INCOME" ? (
-                        <TrendingUp className="w-5 h-5 text-emerald-500" />
-                      ) : (
-                        <TrendingUp className="w-5 h-5 text-rose-500 rotate-180" />
-                      )}
-                      <div>
-                        <p className="font-medium">{transaction.description}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(transaction.date).toLocaleDateString(
-                            "vi-VN"
+              <div className="space-y-6">
+                {transactions?.items.reduce(
+                  (
+                    acc: React.ReactNode[],
+                    transaction: Transaction,
+                    index: number,
+                    array: Transaction[]
+                  ) => {
+                    const transactionDate = parseISO(transaction.date);
+                    const prevDate =
+                      index > 0 ? parseISO(array[index - 1].date) : null;
+
+                    if (
+                      index === 0 ||
+                      !prevDate ||
+                      !isEqual(transactionDate, prevDate)
+                    ) {
+                      acc.push(
+                        <div
+                          key={`date-${transaction.date}`}
+                          className="sticky top-0 bg-background/95 backdrop-blur-sm py-2"
+                        >
+                          <p className="text-sm font-medium text-muted-foreground">
+                            {format(transactionDate, "EEEE, dd/MM/yyyy", {
+                              locale: vi,
+                            })}
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    acc.push(
+                      <div
+                        key={transaction.id}
+                        className="flex items-center justify-between p-4 rounded-lg border bg-background/50 hover:bg-accent/40 transition-all hover:shadow-sm"
+                      >
+                        <div className="flex items-center gap-3">
+                          {transaction.type === "INCOME" ? (
+                            <TrendingUp className="w-5 h-5 text-emerald-500" />
+                          ) : (
+                            <TrendingUp className="w-5 h-5 text-rose-500 rotate-180" />
                           )}
+                          <div>
+                            <p className="font-medium">
+                              {transaction.description}
+                            </p>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Tag className="w-3 h-3" />
+                              <span>{transaction.category.name}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <p
+                          className={`font-semibold ${
+                            transaction.type === "INCOME"
+                              ? "text-emerald-500"
+                              : "text-rose-500"
+                          }`}
+                        >
+                          {transaction.type === "INCOME" ? "+" : "-"}{" "}
+                          {formatCurrency(transaction.amount)}
                         </p>
                       </div>
-                    </div>
-                    <p
-                      className={`font-semibold ${
-                        transaction.type === "INCOME"
-                          ? "text-emerald-500"
-                          : "text-rose-500"
-                      }`}
-                    >
-                      {transaction.type === "INCOME" ? "+" : "-"}{" "}
-                      {formatCurrency(transaction.amount)}
-                    </p>
-                  </div>
-                ))}
+                    );
+
+                    return acc;
+                  },
+                  []
+                )}
               </div>
             </div>
           </Card>

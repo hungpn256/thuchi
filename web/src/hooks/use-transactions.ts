@@ -4,13 +4,17 @@ import { API_ENDPOINTS } from "@/constants/app.constant";
 import axiosClient from "@/lib/axios-client";
 import { TransactionType } from "@/types/transaction";
 
-interface Transaction {
+export interface Transaction {
   id: string;
   type: TransactionType;
   amount: number;
   description: string;
   date: string;
-  categoryId?: string;
+  categoryId: string;
+  category: {
+    id: number;
+    name: string;
+  };
 }
 
 interface TransactionSummary {
@@ -36,7 +40,7 @@ interface CreateTransactionDTO {
   amount: number;
   description: string;
   date: string;
-  categoryId?: string;
+  categoryId: string;
 }
 
 // Custom hook for fetching transaction list

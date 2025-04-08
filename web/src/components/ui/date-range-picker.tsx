@@ -1,5 +1,5 @@
 import * as React from "react";
-import { format } from "date-fns";
+import { endOfDay, format, startOfDay } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { DateRange } from "react-day-picker";
@@ -56,7 +56,12 @@ export function DatePickerWithRange({
             mode="range"
             defaultMonth={date?.from}
             selected={date}
-            onSelect={setDate}
+            onSelect={(range) => {
+              setDate({
+                from: range?.from ? startOfDay(range?.from) : undefined,
+                to: range?.to ? endOfDay(range?.to) : undefined,
+              });
+            }}
             numberOfMonths={2}
             locale={vi}
             classNames={{

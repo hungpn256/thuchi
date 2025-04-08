@@ -46,4 +46,12 @@ export class CreateTransactionDto {
   @IsNotEmpty()
   @IsDateString()
   date: string;
+
+  @ApiProperty({
+    description: 'ID danh mục',
+    example: 1,
+    required: false,
+  })
+  @IsNumber()
+  categoryId: number;
 }

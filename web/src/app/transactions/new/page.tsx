@@ -22,7 +22,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ROUTES } from "@/constants/app.constant";
 import { useCreateTransaction } from "@/hooks/use-transactions";
 import { cn } from "@/lib/utils";
-import { TransactionType } from "@/types/transaction";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { format, formatISO } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -33,17 +32,19 @@ import {
   CalendarIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import * as yup from "yup";
+import { CategoryCombobox } from "@/components/category-combobox";
 
 interface FormValues {
-  type: TransactionType;
+  type: "INCOME" | "EXPENSE";
   amount: number;
   description: string;
   date: Date;
+  categoryId: string;
 }
 
-const formSchema = yup.object({
+const formSchema = yup.object<FormValues>().shape({
   type: yup
     .string()
     .oneOf(["INCOME", "EXPENSE"] as const, "Vui lòng chọn loại giao dịch")
@@ -51,7 +52,7 @@ const formSchema = yup.object({
   amount: yup
     .number()
     .typeError("Số tiền không hợp lệ")
-    .positive("Số tiền phải lớn hơn 0")
+    .min(0, "Số tiền phải lớn hơn 0")
     .required("Vui lòng nhập số tiền"),
   description: yup
     .string()
@@ -59,6 +60,7 @@ const formSchema = yup.object({
     .max(255, "Mô tả không được quá 255 ký tự")
     .required("Vui lòng nhập mô tả"),
   date: yup.date().required("Vui lòng chọn ngày"),
+  categoryId: yup.string().required("Vui lòng chọn danh mục"),
 });
 
 const formatAmount = (value: string) => {
@@ -82,14 +84,18 @@ export default function NewTransactionPage() {
     defaultValues: {
       type: "EXPENSE",
       date: new Date(),
+      categoryId: "",
+      amount: 0,
+      description: "",
     },
   });
 
-  function onSubmit(values: FormValues) {
+  const onSubmit: SubmitHandler<FormValues> = (values) => {
     createTransaction(
       {
         ...values,
         date: formatISO(values.date),
+        categoryId: values.categoryId || "",
       },
       {
         onSuccess: () => {
@@ -97,7 +103,7 @@ export default function NewTransactionPage() {
         },
       }
     );
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background/10 via-background/50 to-background/80">
@@ -206,6 +212,23 @@ export default function NewTransactionPage() {
                     <FormLabel>Mô tả</FormLabel>
                     <FormControl>
                       <Input placeholder="Nhập mô tả giao dịch" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="categoryId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Danh mục</FormLabel>
+                    <FormControl>
+                      <CategoryCombobox
+                        value={field.value ? Number(field.value) : undefined}
+                        onValueChange={(value) => field.onChange(String(value))}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
