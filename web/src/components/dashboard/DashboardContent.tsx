@@ -54,75 +54,99 @@ export default function DashboardContent() {
     page: 1,
   });
 
+  const handleDateRangeChange = (date: DateRange | undefined) => {
+    setDateRange({
+      from: date?.from ? startOfDay(date.from) : new Date(),
+      to: date?.to ? endOfDay(date.to) : new Date(),
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background/95 via-background/50 to-primary/5">
+    <div className="min-h-screen bg-gradient-to-br from-background/95 via-background/80 to-primary/10 relative">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent pointer-events-none" />
       <Header />
-      <div className="container mx-auto max-w-6xl p-2">
+      <div className="container mx-auto max-w-6xl p-2 relative">
         <div className="py-4 space-y-4">
-          <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-background/80 to-background/40 backdrop-blur-sm border shadow-sm">
+          <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-background/90 via-background/70 to-background/50 backdrop-blur-md border shadow-lg">
             <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-semibold tracking-tight">
-                Tổng quan
-              </h1>
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent blur-xl" />
+                <h1 className="text-2xl font-semibold tracking-tight relative">
+                  Tổng quan
+                </h1>
+              </div>
               <Button
                 onClick={() => router.push(ROUTES.TRANSACTIONS + "/new")}
-                className="bg-gradient-to-r from-primary/90 to-primary hover:from-primary hover:to-primary/90 text-primary-foreground shadow-lg shadow-primary/20 text-sm"
+                className="relative bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground shadow-lg shadow-primary/20 text-sm overflow-hidden group"
                 size="sm"
               >
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-foreground/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <Plus className="w-3.5 h-3.5 mr-1.5" />
                 Tạo giao dịch
               </Button>
             </div>
-            <DatePickerWithRange date={dateRange} setDate={setDateRange} />
+            <DatePickerWithRange
+              date={dateRange}
+              setDate={handleDateRangeChange}
+            />
           </div>
 
           <div className="grid grid-cols-3 gap-4">
-            <Card className="relative overflow-hidden border bg-gradient-to-br from-background/60 to-emerald-500/5 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
-              <div className="p-4">
+            <Card className="relative overflow-hidden border bg-gradient-to-br from-background/80 to-emerald-500/10 backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] group">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="p-4 relative">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-gradient-to-br from-emerald-500/20 to-emerald-500/5">
+                  <div className="p-2 rounded-full bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 shadow-inner">
                     <ArrowUpCircle className="w-4 h-4 text-emerald-500" />
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">
                       Thu
                     </h3>
-                    <p className="text-lg font-bold text-emerald-500">
+                    <p className="text-lg font-bold text-emerald-500 drop-shadow-sm">
                       {formatCurrency(summary?.totalIncome || 0)}
                     </p>
                   </div>
                 </div>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500/40 via-emerald-500/20 to-emerald-500/40" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500/50 via-emerald-500/30 to-emerald-500/50" />
             </Card>
 
-            <Card className="relative overflow-hidden border bg-gradient-to-br from-background/60 to-rose-500/5 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
-              <div className="p-4">
+            <Card className="relative overflow-hidden border bg-gradient-to-br from-background/80 to-rose-500/10 backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] group">
+              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="p-4 relative">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-gradient-to-br from-rose-500/20 to-rose-500/5">
+                  <div className="p-2 rounded-full bg-gradient-to-br from-rose-500/30 to-rose-500/10 shadow-inner">
                     <ArrowDownCircle className="w-4 h-4 text-rose-500" />
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">
                       Chi
                     </h3>
-                    <p className="text-lg font-bold text-rose-500">
+                    <p className="text-lg font-bold text-rose-500 drop-shadow-sm">
                       {formatCurrency(summary?.totalExpense || 0)}
                     </p>
                   </div>
                 </div>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-rose-500/40 via-rose-500/20 to-rose-500/40" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-rose-500/50 via-rose-500/30 to-rose-500/50" />
             </Card>
 
-            <Card className="relative overflow-hidden border bg-gradient-to-br from-background/60 to-primary/5 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
-              <div className="p-4">
+            <Card className="relative overflow-hidden border bg-gradient-to-br from-background/80 to-primary/10 backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] group">
+              <div
+                className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity ${
+                  summary?.balance && summary.balance >= 0
+                    ? "from-primary/5 to-transparent"
+                    : "from-rose-500/5 to-transparent"
+                }`}
+              />
+              <div className="p-4 relative">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`p-2 rounded-full bg-gradient-to-br ${
+                    className={`p-2 rounded-full shadow-inner bg-gradient-to-br ${
                       summary?.balance && summary.balance >= 0
-                        ? "from-primary/20 to-primary/5"
-                        : "from-rose-500/20 to-rose-500/5"
+                        ? "from-primary/30 to-primary/10"
+                        : "from-rose-500/30 to-rose-500/10"
                     }`}
                   >
                     <Wallet
@@ -138,7 +162,7 @@ export default function DashboardContent() {
                       Số dư
                     </h3>
                     <p
-                      className={`text-lg font-bold ${
+                      className={`text-lg font-bold drop-shadow-sm ${
                         summary?.balance && summary.balance >= 0
                           ? "text-primary"
                           : "text-rose-500"
@@ -152,16 +176,17 @@ export default function DashboardContent() {
               <div
                 className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${
                   summary?.balance && summary.balance >= 0
-                    ? "from-primary/40 via-primary/20 to-primary/40"
-                    : "from-rose-500/40 via-rose-500/20 to-rose-500/40"
+                    ? "from-primary/50 via-primary/30 to-primary/50"
+                    : "from-rose-500/50 via-rose-500/30 to-rose-500/50"
                 }`}
               />
             </Card>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="border bg-gradient-to-br from-background/60 to-background/20 backdrop-blur-sm shadow-lg">
-              <div className="p-4">
+            <Card className="relative overflow-hidden border bg-gradient-to-br from-background/80 via-background/60 to-background/40 backdrop-blur-md shadow-lg group">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="p-4 relative">
                 <ExpensesChart
                   startDate={dateRange?.from}
                   endDate={dateRange?.to}
@@ -169,10 +194,11 @@ export default function DashboardContent() {
               </div>
             </Card>
 
-            <Card className="border bg-gradient-to-br from-background/60 to-background/20 backdrop-blur-sm shadow-lg">
-              <div className="p-4">
+            <Card className="relative overflow-hidden border bg-gradient-to-br from-background/80 via-background/60 to-background/40 backdrop-blur-md shadow-lg group">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="p-4 relative">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="p-1.5 rounded-full bg-gradient-to-br from-muted/20 to-muted/5">
+                  <div className="p-1.5 rounded-full bg-gradient-to-br from-muted/30 to-muted/10 shadow-inner">
                     <Clock className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <h2 className="text-lg font-semibold tracking-tight">
@@ -199,7 +225,7 @@ export default function DashboardContent() {
                         acc.push(
                           <div
                             key={`date-${transaction.date}`}
-                            className="sticky top-0 bg-gradient-to-r from-background/95 to-background/80 backdrop-blur-sm py-2"
+                            className="sticky top-0 bg-gradient-to-r from-background/95 via-background/90 to-background/80 backdrop-blur-md py-2 z-10"
                           >
                             <p className="text-sm font-medium text-muted-foreground">
                               {format(transactionDate, "EEEE, dd/MM/yyyy", {
@@ -213,14 +239,22 @@ export default function DashboardContent() {
                       acc.push(
                         <div
                           key={transaction.id}
-                          className="flex items-center justify-between p-3 rounded-lg border bg-gradient-to-r from-background/40 to-background/20 hover:from-accent/40 hover:to-accent/20 transition-all hover:shadow-sm"
+                          className="flex items-center justify-between p-3 rounded-lg border bg-gradient-to-r from-background/60 to-background/40 hover:from-accent/30 hover:to-accent/10 transition-all hover:shadow-md group/item"
                         >
                           <div className="flex items-center gap-3">
-                            {transaction.type === "INCOME" ? (
-                              <TrendingUp className="w-5 h-5 text-emerald-500" />
-                            ) : (
-                              <TrendingUp className="w-5 h-5 text-rose-500 rotate-180" />
-                            )}
+                            <div
+                              className={`p-1.5 rounded-full transition-colors ${
+                                transaction.type === "INCOME"
+                                  ? "bg-gradient-to-br from-emerald-500/30 to-emerald-500/10"
+                                  : "bg-gradient-to-br from-rose-500/30 to-rose-500/10"
+                              }`}
+                            >
+                              {transaction.type === "INCOME" ? (
+                                <TrendingUp className="w-4 h-4 text-emerald-500" />
+                              ) : (
+                                <TrendingUp className="w-4 h-4 text-rose-500 rotate-180" />
+                              )}
+                            </div>
                             <div>
                               <p className="font-medium">
                                 {transaction.description}
