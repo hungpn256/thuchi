@@ -112,7 +112,7 @@ export class AuthController {
       if (!user) {
         throw new UnauthorizedException('Invalid Google token');
       }
-      return await this.authService.login(user);
+      return user;
     } catch (error) {
       if (error instanceof UnauthorizedException || error instanceof ValidationException) {
         throw error;

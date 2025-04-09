@@ -30,7 +30,7 @@ export class AuthService {
     return null;
   }
 
-  async login(user: any) {
+  async login(user: User) {
     const payload = { id: user.id };
     return {
       accessToken: this.jwtService.sign(payload),
@@ -76,7 +76,6 @@ export class AuthService {
     try {
       const { tokens } = await this.client.getToken({ code });
       const idToken = tokens.id_token;
-      console.log('🚀 ~ AuthService ~ handleGoogleCallback ~ idToken:', idToken);
 
       if (!idToken) {
         throw new Error('Không lấy được idToken');
