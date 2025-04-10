@@ -4,7 +4,7 @@ module.exports = {
       name: 'my-app',
       script: 'yarn',
       args: 'start',
-      time: true,
+      interpreter: 'bash',
     },
   ],
 };
