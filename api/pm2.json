@@ -1,0 +1,10 @@
+{
+  "apps": [
+    {
+      "name": "thuchi-api",
+      "script": "npm",
+      "args": "start",
+      "time": true
+    }
+  ]
+}
