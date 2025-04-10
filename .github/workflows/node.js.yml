@@ -24,6 +24,9 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} 'bash -lc "
           cd thuchi/api &&
           git pull &&
+          export NVM_DIR="$HOME/.nvm" &&
+          source "$NVM_DIR/nvm.sh" &&
+          nvm use default &&
           npm install -f &&
           npm run build &&
           pm2 restart ecosystem.config.js
