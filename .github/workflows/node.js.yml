@@ -6,7 +6,6 @@ name: Node.js CI
 on:
   push:
     branches: ["master"]
-
 jobs:
   Deploy:
     name: Deploy to EC2 with github actions
