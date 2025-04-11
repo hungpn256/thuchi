@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { transaction_type_enum } from '@prisma/client';
 import {
   IsNotEmpty,
   IsNumber,
@@ -8,7 +9,6 @@ import {
   IsOptional,
   Min,
 } from 'class-validator';
-import { TransactionType } from '../entities/transaction.entity';
 
 export class CreateTransactionDto {
   @ApiProperty({
@@ -18,7 +18,7 @@ export class CreateTransactionDto {
   })
   @IsNotEmpty()
   @IsEnum(['INCOME', 'EXPENSE'])
-  type: TransactionType;
+  type: transaction_type_enum;
 
   @ApiProperty({
     description: 'Số tiền',

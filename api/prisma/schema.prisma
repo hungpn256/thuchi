@@ -1,1 +1,57 @@
- 
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model category {
+  id           Int           @id(map: "PK_24dbc6126a28ff948da33e97d3b") @default(autoincrement())
+  name         String        @db.VarChar
+  userId       Int?
+  createdAt    DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime      @default(now()) @db.Timestamp(6)
+  users        user?         @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_13e8b2a21988bec6fdcbb1fa741")
+  transactions transaction[]
+
+  @@unique([name, userId], map: "UQ_c9e95d6cdc8663c1a22269cb54a")
+  @@index([userId], map: "IDX_13e8b2a21988bec6fdcbb1fa74")
+}
+
+model transaction {
+  type        transaction_type_enum
+  amount      Decimal               @db.Decimal(10, 2)
+  description String?               @db.VarChar
+  date        DateTime              @db.Date
+  userId      Int
+  createdAt   DateTime              @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime              @default(now()) @db.Timestamp(6)
+  categoryId  Int?
+  id          Int                   @id(map: "PK_a219afd8dd77ed80f5a862f1db9") @default(autoincrement())
+  users       user                  @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6bb58f2b6e30cb51a6504599f41")
+  category    category?             @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_86e965e74f9cc66149cf6c90f64")
+
+  @@index([userId, date], map: "IDX_TRANSACTION_USER_DATE")
+}
+
+model user {
+  id           Int           @id(map: "PK_a3ffb1c0c8416b9fc6f907b7433") @default(autoincrement())
+  email        String        @unique(map: "UQ_97672ac88f789774dd47f7c8be3") @db.VarChar
+  name         String        @db.VarChar
+  password     String?       @db.VarChar
+  googleId     String?       @db.VarChar
+  avatar       String?       @db.VarChar
+  createdAt    DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime      @default(now()) @db.Timestamp(6)
+  categories   category[]
+  transactions transaction[]
+
+  @@index([email], map: "IDX_USER_EMAIL")
+}
+
+enum transaction_type_enum {
+  INCOME
+  EXPENSE
+}

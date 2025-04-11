@@ -16,7 +16,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { Category } from './entities/category.entity';
+import { category } from '@prisma/client';
 
 @ApiTags('Categories')
 @Controller('categories')
@@ -30,9 +30,8 @@ export class CategoryController {
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Tạo danh mục thành công',
-    type: Category,
   })
-  async create(@Body() createCategoryDto: CreateCategoryDto, @Request() req): Promise<Category> {
+  async create(@Body() createCategoryDto: CreateCategoryDto, @Request() req): Promise<category> {
     try {
       return await this.categoryService.create({
         ...createCategoryDto,
@@ -45,8 +44,8 @@ export class CategoryController {
 
   @Get()
   @ApiOperation({ summary: 'Lấy danh sách danh mục' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Danh sách danh mục', type: [Category] })
-  async findAll(@Request() req): Promise<Category[]> {
+  @ApiResponse({ status: HttpStatus.OK, description: 'Danh sách danh mục' })
+  async findAll(@Request() req): Promise<category[]> {
     try {
       const categories = await this.categoryService.findAll(req.user.id);
       return categories;
@@ -57,9 +56,9 @@ export class CategoryController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Lấy chi tiết danh mục' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Chi tiết danh mục', type: Category })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Chi tiết danh mục' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Không tìm thấy danh mục' })
-  async findOne(@Param('id') id: number, @Request() req): Promise<Category> {
+  async findOne(@Param('id') id: number, @Request() req): Promise<category> {
     try {
       const category = await this.categoryService.findOne(id, req.user.id);
       if (!category) {
@@ -79,14 +78,13 @@ export class CategoryController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Cập nhật danh mục thành công',
-    type: Category,
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Không tìm thấy danh mục' })
   async update(
     @Param('id') id: number,
     @Body() updateCategoryDto: Partial<CreateCategoryDto>,
     @Request() req,
-  ): Promise<Category> {
+  ): Promise<category> {
     try {
       return await this.categoryService.update(id, req.user.id, updateCategoryDto);
     } catch (error) {

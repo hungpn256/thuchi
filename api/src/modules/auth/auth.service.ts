@@ -2,9 +2,8 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { OAuth2Client } from 'google-auth-library';
-import { User } from './entities/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { PrismaService } from '@/prisma/prisma.service';
+import { user } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -12,8 +11,7 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private readonly prismaService: PrismaService,
   ) {
     this.client = new OAuth2Client({
       clientId: this.configService.get('GOOGLE_CLIENT_ID'),
@@ -30,7 +28,7 @@ export class AuthService {
     return null;
   }
 
-  async login(user: User) {
+  async login(user: user) {
     const payload = { id: user.id };
     return {
       accessToken: this.jwtService.sign(payload),
@@ -48,14 +46,15 @@ export class AuthService {
       const payload = ticket.getPayload();
       if (!payload) throw new UnauthorizedException('Invalid token');
 
-      let user = await this.userRepository.findOne({ where: { email: payload.email } });
+      let user = await this.prismaService.user.findUnique({ where: { email: payload.email } });
       if (!user) {
-        user = this.userRepository.create({
-          email: payload.email,
-          name: payload.name,
-          googleId: payload.sub,
+        user = await this.prismaService.user.create({
+          data: {
+            email: payload.email,
+            name: payload.name,
+            googleId: payload.sub,
+          },
         });
-        await this.userRepository.save(user);
       }
 
       return this.login(user);
@@ -104,7 +103,7 @@ export class AuthService {
     }
   }
 
-  async findUserById(id: number): Promise<User | null> {
-    return this.userRepository.findOne({ where: { id } });
+  async findUserById(id: number): Promise<user | null> {
+    return this.prismaService.user.findUnique({ where: { id } });
   }
 }

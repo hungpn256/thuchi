@@ -1,37 +1,37 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
-import { Category } from './entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
+import { PrismaService } from '@/prisma/prisma.service';
+import { category, Prisma } from '@prisma/client';
 
 @Injectable()
 export class CategoryService {
-  constructor(
-    @InjectRepository(Category)
-    private categoryRepository: Repository<Category>,
-  ) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
-  async create(data: CreateCategoryDto & { userId?: number }): Promise<Category> {
-    const category = this.categoryRepository.create(data);
-    return await this.categoryRepository.save(category);
+  async create(data: CreateCategoryDto & { userId?: number }): Promise<category> {
+    const category = this.prismaService.category.create({ data });
+    return category;
   }
 
-  async findAll(userId?: number): Promise<Category[]> {
-    return await this.categoryRepository.find({
-      where: [
-        { userId }, // Global categories
-        { userId: IsNull() }, // Global categories
-      ],
-      order: { name: 'ASC' },
+  async findAll(userId?: number): Promise<category[]> {
+    return await this.prismaService.category.findMany({
+      where: {
+        OR: [
+          { userId }, // Global categories
+          { userId: null }, // Global categories
+        ],
+      },
+      orderBy: { name: Prisma.SortOrder.asc },
     });
   }
 
-  async findOne(id: number, userId?: number): Promise<Category> {
-    const category = await this.categoryRepository.findOne({
-      where: [
-        { id, userId },
-        { id, userId: IsNull() },
-      ],
+  async findOne(id: number, userId?: number): Promise<category> {
+    const category = await this.prismaService.category.findFirst({
+      where: {
+        OR: [
+          { id, userId },
+          { id, userId: null },
+        ],
+      },
     });
 
     if (!category) {
@@ -41,9 +41,9 @@ export class CategoryService {
     return category;
   }
 
-  async update(id: number, userId: number, data: Partial<CreateCategoryDto>): Promise<Category> {
+  async update(id: number, userId: number, data: Partial<CreateCategoryDto>): Promise<category> {
     // Chỉ cho phép update category của user, không cho update global categories
-    const category = await this.categoryRepository.findOne({
+    const category = await this.prismaService.category.findFirst({
       where: { id, userId },
     });
 
@@ -52,14 +52,13 @@ export class CategoryService {
     }
 
     Object.assign(category, data);
-    return await this.categoryRepository.save(category);
+    return await this.prismaService.category.update({
+      where: { id, userId },
+      data,
+    });
   }
 
   async remove(id: number, userId: number): Promise<void> {
-    // Chỉ cho phép xóa category của user, không cho xóa global categories
-    const result = await this.categoryRepository.delete({ id, userId });
-    if (result.affected === 0) {
-      throw new NotFoundException('Category not found or you do not have permission to delete it');
-    }
+    await this.prismaService.category.delete({ where: { id, userId } });
   }
 }
