@@ -40,7 +40,7 @@ interface CreateTransactionDTO {
   amount: number;
   description: string;
   date: string;
-  categoryId: string;
+  categoryId: number;
 }
 
 export interface CategoryExpense {

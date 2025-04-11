@@ -41,7 +41,7 @@ interface FormValues {
   amount: number;
   description: string;
   date: Date;
-  categoryId: string;
+  categoryId: number;
 }
 
 const formSchema = yup.object<FormValues>().shape({
@@ -60,7 +60,7 @@ const formSchema = yup.object<FormValues>().shape({
     .max(255, "Mô tả không được quá 255 ký tự")
     .required("Vui lòng nhập mô tả"),
   date: yup.date().required("Vui lòng chọn ngày"),
-  categoryId: yup.string().required("Vui lòng chọn danh mục"),
+  categoryId: yup.number().required("Vui lòng chọn danh mục"),
 });
 
 const formatAmount = (value: string) => {
@@ -84,7 +84,6 @@ export default function NewTransactionPage() {
     defaultValues: {
       type: "EXPENSE",
       date: new Date(),
-      categoryId: "",
       amount: 0,
       description: "",
     },
@@ -95,7 +94,6 @@ export default function NewTransactionPage() {
       {
         ...values,
         date: formatISO(values.date),
-        categoryId: values.categoryId || "",
       },
       {
         onSuccess: () => {
@@ -227,7 +225,7 @@ export default function NewTransactionPage() {
                     <FormControl>
                       <CategoryCombobox
                         value={field.value ? Number(field.value) : undefined}
-                        onValueChange={(value) => field.onChange(String(value))}
+                        onValueChange={(value) => field.onChange(Number(value))}
                       />
                     </FormControl>
                     <FormMessage />
