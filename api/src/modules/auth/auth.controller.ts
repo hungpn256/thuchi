@@ -16,6 +16,7 @@ import {
   ValidationException,
 } from '@/shared/exceptions/app.exception';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { GoogleCallbackDto } from './dto/google-callback.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -30,15 +31,6 @@ export class AuthController {
   @ApiBody({
     type: LoginDto,
     description: 'Thông tin đăng nhập',
-    examples: {
-      example1: {
-        value: {
-          username: 'user@example.com',
-          password: '123456',
-        },
-        summary: 'Basic Login Credentials',
-      },
-    },
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -50,6 +42,10 @@ export class AuthController {
           id: 1,
           email: 'user@example.com',
           name: 'John Doe',
+          googleId: '123456789',
+          avatar: 'https://example.com/avatar.jpg',
+          createdAt: '2024-03-20T12:00:00Z',
+          updatedAt: '2024-03-20T12:00:00Z',
         },
       },
     },
@@ -79,14 +75,6 @@ export class AuthController {
   @ApiBody({
     type: LoginGoogleDto,
     description: 'Google ID Token',
-    examples: {
-      example1: {
-        value: {
-          idToken: 'eyJhbGciOiJSUzI1NiIsImtpZCI6...',
-        },
-        summary: 'Google ID Token Example',
-      },
-    },
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -109,16 +97,13 @@ export class AuthController {
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Token không hợp lệ' })
   async loginByGoogle(@Body() loginDto: LoginGoogleDto) {
     try {
-      if (!loginDto.idToken) {
-        throw new ValidationException({ idToken: 'ID Token is required' });
-      }
       const user = await this.authService.verifyGoogleToken(loginDto.idToken);
       if (!user) {
         throw new UnauthorizedException('Invalid Google token');
       }
       return user;
     } catch (error) {
-      if (error instanceof UnauthorizedException || error instanceof ValidationException) {
+      if (error instanceof UnauthorizedException) {
         throw error;
       }
       throw new BadRequestException('Google login failed', { error: error.message });
@@ -153,12 +138,6 @@ export class AuthController {
     summary: 'Callback URL cho Google OAuth',
     description: 'API nhận callback từ Google sau khi người dùng đăng nhập thành công',
   })
-  @ApiQuery({
-    name: 'code',
-    required: true,
-    description: 'Authorization code từ Google',
-    example: '4/0AfJohXnC4Zf...',
-  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Xử lý callback thành công',
@@ -178,18 +157,15 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Code không hợp lệ' })
-  async googleCallback(@Query('code') code: string) {
+  async googleCallback(@Query() query: GoogleCallbackDto) {
     try {
-      if (!code) {
-        throw new ValidationException({ code: 'Authorization code is required' });
-      }
-      const user = await this.authService.handleGoogleCallback(code);
+      const user = await this.authService.handleGoogleCallback(query.code);
       if (!user) {
         throw new UnauthorizedException('Invalid authorization code');
       }
       return await this.authService.verifyGoogleToken(user.idToken);
     } catch (error) {
-      if (error instanceof UnauthorizedException || error instanceof ValidationException) {
+      if (error instanceof UnauthorizedException) {
         throw error;
       }
       throw new BadRequestException('Google callback failed', { error: error.message });

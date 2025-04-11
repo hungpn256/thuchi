@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PrismaModule } from './shared/services/prisma/prisma.module';
+import { ValidationPipe } from '@nestjs/common';
+import { validationConfig } from './configs/validation.config';
 
 @Module({
   imports: [
@@ -28,6 +30,10 @@ import { PrismaModule } from './shared/services/prisma/prisma.module';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe(validationConfig),
     },
   ],
 })

@@ -24,6 +24,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { TransactionService } from './transaction.service';
+import { DatePagingQueryDto } from '@/shared/dto/date-paging-query.dto';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -67,9 +68,7 @@ export class TransactionController {
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Dữ liệu không hợp lệ' })
   async createTransaction(@Request() req, @Body() createTransactionDto: CreateTransactionDto) {
     try {
-      if (!createTransactionDto.amount || createTransactionDto.amount <= 0) {
-        throw new ValidationException({ amount: 'Amount must be greater than 0' });
-      }
+      // Validation is handled by class-validator through CreateTransactionDto
       return await this.transactionService.create({
         ...createTransactionDto,
         userId: req.user.id,
@@ -113,15 +112,11 @@ export class TransactionController {
     status: HttpStatus.OK,
     description: 'Lấy danh sách giao dịch thành công',
   })
-  async getTransactions(
-    @Request() req,
-    @Query() paginationQuery: PaginationQueryDto,
-    @Query() dateRange: DateRangeQueryDto,
-  ) {
+  async getTransactions(@Request() req, @Query() query: DatePagingQueryDto) {
+    console.log('🚀 ~ TransactionController ~ getTransactions ~ query:', query);
     try {
       return await this.transactionService.findAll(req.user.id, {
-        ...paginationQuery,
-        ...dateRange,
+        ...query,
       });
     } catch (error) {
       throw new BadRequestException('Failed to get transactions', { error: error.message });

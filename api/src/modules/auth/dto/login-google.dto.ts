@@ -1,9 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class LoginGoogleDto {
-  @ApiProperty({ description: 'idToken', example: 'abc...' })
-  @IsString()
-  @MinLength(3)
+  @ApiProperty({
+    example: 'eyJhbGciOiJSUzI1NiIsImtpZCI6...',
+    description: 'Google ID Token',
+  })
+  @IsString({ message: 'ID Token must be a string' })
+  @IsNotEmpty({ message: 'ID Token is required' })
   idToken: string;
 }
