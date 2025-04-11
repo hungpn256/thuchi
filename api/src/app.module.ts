@@ -4,7 +4,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { PrismaModule } from './prisma/prisma.module';
+import { PrismaModule } from './shared/services/prisma/prisma.module';
 
 @Module({
   imports: [

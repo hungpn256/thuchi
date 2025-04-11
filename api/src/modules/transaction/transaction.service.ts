@@ -3,7 +3,7 @@ import { PaginationQueryDto } from '@/shared/dto/pagination-query.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/shared/services/prisma/prisma.service';
 import { Prisma, transaction } from '@prisma/client';
 export interface PaginatedTransactions {
   items: transaction[];

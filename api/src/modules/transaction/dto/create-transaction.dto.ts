@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { transaction_type_enum } from '@prisma/client';
+import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsNumber,
@@ -53,5 +54,6 @@ export class CreateTransactionDto {
     required: false,
   })
   @IsNumber()
+  @Type(() => Number)
   categoryId: number;
 }
