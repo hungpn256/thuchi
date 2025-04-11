@@ -10,6 +10,8 @@ export const QUERY_KEYS = {
     SUMMARY: (params?: { startDate?: string; endDate?: string }) =>
       ["transactions", "summary", params] as const,
     DETAIL: (id: string) => ["transactions", "detail", id] as const,
+    CATEGORY: (params?: { startDate?: string; endDate?: string }) =>
+      ["transactions", "summary", params] as const,
   },
   CATEGORIES: {
     ALL: ["categories"] as const,

@@ -150,7 +150,9 @@ export const useDeleteTransaction = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TRANSACTIONS.ALL });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.TRANSACTIONS.ALL],
+      });
     },
   });
 };
@@ -159,8 +161,12 @@ export function useExpensesByCategory(params?: {
   startDate?: Date;
   endDate?: Date;
 }) {
+  const queryParams = {
+    startDate: params?.startDate?.toISOString(),
+    endDate: params?.endDate?.toISOString(),
+  };
   return useQuery<CategoryExpense[]>({
-    queryKey: ["expenses-by-category", params?.startDate, params?.endDate],
+    queryKey: [QUERY_KEYS.TRANSACTIONS.CATEGORY(queryParams)],
     queryFn: async () => {
       const searchParams = new URLSearchParams();
       if (params?.startDate) {
