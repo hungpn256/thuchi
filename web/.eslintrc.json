@@ -1,0 +1,16 @@
+{
+  "extends": [
+    "next/core-web-vitals",
+    "prettier"
+  ],
+  "plugins": [
+    "react"
+  ],
+  "rules": {
+    "react/jsx-uses-react": "error",
+    "react/jsx-uses-vars": "error",
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "react/prop-types": "off",
+    "react/react-in-jsx-scope": "off"
+  }
+} 

@@ -1,4 +1,4 @@
-export type TransactionType = "income" | "expense";
+export type TransactionType = 'income' | 'expense';
 
 export interface Transaction {
   id: string;
@@ -30,6 +30,7 @@ export interface CreateTransactionDTO {
   categoryId?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface UpdateTransactionDTO extends Partial<CreateTransactionDTO> {}
 
 export interface TransactionSummary {

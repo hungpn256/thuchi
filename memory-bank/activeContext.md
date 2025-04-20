@@ -2,15 +2,17 @@
 
 ## Current Focus
 
-- Initial project setup and documentation
-- Establishing project structure and patterns
-- Setting up development environment
+- Enhancing transaction management functionality
+- Improving UI components
+- Fixing UI interaction issues in forms and dialogs
 
 ## Recent Changes
 
-- Created Memory Bank documentation
-- Initialized project structure
-- Set up monorepo with web and api workspaces
+- Fixed issue in transaction form where category and date selection dropdowns weren't working properly in create mode
+- Improved UI responsiveness with proper z-index configurations
+- Consolidated transaction create and edit dialogs into a single reusable component
+- Added padding to the transaction page for improved visual spacing
+- Implemented proper event handling in popover components
 
 ## Active Decisions
 
@@ -25,46 +27,51 @@
    - Neumorphism design system
    - Dark mode support
    - Component-based architecture with shadcn
+   - Consistent spacing and padding across pages
 
 3. Development Workflow
    - Yarn for package management
    - ESLint and TypeScript for code quality
    - Git workflow with feature branches
+   - DRY principles for dialog implementations
 
 ## Next Steps
 
 1. Frontend
 
-   - Set up Next.js project with TypeScript
-   - Configure Tailwind CSS
-   - Implement base UI components
+   - Improve form validation feedback
+   - Enhance mobile responsiveness
+   - Add transaction filtering capabilities
+   - Implement additional transaction analytics
 
 2. Backend
 
-   - Set up NestJS project
-   - Configure database connection
-   - Create initial API endpoints
+   - Optimize transaction queries
+   - Implement batch operations for transactions
+   - Add advanced filtering options
 
 3. Development Environment
-   - Configure ESLint and Prettier
-   - Set up testing framework
-   - Configure build process
+   - Continue refining component reusability
+   - Address any remaining UI inconsistencies
+   - Review performance of data-heavy components
 
 ## Current Considerations
 
 1. Technical
 
    - Type safety across frontend and backend
-   - Performance optimization strategies
-   - Code reuse between workspaces
+   - Performance optimization for transaction listings
+   - z-index management in overlapping UI components
+   - Event propagation handling in nested components
 
 2. UI/UX
 
-   - Component library structure
-   - Theme implementation
-   - Responsive design approach
+   - Consistent padding and spacing standards
+   - Dialog and modal interaction patterns
+   - Form component behavior standardization
+   - Mobile-friendly dropdowns and popovers
 
 3. Development
-   - Code review process
-   - Testing strategy
-   - Documentation standards
+   - Code reuse strategies for similar dialogs
+   - Standard pattern for form state management
+   - Consistent error handling in forms
