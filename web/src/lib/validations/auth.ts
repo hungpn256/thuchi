@@ -7,3 +7,12 @@ export const loginSchema = yup.object({
     .required("Mật khẩu là bắt buộc")
     .min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
 });
+
+export const registerSchema = yup.object({
+  email: yup.string().required("Email là bắt buộc").email("Email không hợp lệ"),
+  password: yup
+    .string()
+    .required("Mật khẩu là bắt buộc")
+    .min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+  name: yup.string().required("Tên là bắt buộc"),
+});

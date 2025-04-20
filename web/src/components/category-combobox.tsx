@@ -37,7 +37,8 @@ export function CategoryCombobox({
     category.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleCreateCategory = async () => {
+  const handleCreateCategory = async (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (!search) return;
     try {
       const newCategory = await createCategory.mutateAsync({ name: search });
@@ -57,13 +58,21 @@ export function CategoryCombobox({
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between"
+          onClick={(e) => e.stopPropagation()}
+          onPointerDownCapture={(e) => e.stopPropagation()}
         >
           {selectedCategory ? selectedCategory.name : "Chọn danh mục..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command shouldFilter={false}>
+      <PopoverContent
+        className="w-full p-0"
+        onPointerDownOutside={(e) => e.preventDefault()}
+      >
+        <Command
+          shouldFilter={false}
+          onPointerDownCapture={(e) => e.stopPropagation()}
+        >
           <CommandInput
             placeholder="Tìm kiếm danh mục..."
             value={search}
@@ -77,7 +86,10 @@ export function CategoryCombobox({
                   variant="ghost"
                   size="sm"
                   className="h-8"
-                  onClick={handleCreateCategory}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCreateCategory(e);
+                  }}
                   disabled={!search || createCategory.isPending}
                 >
                   <Plus className="mr-2 h-4 w-4" />
@@ -90,9 +102,14 @@ export function CategoryCombobox({
                 <CommandItem
                   key={category.id}
                   value={category.name}
-                  onSelect={() => {
-                    onValueChange?.(category.id);
-                    setOpen(false);
+                  onSelect={(value) => {
+                    const categoryToSelect = categories.find(
+                      (c) => c.name.toLowerCase() === value.toLowerCase()
+                    );
+                    if (categoryToSelect) {
+                      onValueChange?.(categoryToSelect.id);
+                      setOpen(false);
+                    }
                   }}
                 >
                   <Check
@@ -110,7 +127,12 @@ export function CategoryCombobox({
                 <CommandSeparator />
                 <CommandGroup>
                   <CommandItem
-                    onSelect={handleCreateCategory}
+                    onSelect={(e) => {
+                      // Prevent event bubbling
+                      const event = e as unknown as React.MouseEvent;
+                      event.stopPropagation?.();
+                      handleCreateCategory();
+                    }}
                     disabled={createCategory.isPending}
                   >
                     <Plus className="mr-2 h-4 w-4" />

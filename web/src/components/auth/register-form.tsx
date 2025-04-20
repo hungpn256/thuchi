@@ -5,34 +5,35 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
-import { LoginCredentials } from "@/types/auth";
-import { Chrome, LockKeyhole, Mail } from "lucide-react";
+import { RegisterCredentials } from "@/types/auth";
+import { Chrome, LockKeyhole, Mail, User } from "lucide-react";
 import { ThemeToggle } from "../theme/theme-toggle";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { loginSchema } from "@/lib/validations/auth";
+import { registerSchema } from "@/lib/validations/auth";
 import Link from "next/link";
 import { ROUTES } from "@/constants/app.constant";
 
-type FormData = LoginCredentials;
+type FormData = RegisterCredentials;
 
-export function LoginForm() {
+export function RegisterForm() {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
-    resolver: yupResolver(loginSchema),
+    resolver: yupResolver(registerSchema),
     defaultValues: {
       email: "",
       password: "",
+      name: "",
     },
   });
 
-  const { login, loginWithGoogle, error } = useAuth();
+  const { register: registerUser, loginWithGoogle, error } = useAuth();
 
   const onSubmit = async (data: FormData) => {
-    await login(data);
+    await registerUser(data);
   };
 
   return (
@@ -41,14 +42,12 @@ export function LoginForm() {
       <CardContent className="pt-6 pb-8 px-8 relative">
         <div className="flex justify-between mb-6 items-center">
           <div className="text-sm">
-            <span className="text-muted-foreground mr-2">
-              Chưa có tài khoản?
-            </span>
+            <span className="text-muted-foreground mr-2">Đã có tài khoản?</span>
             <Link
-              href={ROUTES.AUTH.REGISTER}
+              href={ROUTES.AUTH.LOGIN}
               className="text-primary-600 hover:text-primary-500 font-medium transition-colors"
             >
-              Đăng ký
+              Đăng nhập
             </Link>
           </div>
           <ThemeToggle />
@@ -56,6 +55,27 @@ export function LoginForm() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
+            <div>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-primary-500/80 dark:text-primary-400/80 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">
+                  <User className="h-5 w-5" />
+                </div>
+                <Input
+                  type="text"
+                  placeholder="Họ và tên"
+                  className="pl-10 bg-white/50 dark:bg-gray-900/50 border-primary-100 dark:border-primary-800/50 focus-visible:ring-1 focus-visible:ring-primary-400 dark:focus-visible:ring-primary-500 focus-visible:ring-offset-0 transition-all hover:border-primary-200 dark:hover:border-primary-700 placeholder:text-muted-foreground/70"
+                  {...register("name")}
+                  aria-invalid={errors.name ? "true" : "false"}
+                />
+                <div className="absolute inset-0 rounded-md bg-gradient-to-r from-primary-500/10 via-transparent to-primary-500/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              </div>
+              {errors.name && (
+                <div className="text-sm text-red-500 ml-1 animate-fade-down">
+                  {errors.name.message}
+                </div>
+              )}
+            </div>
+
             <div>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-primary-500/80 dark:text-primary-400/80 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">
@@ -110,7 +130,7 @@ export function LoginForm() {
             disabled={isSubmitting}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-white/[0.07] to-transparent opacity-0 group-hover/button:opacity-100 transition-opacity" />
-            {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
+            {isSubmitting ? "Đang đăng ký..." : "Đăng ký"}
           </Button>
 
           <div className="relative">
@@ -119,7 +139,7 @@ export function LoginForm() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-gradient-to-br from-white/90 via-white/80 to-white/70 dark:from-gray-800/90 dark:via-gray-800/80 dark:to-gray-800/70 px-2 text-muted-foreground">
-                Hoặc đăng nhập với
+                Hoặc đăng ký với
               </span>
             </div>
           </div>

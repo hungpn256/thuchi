@@ -3,6 +3,12 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface RegisterCredentials {
+  email: string;
+  password: string;
+  name: string;
+}
+
 export interface AuthResponse {
   accessToken: string;
   user: User;
@@ -19,6 +25,7 @@ export interface User {
 
 export interface UseAuthReturn {
   login: (credentials: LoginCredentials) => Promise<void>;
+  register: (credentials: RegisterCredentials) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   isLoading: boolean;
   error: Error | null;

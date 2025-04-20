@@ -1,7 +1,12 @@
 "use client";
 
 import axiosClient from "@/lib/axios-client";
-import { AuthResponse, LoginCredentials, UseAuthReturn } from "@/types/auth";
+import {
+  AuthResponse,
+  LoginCredentials,
+  RegisterCredentials,
+  UseAuthReturn,
+} from "@/types/auth";
 import { STORAGE_KEYS, ROUTES, API_ENDPOINTS } from "@/constants/app.constant";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -16,6 +21,27 @@ export const useAuth = (): UseAuthReturn => {
       try {
         const { data } = await axiosClient.post<AuthResponse>(
           API_ENDPOINTS.AUTH.LOGIN,
+          credentials
+        );
+
+        // Store the token in localStorage
+        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken);
+
+        // Redirect to dashboard
+        router.push(ROUTES.DASHBOARD);
+      } catch (err) {
+        const error = err as Error;
+        setError(error);
+        throw error;
+      }
+    },
+  });
+
+  const { mutateAsync: register, isPending: isRegisterLoading } = useMutation({
+    mutationFn: async (credentials: RegisterCredentials) => {
+      try {
+        const { data } = await axiosClient.post<AuthResponse>(
+          API_ENDPOINTS.AUTH.REGISTER,
           credentials
         );
 
@@ -100,8 +126,9 @@ export const useAuth = (): UseAuthReturn => {
 
   return {
     login,
+    register,
     loginWithGoogle,
-    isLoading: isLoginLoading || isGoogleLoading,
+    isLoading: isLoginLoading || isRegisterLoading || isGoogleLoading,
     error,
   };
 };

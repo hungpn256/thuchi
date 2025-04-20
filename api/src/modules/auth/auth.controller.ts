@@ -17,16 +17,57 @@ import {
 } from '@/shared/exceptions/app.exception';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { GoogleCallbackDto } from './dto/google-callback.dto';
+import { RegisterDto } from './dto/register.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Post('register')
+  @ApiOperation({
+    summary: 'Đăng ký tài khoản mới',
+    description: 'API đăng ký tài khoản mới với email và mật khẩu',
+  })
+  @ApiBody({
+    type: RegisterDto,
+    description: 'Thông tin đăng ký',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Đăng ký thành công',
+    schema: {
+      example: {
+        accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        user: {
+          id: 1,
+          email: 'user@example.com',
+          name: 'John Doe',
+          createdAt: '2024-03-20T12:00:00Z',
+          updatedAt: '2024-03-20T12:00:00Z',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Email đã được sử dụng hoặc thông tin đăng ký không hợp lệ',
+  })
+  async register(@Body() registerDto: RegisterDto) {
+    try {
+      return await this.authService.register(registerDto);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException('Đăng ký thất bại', { error: error.message });
+    }
+  }
+
   @Post('login')
   @ApiOperation({
-    summary: 'Đăng nhập với username/password',
-    description: 'API đăng nhập hệ thống sử dụng username và password',
+    summary: 'Đăng nhập với email/password',
+    description: 'API đăng nhập hệ thống sử dụng email và password',
   })
   @ApiBody({
     type: LoginDto,
@@ -51,19 +92,19 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Thông tin đăng nhập không hợp lệ' })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Sai username hoặc password' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Sai email hoặc password' })
   async login(@Body() loginDto: LoginDto) {
     try {
-      const user = await this.authService.validateUser(loginDto.username, loginDto.password);
+      const user = await this.authService.validateUser(loginDto.email, loginDto.password);
       if (!user) {
-        throw new UnauthorizedException('Invalid username or password');
+        throw new UnauthorizedException('Sai email hoặc mật khẩu');
       }
       return await this.authService.login(user);
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new BadRequestException('Login failed', { error: error.message });
+      throw new BadRequestException('Đăng nhập thất bại', { error: error.message });
     }
   }
 

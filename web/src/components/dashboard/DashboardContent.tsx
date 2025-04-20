@@ -25,22 +25,26 @@ import {
   TrendingUp,
   Tag,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { ROUTES } from "@/constants/app.constant";
 import {
   useTransactionList,
   useTransactionSummary,
   type Transaction,
 } from "@/hooks/use-transactions";
 import { ExpensesChart } from "./ExpensesChart";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { TransactionForm } from "@/components/transaction/transaction-form";
 
 export default function DashboardContent() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: startOfDay(addDays(new Date(), -30)),
     to: endOfDay(new Date()),
   });
-
-  const router = useRouter();
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const { data: summary } = useTransactionSummary({
     startDate: dateRange?.from,
@@ -61,6 +65,10 @@ export default function DashboardContent() {
     });
   };
 
+  const handleCreateClick = () => {
+    setIsCreateDialogOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background/95 via-background/80 to-primary/10 relative">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent pointer-events-none" />
@@ -76,7 +84,7 @@ export default function DashboardContent() {
                 </h1>
               </div>
               <Button
-                onClick={() => router.push(ROUTES.TRANSACTIONS + "/new")}
+                onClick={handleCreateClick}
                 className="relative bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground shadow-lg shadow-primary/20 text-sm overflow-hidden group"
                 size="sm"
               >
@@ -286,6 +294,22 @@ export default function DashboardContent() {
               </div>
             </Card>
           </div>
+
+          {/* Create Transaction Dialog */}
+          <Dialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+          >
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Tạo giao dịch mới</DialogTitle>
+              </DialogHeader>
+              <TransactionForm
+                onSuccess={() => setIsCreateDialogOpen(false)}
+                mode="create"
+              />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </div>

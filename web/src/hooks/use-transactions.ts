@@ -123,7 +123,7 @@ export const useUpdateTransaction = () => {
       id: string;
       data: Partial<CreateTransactionDTO>;
     }) => {
-      const response = await axiosClient.patch(
+      const response = await axiosClient.put(
         `${API_ENDPOINTS.TRANSACTIONS.UPDATE}/${id}`,
         data
       );

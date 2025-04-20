@@ -1,9 +1,11 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { OAuth2Client } from 'google-auth-library';
 import { PrismaService } from '@/shared/services/prisma/prisma.service';
 import { user } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
+import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -20,12 +22,33 @@ export class AuthService {
     });
   }
 
-  async validateUser(username: string, password: string): Promise<any> {
-    const user = { id: 1, username: 'test' };
-    if (user && password === '123456') {
+  async validateUser(email: string, password: string): Promise<any> {
+    try {
+      // Tìm user theo email
+      const user = await this.prismaService.user.findUnique({
+        where: { email },
+      });
+
+      if (!user) {
+        return null;
+      }
+
+      // Kiểm tra nếu người dùng đăng nhập bằng Google
+      if (!user.password) {
+        return null;
+      }
+
+      // Kiểm tra mật khẩu
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        return null;
+      }
+
       return user;
+    } catch (error) {
+      console.error('Error validating user:', error);
+      return null;
     }
-    return null;
   }
 
   async login(user: user) {
@@ -34,6 +57,33 @@ export class AuthService {
       accessToken: this.jwtService.sign(payload),
       user: user,
     };
+  }
+
+  async register(registerDto: RegisterDto) {
+    // Check if user with this email already exists
+    const existingUser = await this.prismaService.user.findUnique({
+      where: { email: registerDto.email },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException('Email đã được sử dụng');
+    }
+
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(registerDto.password, salt);
+
+    // Create new user
+    const newUser = await this.prismaService.user.create({
+      data: {
+        email: registerDto.email,
+        name: registerDto.name,
+        password: hashedPassword,
+      },
+    });
+
+    // Return user with access token
+    return this.login(newUser);
   }
 
   async verifyGoogleToken(idToken: string) {

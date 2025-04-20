@@ -10,7 +10,6 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowLeft,
   Edit,
   Plus,
   Trash,
@@ -18,7 +17,6 @@ import {
   Clock,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { ROUTES } from "@/constants/app.constant";
 import {
   Dialog,
   DialogContent,
@@ -42,16 +40,7 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { formatCurrency } from "@/lib/utils";
 import { useForm } from "react-hook-form";
-
-// Định nghĩa kiểu dữ liệu cho sự kiện trong calendar
-export interface CalendarEvent {
-  id: string | number;
-  title: string;
-  start: Date;
-  end: Date;
-  description?: string;
-  expectedAmount?: number;
-}
+import { CalendarEvent } from "@/types/events";
 
 // Form data cho việc tạo sự kiện mới
 interface NewEventFormData {
