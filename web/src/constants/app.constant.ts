@@ -10,6 +10,12 @@ export const ROUTES = {
   },
   DASHBOARD: "/",
   TRANSACTIONS: "/transactions",
+  EVENTS: {
+    LIST: "/events",
+    NEW: "/events/new",
+    CALENDAR: "/events/calendar",
+    DETAIL: "/events",
+  },
   LOGIN: "/login",
   REGISTER: "/register",
 } as const;
@@ -34,5 +40,13 @@ export const API_ENDPOINTS = {
     PROFILE: "/auth/profile",
     LOGIN_GOOGLE: "/auth/login/google",
     GOOGLE: "/auth/google",
+  },
+  EVENTS: {
+    LIST: "/events",
+    CREATE: "/events",
+    UPDATE: "/events",
+    DELETE: "/events",
+    DETAIL: "/events",
+    BY_CATEGORY: "/events/category",
   },
 } as const;

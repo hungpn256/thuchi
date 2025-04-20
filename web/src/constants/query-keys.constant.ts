@@ -16,6 +16,13 @@ export const QUERY_KEYS = {
   CATEGORIES: {
     ALL: ["categories"] as const,
   },
+  EVENTS: {
+    ALL: ["events"] as const,
+    LIST: () => [...QUERY_KEYS.EVENTS.ALL, "list"] as const,
+    DETAIL: (id: number) => [...QUERY_KEYS.EVENTS.ALL, id] as const,
+    BY_CATEGORY: (categoryId: number) =>
+      [...QUERY_KEYS.EVENTS.ALL, "category", categoryId] as const,
+  },
   AUTH: {
     PROFILE: ["auth", "profile"] as const,
   },

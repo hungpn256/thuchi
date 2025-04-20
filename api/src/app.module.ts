@@ -5,6 +5,7 @@ import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PrismaModule } from './shared/services/prisma/prisma.module';
+import { EventModule } from './modules/event/event.module';
 import { ValidationPipe } from '@nestjs/common';
 import { validationConfig } from './configs/validation.config';
 
@@ -25,6 +26,7 @@ import { validationConfig } from './configs/validation.config';
     }),
     AuthModule,
     TransactionModule,
+    EventModule,
   ],
   providers: [
     {
