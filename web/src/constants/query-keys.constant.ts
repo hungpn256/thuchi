@@ -1,33 +1,30 @@
 export const QUERY_KEYS = {
   TRANSACTIONS: {
-    ALL: ["transactions"] as const,
-    LIST: (params?: {
-      startDate?: string;
-      endDate?: string;
-      limit?: number;
-      page?: number;
-    }) => ["transactions", "list", params] as const,
+    ALL: ['transactions'] as const,
+    LIST: (params?: { startDate?: string; endDate?: string; limit?: number; page?: number }) =>
+      ['transactions', 'list', params] as const,
     SUMMARY: (params?: { startDate?: string; endDate?: string }) =>
-      ["transactions", "summary", params] as const,
-    DETAIL: (id: string) => ["transactions", "detail", id] as const,
+      ['transactions', 'summary', params] as const,
+    DETAIL: (id: string) => ['transactions', 'detail', id] as const,
     CATEGORY: (params?: { startDate?: string; endDate?: string }) =>
-      ["transactions", "summary", params] as const,
+      ['transactions', 'summary', params] as const,
   },
   CATEGORIES: {
-    ALL: ["categories"] as const,
+    ALL: ['categories'] as const,
+    LIST: () => [...QUERY_KEYS.CATEGORIES.ALL, 'list'] as const,
   },
   EVENTS: {
-    ALL: ["events"] as const,
-    LIST: () => [...QUERY_KEYS.EVENTS.ALL, "list"] as const,
+    ALL: ['events'] as const,
+    LIST: () => [...QUERY_KEYS.EVENTS.ALL, 'list'] as const,
     DETAIL: (id: number) => [...QUERY_KEYS.EVENTS.ALL, id] as const,
     BY_CATEGORY: (categoryId: number) =>
-      [...QUERY_KEYS.EVENTS.ALL, "category", categoryId] as const,
+      [...QUERY_KEYS.EVENTS.ALL, 'category', categoryId] as const,
   },
   AUTH: {
-    PROFILE: ["auth", "profile"] as const,
+    PROFILE: ['auth', 'profile'] as const,
   },
   USER: {
-    ALL: ["user"],
-    PROFILE: () => [...QUERY_KEYS.USER.ALL, "profile"],
+    ALL: ['user'],
+    PROFILE: () => [...QUERY_KEYS.USER.ALL, 'profile'],
   },
 } as const;

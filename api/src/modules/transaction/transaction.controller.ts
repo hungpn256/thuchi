@@ -25,6 +25,7 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { TransactionService } from './transaction.service';
 import { DatePagingQueryDto } from '@/shared/dto/date-paging-query.dto';
+import { GetTransactionsDto } from './dto/get-transactions.dto';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -112,8 +113,7 @@ export class TransactionController {
     status: HttpStatus.OK,
     description: 'Lấy danh sách giao dịch thành công',
   })
-  async getTransactions(@Request() req, @Query() query: DatePagingQueryDto) {
-    console.log('🚀 ~ TransactionController ~ getTransactions ~ query:', query);
+  async getTransactions(@Request() req, @Query() query: GetTransactionsDto) {
     try {
       return await this.transactionService.findAll(req.user.id, {
         ...query,

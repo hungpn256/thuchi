@@ -1,7 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsOptional } from 'class-validator';
+import { IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
 import { PaginationDto } from './pagination.dto';
+import { TransactionType } from '@/constants/transaction.enum';
 
 export class GetTransactionsDto extends PaginationDto {
   @ApiPropertyOptional({
@@ -21,4 +22,28 @@ export class GetTransactionsDto extends PaginationDto {
   @IsDate()
   @IsOptional()
   endDate?: Date;
+
+  @ApiPropertyOptional({
+    description: 'Category IDs for filtering (comma-separated)',
+    example: '1,2,3',
+  })
+  @IsString()
+  @IsOptional()
+  categoryIds?: string;
+
+  @ApiPropertyOptional({
+    description: 'Transaction type (INCOME, EXPENSE)',
+    enum: TransactionType,
+  })
+  @IsEnum(TransactionType)
+  @IsOptional()
+  type?: TransactionType;
+
+  @ApiPropertyOptional({
+    description: 'Search term for description',
+    example: 'groceries',
+  })
+  @IsString()
+  @IsOptional()
+  search?: string;
 }

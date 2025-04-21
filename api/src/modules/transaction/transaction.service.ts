@@ -5,6 +5,7 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from '@/shared/services/prisma/prisma.service';
 import { Prisma, transaction } from '@prisma/client';
+import { GetTransactionsDto } from './dto/get-transactions.dto';
 export interface PaginatedTransactions {
   items: transaction[];
   total: number;
@@ -27,11 +28,8 @@ export class TransactionService {
     return transaction;
   }
 
-  async findAll(
-    userId: number,
-    query: PaginationQueryDto & DateRangeQueryDto,
-  ): Promise<PaginatedTransactions> {
-    const { page = 1, limit = 10, startDate, endDate } = query;
+  async findAll(userId: number, query: GetTransactionsDto): Promise<PaginatedTransactions> {
+    const { page = 1, limit = 10, startDate, endDate, categoryIds, type, search } = query;
     const skip = (page - 1) * limit;
 
     const where: Prisma.transactionWhereInput = {
@@ -40,6 +38,9 @@ export class TransactionService {
         gte: startDate,
         lte: endDate,
       },
+      ...(categoryIds && { categoryId: { in: categoryIds.split(',').map(Number) } }),
+      ...(type && { type }),
+      ...(search && { description: { contains: search, mode: 'insensitive' } }),
     };
 
     const items = await this.prismaService.transaction.findMany({

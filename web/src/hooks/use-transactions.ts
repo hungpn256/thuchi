@@ -1,8 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/constants/query-keys.constant";
-import { API_ENDPOINTS } from "@/constants/app.constant";
-import axiosClient from "@/lib/axios-client";
-import { TransactionType } from "@/types/transaction";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEYS } from '@/constants/query-keys.constant';
+import { API_ENDPOINTS } from '@/constants/app.constant';
+import axiosClient from '@/lib/axios-client';
+import { TransactionType } from '@/types/transaction';
 
 export interface Transaction {
   id: number;
@@ -28,6 +28,9 @@ interface TransactionListParams {
   endDate?: Date;
   limit?: number;
   page?: number;
+  categoryIds?: number[];
+  type?: TransactionType;
+  search?: string;
 }
 
 interface TransactionSummaryParams {
@@ -56,9 +59,18 @@ export const useTransactionList = (params?: TransactionListParams) => {
     endDate: params?.endDate?.toISOString(),
     limit: params?.limit || 10,
     page: params?.page || 1,
+    ...(params?.categoryIds?.length ? { categoryIds: params.categoryIds.join(',') } : {}),
+    ...(params?.type ? { type: params.type } : {}),
+    ...(params?.search ? { search: params.search } : {}),
   };
 
-  return useQuery<{ items: Transaction[] }>({
+  return useQuery<{
+    items: Transaction[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }>({
     queryKey: QUERY_KEYS.TRANSACTIONS.LIST(queryParams),
     queryFn: async () => {
       const { data } = await axiosClient.get(API_ENDPOINTS.TRANSACTIONS.LIST, {
@@ -80,12 +92,9 @@ export const useTransactionSummary = (params?: TransactionSummaryParams) => {
   return useQuery<TransactionSummary>({
     queryKey: QUERY_KEYS.TRANSACTIONS.SUMMARY(queryParams),
     queryFn: async () => {
-      const { data } = await axiosClient.get(
-        API_ENDPOINTS.TRANSACTIONS.SUMMARY,
-        {
-          params: queryParams,
-        }
-      );
+      const { data } = await axiosClient.get(API_ENDPOINTS.TRANSACTIONS.SUMMARY, {
+        params: queryParams,
+      });
       return data;
     },
     enabled: !!params?.startDate && !!params?.endDate,
@@ -98,10 +107,7 @@ export const useCreateTransaction = () => {
 
   return useMutation({
     mutationFn: async (newTransaction: CreateTransactionDTO) => {
-      const { data } = await axiosClient.post(
-        API_ENDPOINTS.TRANSACTIONS.CREATE,
-        newTransaction
-      );
+      const { data } = await axiosClient.post(API_ENDPOINTS.TRANSACTIONS.CREATE, newTransaction);
       return data;
     },
     onSuccess: () => {
@@ -116,17 +122,8 @@ export const useUpdateTransaction = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: Partial<CreateTransactionDTO>;
-    }) => {
-      const response = await axiosClient.put(
-        `${API_ENDPOINTS.TRANSACTIONS.UPDATE}/${id}`,
-        data
-      );
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateTransactionDTO> }) => {
+      const response = await axiosClient.put(`${API_ENDPOINTS.TRANSACTIONS.UPDATE}/${id}`, data);
       return response.data;
     },
     onSuccess: (_, { id }) => {
@@ -144,9 +141,7 @@ export const useDeleteTransaction = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await axiosClient.delete(
-        `${API_ENDPOINTS.TRANSACTIONS.DELETE}/${id}`
-      );
+      const response = await axiosClient.delete(`${API_ENDPOINTS.TRANSACTIONS.DELETE}/${id}`);
       return response.data;
     },
     onSuccess: () => {
@@ -157,10 +152,7 @@ export const useDeleteTransaction = () => {
   });
 };
 
-export function useExpensesByCategory(params?: {
-  startDate?: Date;
-  endDate?: Date;
-}) {
+export function useExpensesByCategory(params?: { startDate?: Date; endDate?: Date }) {
   const queryParams = {
     startDate: params?.startDate?.toISOString(),
     endDate: params?.endDate?.toISOString(),
@@ -170,14 +162,14 @@ export function useExpensesByCategory(params?: {
     queryFn: async () => {
       const searchParams = new URLSearchParams();
       if (params?.startDate) {
-        searchParams.append("startDate", params.startDate.toISOString());
+        searchParams.append('startDate', params.startDate.toISOString());
       }
       if (params?.endDate) {
-        searchParams.append("endDate", params.endDate.toISOString());
+        searchParams.append('endDate', params.endDate.toISOString());
       }
 
       const { data } = await axiosClient.get<CategoryExpense[]>(
-        `/transactions/expenses-by-category?${searchParams.toString()}`
+        `/transactions/expenses-by-category?${searchParams.toString()}`,
       );
       return data;
     },

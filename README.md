@@ -102,9 +102,12 @@ cp web/.env.example web/.env
 # Start both web and API in development mode
 yarn dev
 
-# Alternatively, start individually
-yarn workspace web dev
-yarn workspace api start:dev
+# Start with colored output for better visibility
+yarn dev:pretty
+
+# Or start individually
+yarn start:web   # Start only the web application
+yarn start:api   # Start only the API server
 ```
 
 ## 📱 Usage Examples

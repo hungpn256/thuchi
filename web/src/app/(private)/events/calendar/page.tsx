@@ -5,8 +5,7 @@ import { EventCalendar } from '@/components/calendar/EventCalendar';
 import { useEventList, useDeleteEvent, useCreateEvent, useUpdateEvent } from '@/hooks/use-events';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Edit, Plus, Trash } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -19,9 +18,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
-import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
-import { formatCurrency } from '@/lib/utils';
 import { CalendarEvent } from '@/types/events';
 import {
   EventForm,
@@ -31,9 +27,9 @@ import {
 } from '@/components/event/EventForm';
 import { toast } from '@/components/ui/use-toast';
 import { EventEntity } from '@/types/event';
+import { EventCard } from '@/components/event/EventCard';
 
 export default function EventCalendarPage() {
-  const router = useRouter();
   const { data: events = [], isLoading } = useEventList();
   const deleteEvent = useDeleteEvent();
   const createEvent = useCreateEvent();
@@ -216,77 +212,19 @@ export default function EventCalendarPage() {
 
       {/* Dialog hiển thị chi tiết sự kiện */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">{selectedEvent?.title}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            {selectedEvent?.description && (
-              <div>
-                <h3 className="text-muted-foreground mb-1 text-sm font-medium">Mô tả</h3>
-                <p>{selectedEvent.description}</p>
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-muted-foreground mb-1 text-sm font-medium">Bắt đầu</h3>
-                <p>
-                  {format(selectedEvent?.start || new Date(), 'EEEE, dd/MM/yyyy', { locale: vi })}
-                </p>
-              </div>
-              <div>
-                <h3 className="text-muted-foreground mb-1 text-sm font-medium">Kết thúc</h3>
-                <p>
-                  {format(selectedEvent?.end || new Date(), 'EEEE, dd/MM/yyyy', { locale: vi })}
-                </p>
-              </div>
-            </div>
-            {selectedEvent?.expectedAmount && (
-              <div>
-                <h3 className="text-muted-foreground mb-1 text-sm font-medium">Số tiền dự kiến</h3>
-                <p className="text-primary-600 dark:text-primary-400 font-medium">
-                  {formatCurrency(selectedEvent.expectedAmount)} VND
-                </p>
-              </div>
-            )}
-            <div className="flex justify-between pt-4">
-              <div className="space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1 text-red-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950"
-                  onClick={() => {
-                    setIsDeleteDialogOpen(true);
-                  }}
-                >
-                  <Trash className="h-4 w-4" />
-                  Xóa
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1 text-amber-500 hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-950"
-                  onClick={openEditEventDialog}
-                >
-                  <Edit className="h-4 w-4" />
-                  Chỉnh sửa
-                </Button>
-              </div>
-              <div className="space-x-2">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Đóng
-                </Button>
-                <Button
-                  onClick={() => {
-                    setIsDialogOpen(false);
-                    router.push(`/events/${selectedEvent?.id}`);
-                  }}
-                >
-                  Xem chi tiết
-                </Button>
-              </div>
-            </div>
-          </div>
+        <DialogContent className="border-none bg-transparent p-0 shadow-none sm:max-w-md md:max-w-lg">
+          {selectedEvent && events.find((e) => e.id === selectedEvent.id) && (
+            <EventCard
+              event={events.find((e) => e.id === selectedEvent.id) as EventEntity}
+              hideActions={false}
+              onEdit={() => openEditEventDialog()}
+              onDelete={() => setIsDeleteDialogOpen(true)}
+              className="max-w-full shadow-xl"
+              onClick={() => {}}
+              showFullDetails={true}
+              useDropdownActions={false}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
