@@ -7,6 +7,15 @@ import { user } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
 
+interface TokenPayload {
+  id: number;
+}
+
+interface Tokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
 @Injectable()
 export class AuthService {
   private client: OAuth2Client;
@@ -51,12 +60,61 @@ export class AuthService {
     }
   }
 
+  private async generateTokens(payload: TokenPayload): Promise<Tokens> {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.get('ACCESS_TOKEN_SECRET_KEY'),
+        expiresIn: this.configService.get('ACCESS_TOKEN_EXPIRATION'),
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.get('REFRESH_TOKEN_SECRET_KEY'),
+        expiresIn: this.configService.get('REFRESH_TOKEN_EXPIRATION'),
+      }),
+    ]);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
   async login(user: user) {
     const payload = { id: user.id };
+    const tokens = await this.generateTokens(payload);
     return {
-      accessToken: this.jwtService.sign(payload),
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       user: user,
     };
+  }
+
+  async refreshToken(refreshToken: string) {
+    try {
+      // Verify the refresh token
+      const payload = await this.jwtService.verifyAsync<TokenPayload>(refreshToken, {
+        secret: this.configService.get('REFRESH_TOKEN_SECRET_KEY'),
+      });
+
+      // Check if user exists
+      const user = await this.prismaService.user.findUnique({
+        where: { id: payload.id },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      // Generate new tokens
+      const tokens = await this.generateTokens({ id: user.id });
+
+      return {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        user,
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
   }
 
   async register(registerDto: RegisterDto) {

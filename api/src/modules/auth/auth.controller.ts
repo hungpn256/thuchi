@@ -18,6 +18,7 @@ import {
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { GoogleCallbackDto } from './dto/google-callback.dto';
 import { RegisterDto } from './dto/register.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -248,6 +249,47 @@ export class AuthController {
         throw error;
       }
       throw new BadRequestException('Failed to get profile', { error: error.message });
+    }
+  }
+
+  @Post('refresh-token')
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description: 'API để làm mới access token sử dụng refresh token',
+  })
+  @ApiBody({
+    type: RefreshTokenDto,
+    description: 'Refresh token',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Token được làm mới thành công',
+    schema: {
+      example: {
+        accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        user: {
+          id: 1,
+          email: 'user@example.com',
+          name: 'John Doe',
+          createdAt: '2024-03-20T12:00:00Z',
+          updatedAt: '2024-03-20T12:00:00Z',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Refresh token không hợp lệ hoặc đã hết hạn',
+  })
+  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
+    try {
+      return await this.authService.refreshToken(refreshTokenDto.refreshToken);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new BadRequestException('Token refresh failed', { error: error.message });
     }
   }
 }

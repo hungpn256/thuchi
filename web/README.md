@@ -70,6 +70,47 @@ src/
 - 🏷️ Quản lý danh mục
 - 📱 Responsive design
 
+## Authentication
+
+The application uses JWT for authentication with a refresh token mechanism:
+
+### Access and Refresh Tokens
+
+- **Access Token**: Short-lived token (15 minutes) used for API authentication
+- **Refresh Token**: Long-lived token (7 days) used to obtain a new access token
+
+### Auth Flow
+
+1. User logs in and receives access token and refresh token
+2. Tokens are stored in localStorage
+3. Access token is included in API request headers
+4. When an API request returns 401 Unauthorized, the application automatically:
+   - Attempts to refresh the access token using the refresh token
+   - Retries the original request with the new access token
+   - If refresh fails, redirects to the login page
+
+### Security Features
+
+- Automatic token refresh handling
+- Token rotation with each refresh
+- Queue mechanism for handling multiple concurrent requests during token refresh
+
+### Auth Hooks
+
+The application provides several authentication hooks:
+
+```typescript
+const {
+  login, // Login with email/password
+  register, // Register a new user
+  loginWithGoogle, // Login with Google
+  refreshToken, // Manually refresh the token
+  logout, // Logout the user
+  isLoading, // Loading state
+  error, // Error state
+} = useAuth();
+```
+
 ## Contributing
 
 Mọi đóng góp đều được hoan nghênh! Vui lòng tạo issue hoặc pull request để đóng góp.

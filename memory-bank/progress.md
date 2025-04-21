@@ -4,11 +4,20 @@
 
 - Project initialization and structure
 - Core UI components using shadcn
-- Authentication system
+- Authentication system with refresh token mechanism
 - Transaction listing and management
 - Category management
 - Basic filtering by date range
 - Dark mode theming
+
+## Recent Improvements
+
+1. Authentication Enhancements
+   - Implemented refresh token mechanism in the API
+   - Added automatic token refresh in the web application
+   - Implemented token rotation for better security
+   - Added comprehensive documentation for the auth system
+   - Created request queue mechanism for concurrent requests during token refresh
 
 ## In Progress
 
@@ -33,21 +42,28 @@
 
 ## What's Left
 
-1. Advanced Features
+1. Authentication Enhancements
+
+   - Token revocation mechanism for logout
+   - Multiple device support with unique refresh tokens
+   - Secure storage options (HttpOnly cookies)
+   - Rate limiting for authentication endpoints
+
+2. Advanced Features
 
    - Advanced transaction filtering
    - Batch operations for transactions
    - Export/import functionality
    - Data visualization enhancements
 
-2. User Experience
+3. User Experience
 
    - Guided tours/onboarding
    - Keyboard shortcuts
    - Accessibility improvements
    - Animation refinements
 
-3. Infrastructure
+4. Infrastructure
    - Advanced caching strategies
    - Offline support
    - Performance monitoring
@@ -64,7 +80,7 @@
 
 1. Phase 1: Core Experience (Complete)
 
-   - Authentication
+   - Authentication with refresh token
    - Basic transaction management
    - Category management
    - Simple reporting
@@ -88,3 +104,4 @@
 - Addressing UI interaction bugs, particularly in forms and dialogs
 - Following DRY principles for dialog management
 - Implementing consistent handling of z-index and event propagation
+- Enhanced security with refresh token implementation

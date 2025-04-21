@@ -11,7 +11,12 @@ export interface RegisterCredentials {
 
 export interface AuthResponse {
   accessToken: string;
+  refreshToken: string;
   user: User;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
 }
 
 export interface User {
@@ -27,6 +32,8 @@ export interface UseAuthReturn {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  refreshToken: () => Promise<AuthResponse>;
+  logout: () => void;
   isLoading: boolean;
   error: Error | null;
 }

@@ -13,7 +13,7 @@ import { PassportModule } from '@nestjs/passport';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get('ACCESS_TOKEN_SECRET_KEY'),
-        signOptions: { expiresIn: '1d' },
+        signOptions: { expiresIn: configService.get('ACCESS_TOKEN_EXPIRATION', '15m') },
       }),
       inject: [ConfigService],
     }),

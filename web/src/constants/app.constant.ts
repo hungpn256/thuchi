@@ -1,5 +1,6 @@
 export const STORAGE_KEYS = {
   ACCESS_TOKEN: 'accessToken',
+  REFRESH_TOKEN: 'refreshToken',
 } as const;
 
 export const ROUTES = {
@@ -43,6 +44,7 @@ export const API_ENDPOINTS = {
     PROFILE: '/auth/profile',
     LOGIN_GOOGLE: '/auth/login/google',
     GOOGLE: '/auth/google',
+    REFRESH_TOKEN: '/auth/refresh-token',
   },
   EVENTS: {
     LIST: '/events',
