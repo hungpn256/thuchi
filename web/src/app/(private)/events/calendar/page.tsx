@@ -1,29 +1,13 @@
-"use client";
+'use client';
 
-import { Header } from "@/components/layout/Header";
-import { EventCalendar } from "@/components/calendar/EventCalendar";
-import {
-  useEventList,
-  useDeleteEvent,
-  useCreateEvent,
-} from "@/hooks/use-events";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  Edit,
-  Plus,
-  Trash,
-  Calendar as CalendarIcon,
-  Clock,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Header } from '@/components/layout/Header';
+import { EventCalendar } from '@/components/calendar/EventCalendar';
+import { useEventList, useDeleteEvent, useCreateEvent, useUpdateEvent } from '@/hooks/use-events';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Edit, Plus, Trash } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,66 +17,37 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
-import { formatCurrency } from "@/lib/utils";
-import { useForm } from "react-hook-form";
-import { CalendarEvent } from "@/types/events";
-
-// Form data cho việc tạo sự kiện mới
-interface NewEventFormData {
-  name: string;
-  description?: string;
-  startTime: string;
-  endTime: string;
-  expectedAmount?: number;
-}
-
-// Toast function
-const showToast = ({
-  title,
-  description,
-  variant,
-}: {
-  title: string;
-  description?: string;
-  variant?: "default" | "destructive";
-}) => {
-  console.log(
-    `${variant === "destructive" ? "Error: " : ""}${title}${description ? ` - ${description}` : ""}`
-  );
-  // In a real app, you would use a toast library here
-};
+} from '@/components/ui/alert-dialog';
+import { useState } from 'react';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import { formatCurrency } from '@/lib/utils';
+import { CalendarEvent } from '@/types/events';
+import {
+  EventForm,
+  EventFormValues,
+  eventToFormValues,
+  formValuesToEventData,
+} from '@/components/event/EventForm';
+import { toast } from '@/components/ui/use-toast';
+import { EventEntity } from '@/types/event';
 
 export default function EventCalendarPage() {
   const router = useRouter();
   const { data: events = [], isLoading } = useEventList();
   const deleteEvent = useDeleteEvent();
   const createEvent = useCreateEvent();
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
-    null
-  );
+  const updateEvent = useUpdateEvent();
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isNewEventDialogOpen, setIsNewEventDialogOpen] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<NewEventFormData>({
-    defaultValues: {
-      startTime: "08:00",
-      endTime: "17:00",
-    },
-  });
+  const [isEditEventDialogOpen, setIsEditEventDialogOpen] = useState(false);
+  const [currentEditEvent, setCurrentEditEvent] = useState<EventEntity | null>(null);
 
   // Format sự kiện cho calendar
   const calendarEvents: CalendarEvent[] = events.map((event) => ({
@@ -117,89 +72,133 @@ export default function EventCalendarPage() {
       await deleteEvent.mutateAsync(Number(selectedEvent.id));
       setIsDeleteDialogOpen(false);
       setIsDialogOpen(false);
-      showToast({
-        title: "Xóa sự kiện thành công",
-        description: "Sự kiện đã được xóa khỏi lịch của bạn",
+      toast({
+        title: 'Xóa sự kiện thành công',
+        description: 'Sự kiện đã được xóa khỏi lịch của bạn',
       });
     } catch (error: unknown) {
-      console.error("Lỗi khi xóa sự kiện:", error);
-      showToast({
-        title: "Lỗi khi xóa sự kiện",
-        description: "Đã xảy ra lỗi, vui lòng thử lại sau",
-        variant: "destructive",
+      console.error('Lỗi khi xóa sự kiện:', error);
+      toast({
+        title: 'Lỗi khi xóa sự kiện',
+        description: 'Đã xảy ra lỗi, vui lòng thử lại sau',
+        variant: 'destructive',
       });
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const onSubmitNewEvent = async (data: NewEventFormData) => {
+  const closeNewEventDialog = () => {
+    setIsNewEventDialogOpen(false);
+  };
+
+  const closeEditEventDialog = () => {
+    setIsEditEventDialogOpen(false);
+    setCurrentEditEvent(null);
+  };
+
+  const openEditEventDialog = () => {
+    if (!selectedEvent) return;
+
+    // Tìm event đầy đủ từ danh sách events
+    const eventToEdit = events.find((event) => event.id === selectedEvent.id);
+    if (eventToEdit) {
+      setCurrentEditEvent(eventToEdit as EventEntity);
+      setIsEditEventDialogOpen(true);
+      setIsDialogOpen(false);
+    }
+  };
+
+  const handleCreateEvent = async (data: EventFormValues) => {
     try {
       setIsCreating(true);
 
-      // Tạo ngày bắt đầu từ selectedDate và startTime
-      const startDate = new Date(selectedDate);
-      const [startHour, startMinute] = data.startTime.split(":").map(Number);
-      startDate.setHours(startHour, startMinute, 0);
+      // Log dữ liệu form để debug
+      console.log('Original form data:', data);
 
-      // Tạo ngày kết thúc từ selectedDate và endTime
-      const endDate = new Date(selectedDate);
-      const [endHour, endMinute] = data.endTime.split(":").map(Number);
-      endDate.setHours(endHour, endMinute, 0);
+      // Chuyển đổi dữ liệu form sang dữ liệu event
+      const eventData = formValuesToEventData(data);
 
-      await createEvent.mutateAsync({
-        name: data.name,
-        description: data.description,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        expectedAmount: data.expectedAmount
-          ? Number(data.expectedAmount)
-          : undefined,
-      });
+      // Log dữ liệu đã chuyển đổi để debug
+      console.log('Converted event data:', eventData);
+      console.log('StartDate with time:', new Date(eventData.startDate).toLocaleString());
+      console.log('EndDate with time:', new Date(eventData.endDate).toLocaleString());
 
+      // Gửi request tạo event
+      await createEvent.mutateAsync(eventData);
       setIsNewEventDialogOpen(false);
-      reset();
 
-      showToast({
-        title: "Tạo sự kiện thành công",
-        description: "Sự kiện mới đã được thêm vào lịch của bạn",
+      toast({
+        title: 'Tạo sự kiện thành công',
+        description: 'Sự kiện mới đã được thêm vào lịch của bạn',
       });
     } catch (error: unknown) {
-      console.error("Lỗi khi tạo sự kiện:", error);
-      showToast({
-        title: "Lỗi khi tạo sự kiện",
-        description: "Đã xảy ra lỗi, vui lòng thử lại sau",
-        variant: "destructive",
+      console.error('Lỗi khi tạo sự kiện:', error);
+      toast({
+        title: 'Lỗi khi tạo sự kiện',
+        description: 'Đã xảy ra lỗi, vui lòng thử lại sau',
+        variant: 'destructive',
       });
     } finally {
       setIsCreating(false);
     }
   };
 
+  const handleUpdateEvent = async (data: EventFormValues) => {
+    if (!data.id) return;
+
+    try {
+      setIsUpdating(true);
+      const eventData = formValuesToEventData(data);
+
+      await updateEvent.mutateAsync({
+        id: data.id,
+        data: eventData,
+      });
+
+      setIsEditEventDialogOpen(false);
+      setCurrentEditEvent(null);
+
+      toast({
+        title: 'Cập nhật sự kiện thành công',
+        description: 'Sự kiện đã được cập nhật thành công',
+      });
+    } catch (error: unknown) {
+      console.error('Lỗi khi cập nhật sự kiện:', error);
+      toast({
+        title: 'Lỗi khi cập nhật sự kiện',
+        description: 'Đã xảy ra lỗi, vui lòng thử lại sau',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background/10 via-background/50 to-background/80">
+    <div className="from-background/10 via-background/50 to-background/80 min-h-screen bg-gradient-to-b">
       <Header />
-      <div className="container mx-auto py-10 px-4 space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="container mx-auto space-y-8 px-4 py-10">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div className="flex items-center gap-4">
             <h1 className="text-3xl font-bold tracking-tight">Lịch sự kiện</h1>
           </div>
           <Button
-            className="gap-2 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400"
+            className="from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 gap-2 bg-gradient-to-r"
             onClick={() => {
               setSelectedDate(new Date());
               setIsNewEventDialogOpen(true);
             }}
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="h-4 w-4" />
             Tạo sự kiện mới
           </Button>
         </div>
 
-        <Card className="shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-neumorphic-dark border-white/20 border bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-8">
+        <Card className="dark:shadow-neumorphic-dark border border-white/20 bg-white/80 p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-xl dark:bg-gray-800/80">
           {isLoading ? (
-            <div className="flex items-center justify-center h-[700px]">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <div className="flex h-[700px] items-center justify-center">
+              <div className="border-primary h-12 w-12 animate-spin rounded-full border-b-2"></div>
             </div>
           ) : (
             <EventCalendar
@@ -219,51 +218,33 @@ export default function EventCalendarPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">
-              {selectedEvent?.title}
-            </DialogTitle>
+            <DialogTitle className="text-xl font-semibold">{selectedEvent?.title}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             {selectedEvent?.description && (
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                  Mô tả
-                </h3>
+                <h3 className="text-muted-foreground mb-1 text-sm font-medium">Mô tả</h3>
                 <p>{selectedEvent.description}</p>
               </div>
             )}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                  Bắt đầu
-                </h3>
+                <h3 className="text-muted-foreground mb-1 text-sm font-medium">Bắt đầu</h3>
                 <p>
-                  {format(
-                    selectedEvent?.start || new Date(),
-                    "EEEE, dd/MM/yyyy",
-                    { locale: vi }
-                  )}
+                  {format(selectedEvent?.start || new Date(), 'EEEE, dd/MM/yyyy', { locale: vi })}
                 </p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                  Kết thúc
-                </h3>
+                <h3 className="text-muted-foreground mb-1 text-sm font-medium">Kết thúc</h3>
                 <p>
-                  {format(
-                    selectedEvent?.end || new Date(),
-                    "EEEE, dd/MM/yyyy",
-                    { locale: vi }
-                  )}
+                  {format(selectedEvent?.end || new Date(), 'EEEE, dd/MM/yyyy', { locale: vi })}
                 </p>
               </div>
             </div>
             {selectedEvent?.expectedAmount && (
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                  Số tiền dự kiến
-                </h3>
-                <p className="font-medium text-primary-600 dark:text-primary-400">
+                <h3 className="text-muted-foreground mb-1 text-sm font-medium">Số tiền dự kiến</h3>
+                <p className="text-primary-600 dark:text-primary-400 font-medium">
                   {formatCurrency(selectedEvent.expectedAmount)} VND
                 </p>
               </div>
@@ -273,32 +254,26 @@ export default function EventCalendarPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-1 text-red-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                  className="gap-1 text-red-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950"
                   onClick={() => {
                     setIsDeleteDialogOpen(true);
                   }}
                 >
-                  <Trash className="w-4 h-4" />
+                  <Trash className="h-4 w-4" />
                   Xóa
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-1 text-amber-500 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950"
-                  onClick={() => {
-                    setIsDialogOpen(false);
-                    router.push(`/events/${selectedEvent?.id}/edit`);
-                  }}
+                  className="gap-1 text-amber-500 hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-950"
+                  onClick={openEditEventDialog}
                 >
-                  <Edit className="w-4 h-4" />
+                  <Edit className="h-4 w-4" />
                   Chỉnh sửa
                 </Button>
               </div>
               <div className="space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsDialogOpen(false)}
-                >
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Đóng
                 </Button>
                 <Button
@@ -315,156 +290,49 @@ export default function EventCalendarPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog tạo sự kiện mới */}
-      <Dialog
-        open={isNewEventDialogOpen}
-        onOpenChange={setIsNewEventDialogOpen}
-      >
+      {/* Dialog tạo sự kiện mới sử dụng component chung */}
+      <Dialog open={isNewEventDialogOpen} onOpenChange={setIsNewEventDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">
-              Tạo sự kiện mới
-            </DialogTitle>
+            <DialogTitle className="text-xl font-semibold">Tạo sự kiện mới</DialogTitle>
           </DialogHeader>
-          <form
-            onSubmit={handleSubmit(onSubmitNewEvent)}
-            className="space-y-4 pt-4"
-          >
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Ngày:</span>
-                  <span>
-                    {format(selectedDate, "EEEE, dd/MM/yyyy", { locale: vi })}
-                  </span>
-                </div>
-              </div>
+          <EventForm
+            defaultValues={{
+              date: selectedDate,
+              startTime: '08:00',
+              endTime: '17:00',
+            }}
+            onSubmit={handleCreateEvent}
+            onCancel={closeNewEventDialog}
+            isSubmitting={isCreating}
+          />
+        </DialogContent>
+      </Dialog>
 
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Tên sự kiện <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  id="name"
-                  placeholder="Nhập tên sự kiện"
-                  {...register("name", {
-                    required: "Tên sự kiện không được để trống",
-                  })}
-                  className={errors.name ? "border-red-500" : ""}
-                />
-                {errors.name && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.name.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Mô tả
-                </label>
-                <Input
-                  id="description"
-                  placeholder="Nhập mô tả (tùy chọn)"
-                  {...register("description")}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="startTime"
-                    className="flex items-center text-sm font-medium text-foreground mb-1"
-                  >
-                    <Clock className="h-3 w-3 mr-1" />
-                    Thời gian bắt đầu
-                  </label>
-                  <Input
-                    id="startTime"
-                    type="time"
-                    {...register("startTime", { required: true })}
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="endTime"
-                    className="flex items-center text-sm font-medium text-foreground mb-1"
-                  >
-                    <Clock className="h-3 w-3 mr-1" />
-                    Thời gian kết thúc
-                  </label>
-                  <Input
-                    id="endTime"
-                    type="time"
-                    {...register("endTime", { required: true })}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="expectedAmount"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Số tiền dự kiến (VND)
-                </label>
-                <Input
-                  id="expectedAmount"
-                  type="number"
-                  placeholder="Nhập số tiền (tùy chọn)"
-                  {...register("expectedAmount")}
-                />
-              </div>
-            </div>
-
-            <DialogFooter className="pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsNewEventDialogOpen(false);
-                  reset();
-                }}
-              >
-                Hủy
-              </Button>
-              <Button
-                type="submit"
-                disabled={isCreating}
-                className="bg-primary hover:bg-primary/90"
-              >
-                {isCreating ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Đang tạo...
-                  </>
-                ) : (
-                  <>Tạo sự kiện</>
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
+      {/* Dialog chỉnh sửa sự kiện sử dụng component chung */}
+      <Dialog open={isEditEventDialogOpen} onOpenChange={setIsEditEventDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Chỉnh sửa sự kiện</DialogTitle>
+          </DialogHeader>
+          {currentEditEvent && (
+            <EventForm
+              defaultValues={eventToFormValues(currentEditEvent)}
+              onSubmit={handleUpdateEvent}
+              onCancel={closeEditEventDialog}
+              isSubmitting={isUpdating}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
       {/* Dialog xác nhận xóa sự kiện */}
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Bạn có chắc chắn muốn xóa?</AlertDialogTitle>
             <AlertDialogDescription>
-              Hành động này không thể hoàn tác. Sự kiện sẽ bị xóa vĩnh viễn khỏi
-              hệ thống.
+              Hành động này không thể hoàn tác. Sự kiện sẽ bị xóa vĩnh viễn khỏi hệ thống.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -479,7 +347,7 @@ export default function EventCalendarPage() {
             >
               {isDeleting ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
                   Đang xóa...
                 </>
               ) : (

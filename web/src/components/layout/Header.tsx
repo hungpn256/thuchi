@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,12 +8,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ROUTES, STORAGE_KEYS } from "@/constants/app.constant";
-import { useUserProfile } from "@/hooks/use-user";
-import { LogOut, User } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { ThemeToggle } from "../theme/theme-toggle";
+} from '@/components/ui/dropdown-menu';
+import { ROUTES, STORAGE_KEYS } from '@/constants/app.constant';
+import { useUserProfile } from '@/hooks/use-user';
+import { LogOut, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ThemeToggle } from '../theme/theme-toggle';
 
 export function Header() {
   const { data: profile } = useUserProfile();
@@ -25,22 +25,18 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
       <div className="container mx-auto">
         <div className="flex h-14 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-bold pl-4">Thu Chi</span>
-          </div>
+          <div className="flex items-center gap-2"></div>
 
           <div className="flex items-center gap-4">
             <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative">
-                  <User className="h-5 w-5 mr-2" />
-                  <span className="hidden md:inline-block">
-                    {profile?.email}
-                  </span>
+                  <User className="mr-2 h-5 w-5" />
+                  <span className="hidden md:inline-block">{profile?.email}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">

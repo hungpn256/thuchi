@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Header } from "@/components/layout/Header";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Card } from "@/components/ui/card";
+import { Header } from '@/components/layout/Header';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Card } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -11,33 +11,24 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ROUTES } from "@/constants/app.constant";
-import { useCreateTransaction } from "@/hooks/use-transactions";
-import { cn } from "@/lib/utils";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { format, formatISO } from "date-fns";
-import { vi } from "date-fns/locale";
-import {
-  ArrowDownCircle,
-  ArrowLeft,
-  ArrowUpCircle,
-  CalendarIcon,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useForm, type SubmitHandler } from "react-hook-form";
-import * as yup from "yup";
-import { CategoryCombobox } from "@/components/category-combobox";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { ROUTES } from '@/constants/app.constant';
+import { useCreateTransaction } from '@/hooks/use-transactions';
+import { cn, formatAmount, unFormatAmount } from '@/lib/utils';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { format, formatISO } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import { ArrowDownCircle, ArrowLeft, ArrowUpCircle, CalendarIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useForm, type SubmitHandler } from 'react-hook-form';
+import * as yup from 'yup';
+import { CategoryCombobox } from '@/components/category-combobox';
 
 interface FormValues {
-  type: "INCOME" | "EXPENSE";
+  type: 'INCOME' | 'EXPENSE';
   amount: number;
   description: string;
   date: Date;
@@ -47,33 +38,21 @@ interface FormValues {
 const formSchema = yup.object<FormValues>().shape({
   type: yup
     .string()
-    .oneOf(["INCOME", "EXPENSE"] as const, "Vui lòng chọn loại giao dịch")
-    .required("Vui lòng chọn loại giao dịch"),
+    .oneOf(['INCOME', 'EXPENSE'] as const, 'Vui lòng chọn loại giao dịch')
+    .required('Vui lòng chọn loại giao dịch'),
   amount: yup
     .number()
-    .typeError("Số tiền không hợp lệ")
-    .min(0, "Số tiền phải lớn hơn 0")
-    .required("Vui lòng nhập số tiền"),
+    .typeError('Số tiền không hợp lệ')
+    .min(0, 'Số tiền phải lớn hơn 0')
+    .required('Vui lòng nhập số tiền'),
   description: yup
     .string()
-    .min(1, "Vui lòng nhập mô tả")
-    .max(255, "Mô tả không được quá 255 ký tự")
-    .required("Vui lòng nhập mô tả"),
-  date: yup.date().required("Vui lòng chọn ngày"),
-  categoryId: yup.number().required("Vui lòng chọn danh mục"),
+    .min(1, 'Vui lòng nhập mô tả')
+    .max(255, 'Mô tả không được quá 255 ký tự')
+    .required('Vui lòng nhập mô tả'),
+  date: yup.date().required('Vui lòng chọn ngày'),
+  categoryId: yup.number().required('Vui lòng chọn danh mục'),
 });
-
-const formatAmount = (value: string) => {
-  // Remove all non-digit characters
-  const number = value.replace(/\D/g, "");
-  // Format with thousand separators
-  return number.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-};
-
-const unformatAmount = (value: string) => {
-  // Remove all non-digit characters and convert to number
-  return Number(value.replace(/\D/g, ""));
-};
 
 export default function NewTransactionPage() {
   const router = useRouter();
@@ -82,10 +61,10 @@ export default function NewTransactionPage() {
   const form = useForm<FormValues>({
     resolver: yupResolver(formSchema),
     defaultValues: {
-      type: "EXPENSE",
+      type: 'EXPENSE',
       date: new Date(),
       amount: 0,
-      description: "",
+      description: '',
     },
   });
 
@@ -97,31 +76,25 @@ export default function NewTransactionPage() {
       },
       {
         onSuccess: () => {
-          router.push(ROUTES.DASHBOARD);
+          router.push(ROUTES.TRANSACTIONS.LIST);
         },
-      }
+      },
     );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background/10 via-background/50 to-background/80">
+    <div className="from-background/10 via-background/50 to-background/80 min-h-screen bg-gradient-to-b">
       <Header />
-      <div className="container mx-auto max-w-2xl py-8 space-y-8">
+      <div className="container mx-auto max-w-2xl space-y-8 py-8">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            className="gap-2"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="w-4 h-4" />
+          <Button variant="ghost" className="gap-2" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
             Quay lại
           </Button>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Tạo giao dịch mới
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight">Tạo giao dịch mới</h1>
         </div>
 
-        <Card className="shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-neumorphic-dark border-white/20 border bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-6">
+        <Card className="dark:shadow-neumorphic-dark border border-white/20 bg-white/80 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-xl dark:bg-gray-800/80">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -138,15 +111,11 @@ export default function NewTransactionPage() {
                       >
                         <FormItem>
                           <FormControl>
-                            <RadioGroupItem
-                              value="EXPENSE"
-                              id="expense"
-                              className="peer sr-only"
-                            />
+                            <RadioGroupItem value="EXPENSE" id="expense" className="peer sr-only" />
                           </FormControl>
                           <FormLabel
                             htmlFor="expense"
-                            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-transparent p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                            className="border-muted hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary flex flex-col items-center justify-between rounded-md border-2 bg-transparent p-4"
                           >
                             <ArrowDownCircle className="mb-3 h-6 w-6 text-rose-500" />
                             Chi tiêu
@@ -154,15 +123,11 @@ export default function NewTransactionPage() {
                         </FormItem>
                         <FormItem>
                           <FormControl>
-                            <RadioGroupItem
-                              value="INCOME"
-                              id="income"
-                              className="peer sr-only"
-                            />
+                            <RadioGroupItem value="INCOME" id="income" className="peer sr-only" />
                           </FormControl>
                           <FormLabel
                             htmlFor="income"
-                            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-transparent p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                            className="border-muted hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary flex flex-col items-center justify-between rounded-md border-2 bg-transparent p-4"
                           >
                             <ArrowUpCircle className="mb-3 h-6 w-6 text-emerald-500" />
                             Thu nhập
@@ -186,13 +151,13 @@ export default function NewTransactionPage() {
                         <Input
                           placeholder="Nhập số tiền"
                           {...field}
-                          value={formatAmount(field.value?.toString() || "")}
+                          value={formatAmount(field.value?.toString() || '')}
                           onChange={(e) => {
-                            const value = unformatAmount(e.target.value);
+                            const value = unFormatAmount(e.target.value);
                             field.onChange(value);
                           }}
                         />
-                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-muted-foreground">
+                        <div className="text-muted-foreground pointer-events-none absolute inset-y-0 right-3 flex items-center">
                           VND
                         </div>
                       </div>
@@ -243,14 +208,14 @@ export default function NewTransactionPage() {
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
-                            variant={"outline"}
+                            variant={'outline'}
                             className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              'w-full pl-3 text-left font-normal',
+                              !field.value && 'text-muted-foreground',
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "dd MMMM, yyyy", {
+                              format(field.value, 'dd MMMM, yyyy', {
                                 locale: vi,
                               })
                             ) : (
@@ -266,7 +231,7 @@ export default function NewTransactionPage() {
                           selected={field.value}
                           onSelect={field.onChange}
                           disabled={(date: Date) =>
-                            date > new Date() || date < new Date("1900-01-01")
+                            date > new Date() || date < new Date('1900-01-01')
                           }
                           initialFocus
                         />
@@ -281,12 +246,12 @@ export default function NewTransactionPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => router.back()}
+                  onClick={() => router.push(ROUTES.TRANSACTIONS.LIST)}
                 >
                   Hủy
                 </Button>
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Đang xử lý..." : "Tạo giao dịch"}
+                  {isPending ? 'Đang xử lý...' : 'Tạo giao dịch'}
                 </Button>
               </div>
             </form>

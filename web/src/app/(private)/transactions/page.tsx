@@ -1,21 +1,17 @@
-"use client";
+'use client';
 
-import { Header } from "@/components/layout/Header";
-import { Button } from "@/components/ui/button";
-import { useTransactionList } from "@/hooks/use-transactions";
-import { format, subDays } from "date-fns";
-import { vi } from "date-fns/locale";
-import { useState } from "react";
-import { Plus, Filter, FileEdit, Trash } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn, formatCurrency } from "@/lib/utils";
-import { DateRange } from "react-day-picker";
+import { Header } from '@/components/layout/Header';
+import { Button } from '@/components/ui/button';
+import { useTransactionList } from '@/hooks/use-transactions';
+import { format, subDays } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import { useState } from 'react';
+import { Plus, Filter, FileEdit, Trash } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn, formatCurrency } from '@/lib/utils';
+import { DateRange } from 'react-day-picker';
 import {
   Table,
   TableBody,
@@ -23,7 +19,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -31,8 +27,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
+} from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,20 +36,21 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
-import { useDeleteTransaction } from "@/hooks/use-transactions";
-import { TransactionForm } from "@/components/transaction/transaction-form";
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal } from 'lucide-react';
+import { useDeleteTransaction } from '@/hooks/use-transactions';
+import { TransactionForm } from '@/components/transaction/transaction-form';
+import { ROUTES } from '@/constants/app.constant';
+import { useRouter } from 'next/navigation';
 
 export default function TransactionsPage() {
+  const router = useRouter();
   const [date, setDate] = useState<DateRange | undefined>({
     from: subDays(new Date(), 30),
     to: new Date(),
   });
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedTransactionId, setSelectedTransactionId] = useState<
-    string | null
-  >(null);
+  const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
 
   const { data, isLoading } = useTransactionList({
@@ -62,8 +59,7 @@ export default function TransactionsPage() {
     limit: 100,
   });
 
-  const { mutate: deleteTransaction, isPending: isDeleting } =
-    useDeleteTransaction();
+  const { mutate: deleteTransaction, isPending: isDeleting } = useDeleteTransaction();
 
   const handleDeleteTransaction = () => {
     if (selectedTransactionId) {
@@ -86,8 +82,7 @@ export default function TransactionsPage() {
   };
 
   const handleCreateClick = () => {
-    setSelectedTransactionId(null);
-    setIsTransactionDialogOpen(true);
+    router.push(ROUTES.TRANSACTIONS.NEW);
   };
 
   const handleTransactionDialogClose = () => {
@@ -96,26 +91,24 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background/10 via-background/50 to-background/80">
+    <div className="from-background/10 via-background/50 to-background/80 min-h-screen bg-gradient-to-b">
       <Header />
-      <div className="container mx-auto py-10 px-4 space-y-8">
+      <div className="container mx-auto space-y-8 px-4 py-10">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">
-            Danh sách giao dịch
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight">Danh sách giao dịch</h1>
           <div className="flex gap-2">
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="gap-2">
-                  <Filter className="w-4 h-4" />
+                  <Filter className="h-4 w-4" />
                   {date?.from ? (
                     date.to ? (
                       <>
-                        {format(date.from, "dd/MM/yyyy", { locale: vi })} -{" "}
-                        {format(date.to, "dd/MM/yyyy", { locale: vi })}
+                        {format(date.from, 'dd/MM/yyyy', { locale: vi })} -{' '}
+                        {format(date.to, 'dd/MM/yyyy', { locale: vi })}
                       </>
                     ) : (
-                      format(date.from, "dd/MM/yyyy", { locale: vi })
+                      format(date.from, 'dd/MM/yyyy', { locale: vi })
                     )
                   ) : (
                     <span>Chọn ngày</span>
@@ -135,7 +128,7 @@ export default function TransactionsPage() {
               </PopoverContent>
             </Popover>
             <Button className="gap-2" onClick={handleCreateClick}>
-              <Plus className="w-4 h-4" />
+              <Plus className="h-4 w-4" />
               Thêm mới
             </Button>
           </div>
@@ -172,26 +165,20 @@ export default function TransactionsPage() {
                 <TableBody>
                   {data.items.map((transaction) => (
                     <TableRow key={transaction.id}>
-                      <TableCell className="font-medium">
-                        {transaction.description}
-                      </TableCell>
+                      <TableCell className="font-medium">{transaction.description}</TableCell>
+                      <TableCell>{transaction.category?.name || 'Không có danh mục'}</TableCell>
                       <TableCell>
-                        {transaction.category?.name || "Không có danh mục"}
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(transaction.date), "dd/MM/yyyy", {
+                        {format(new Date(transaction.date), 'dd/MM/yyyy', {
                           locale: vi,
                         })}
                       </TableCell>
                       <TableCell
-                        className={cn("text-right font-medium", {
-                          "text-emerald-600 dark:text-emerald-400":
-                            transaction.type === "INCOME",
-                          "text-rose-600 dark:text-rose-400":
-                            transaction.type === "EXPENSE",
+                        className={cn('text-right font-medium', {
+                          'text-emerald-600 dark:text-emerald-400': transaction.type === 'INCOME',
+                          'text-rose-600 dark:text-rose-400': transaction.type === 'EXPENSE',
                         })}
                       >
-                        {transaction.type === "INCOME" ? "+" : "-"}
+                        {transaction.type === 'INCOME' ? '+' : '-'}
                         {formatCurrency(transaction.amount)}
                       </TableCell>
                       <TableCell className="text-right">
@@ -206,17 +193,13 @@ export default function TransactionsPage() {
                             <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              onClick={() =>
-                                handleEditClick(transaction.id.toString())
-                              }
+                              onClick={() => handleEditClick(transaction.id.toString())}
                             >
                               <FileEdit className="mr-2 h-4 w-4" />
                               Chỉnh sửa
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() =>
-                                handleDeleteClick(transaction.id.toString())
-                              }
+                              onClick={() => handleDeleteClick(transaction.id.toString())}
                             >
                               <Trash className="mr-2 h-4 w-4" />
                               Xóa
@@ -229,15 +212,11 @@ export default function TransactionsPage() {
                 </TableBody>
               </Table>
             ) : (
-              <div className="text-center py-12">
+              <div className="py-12 text-center">
                 <p className="text-muted-foreground">
                   Không có giao dịch nào trong khoảng thời gian này
                 </p>
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={handleCreateClick}
-                >
+                <Button variant="outline" className="mt-4" onClick={handleCreateClick}>
                   Tạo giao dịch mới
                 </Button>
               </div>
@@ -252,8 +231,7 @@ export default function TransactionsPage() {
           <DialogHeader>
             <DialogTitle>Xác nhận xóa</DialogTitle>
             <DialogDescription>
-              Bạn có chắc chắn muốn xóa giao dịch này không? Hành động này không
-              thể hoàn tác.
+              Bạn có chắc chắn muốn xóa giao dịch này không? Hành động này không thể hoàn tác.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -264,34 +242,23 @@ export default function TransactionsPage() {
             >
               Hủy
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteTransaction}
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Đang xóa..." : "Xóa"}
+            <Button variant="destructive" onClick={handleDeleteTransaction} disabled={isDeleting}>
+              {isDeleting ? 'Đang xóa...' : 'Xóa'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Transaction Dialog (for both Create and Edit) */}
-      <Dialog
-        open={isTransactionDialogOpen}
-        onOpenChange={setIsTransactionDialogOpen}
-      >
+      {/* Transaction Dialog (for Edit only) */}
+      <Dialog open={isTransactionDialogOpen} onOpenChange={setIsTransactionDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>
-              {selectedTransactionId
-                ? "Chỉnh sửa giao dịch"
-                : "Tạo giao dịch mới"}
-            </DialogTitle>
+            <DialogTitle>Chỉnh sửa giao dịch</DialogTitle>
           </DialogHeader>
           <TransactionForm
             transactionId={selectedTransactionId || undefined}
             onSuccess={handleTransactionDialogClose}
-            mode={selectedTransactionId ? "update" : "create"}
+            mode="update"
           />
         </DialogContent>
       </Dialog>
