@@ -8,6 +8,7 @@ import { PrismaModule } from './shared/services/prisma/prisma.module';
 import { EventModule } from './modules/event/event.module';
 import { ValidationPipe } from '@nestjs/common';
 import { validationConfig } from './configs/validation.config';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { validationConfig } from './configs/validation.config';
     AuthModule,
     TransactionModule,
     EventModule,
+    ReportsModule,
   ],
   providers: [
     {

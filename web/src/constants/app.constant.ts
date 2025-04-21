@@ -18,10 +18,14 @@ export const ROUTES = {
     LIST: '/events',
     NEW: '/events/new',
     CALENDAR: '/events/calendar',
-    DETAIL: '/events',
   },
-  LOGIN: '/login',
-  REGISTER: '/register',
+  REPORTS: {
+    ROOT: '/reports',
+    SUMMARY: '/reports',
+    BY_CATEGORY: '/reports/by-category',
+    TRENDS: '/reports/trends',
+  },
+  SETTINGS: '/settings',
 } as const;
 
 export const API_ENDPOINTS = {
@@ -53,5 +57,10 @@ export const API_ENDPOINTS = {
     DELETE: '/events',
     DETAIL: '/events',
     BY_CATEGORY: '/events/category',
+  },
+  REPORTS: {
+    SUMMARY: '/reports/summary',
+    CATEGORIES: '/reports/categories',
+    TRENDS: '/reports/trends',
   },
 } as const;
