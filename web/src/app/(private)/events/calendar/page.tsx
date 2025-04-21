@@ -106,19 +106,12 @@ export default function EventCalendarPage() {
   };
 
   const handleCreateEvent = async (data: EventFormValues) => {
+    console.log('🚀 ~ handleCreateEvent ~ data:', data);
     try {
       setIsCreating(true);
 
-      // Log dữ liệu form để debug
-      console.log('Original form data:', data);
-
       // Chuyển đổi dữ liệu form sang dữ liệu event
       const eventData = formValuesToEventData(data);
-
-      // Log dữ liệu đã chuyển đổi để debug
-      console.log('Converted event data:', eventData);
-      console.log('StartDate with time:', new Date(eventData.startDate).toLocaleString());
-      console.log('EndDate with time:', new Date(eventData.endDate).toLocaleString());
 
       // Gửi request tạo event
       await createEvent.mutateAsync(eventData);

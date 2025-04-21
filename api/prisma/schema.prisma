@@ -58,8 +58,8 @@ model event {
     id             Int           @id @default(autoincrement())
     name           String        @db.VarChar
     description    String?       @db.VarChar
-    startDate      DateTime      @db.Date
-    endDate        DateTime      @db.Date
+    startDate      DateTime      @db.Timestamp(6)
+    endDate        DateTime      @db.Timestamp(6)
     expectedAmount Decimal?      @db.Decimal(10, 2)
     userId         Int
     createdAt      DateTime      @default(now()) @db.Timestamp(6)

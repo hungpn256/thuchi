@@ -273,10 +273,6 @@ export function formValuesToEventData(data: EventFormValues) {
     }
 
     startDate.setHours(startHour, startMinute, 0, 0);
-    console.log(`Setting start time to ${startHour}:${startMinute}`, {
-      before: startDate.toISOString(),
-      jsDate: startDate,
-    });
 
     // Tạo ngày kết thúc từ date và endTime
     const endDate = new Date(data.date);
@@ -288,17 +284,6 @@ export function formValuesToEventData(data: EventFormValues) {
     }
 
     endDate.setHours(endHour, endMinute, 0, 0);
-    console.log(`Setting end time to ${endHour}:${endMinute}`, {
-      after: endDate.toISOString(),
-      jsDate: endDate,
-    });
-
-    // Log để kiểm tra xem thời gian đã được set đúng chưa
-    console.log('Form values:', {
-      date: data.date,
-      startTime: data.startTime,
-      endTime: data.endTime,
-    });
 
     console.log('Dates after setting hours/minutes:', {
       startDate: startDate.toLocaleString(),
@@ -307,7 +292,9 @@ export function formValuesToEventData(data: EventFormValues) {
 
     // Đảm bảo chuỗi ISO có thời gian chính xác
     const startDateISO = startDate.toISOString();
+    console.log('🚀 ~ formValuesToEventData ~ startDateISO:', startDateISO);
     const endDateISO = endDate.toISOString();
+    console.log('🚀 ~ formValuesToEventData ~ endDateISO:', endDateISO);
 
     return {
       name: data.name,
