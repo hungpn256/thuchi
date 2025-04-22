@@ -46,16 +46,25 @@ export default function SettingsPage() {
       theme: 'light',
       notificationsEnabled: true,
     },
+    mode: 'onChange',
   });
 
   useEffect(() => {
     if (settings) {
-      form.reset({
-        defaultCurrency: settings.defaultCurrency as 'VND' | 'USD' | 'EUR' | 'JPY',
-        language: settings.language as 'vi' | 'en',
-        theme: settings.theme as 'light' | 'dark',
-        notificationsEnabled: settings.notificationsEnabled,
-      });
+      console.log('🚀 ~ useEffect ~ settings:', settings);
+      setTimeout(() => {
+        form.reset(
+          {
+            defaultCurrency: settings.defaultCurrency as 'VND' | 'USD' | 'EUR' | 'JPY',
+            language: settings.language as 'vi' | 'en',
+            theme: settings.theme as 'light' | 'dark',
+            notificationsEnabled: settings.notificationsEnabled,
+          },
+          {
+            keepDefaultValues: false,
+          },
+        );
+      }, 100);
     }
   }, [settings, form]);
 
@@ -64,7 +73,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="container py-6">
+    <div className="container p-6">
       <h1 className="mb-6 text-3xl font-bold">Cài đặt</h1>
 
       <Card className="mx-auto w-full max-w-2xl">
@@ -86,7 +95,7 @@ export default function SettingsPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Đơn vị tiền tệ mặc định</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Chọn đơn vị tiền tệ" />
@@ -113,7 +122,7 @@ export default function SettingsPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Ngôn ngữ</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Chọn ngôn ngữ" />

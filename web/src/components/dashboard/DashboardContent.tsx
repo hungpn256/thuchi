@@ -250,10 +250,7 @@ export default function DashboardContent() {
               <DialogHeader>
                 <DialogTitle>Tạo giao dịch mới</DialogTitle>
               </DialogHeader>
-              <TransactionForm
-                onSuccess={() => setIsCreateDialogOpen(false)}
-                defaultValues={{ date: new Date() }}
-              />
+              <TransactionForm onSuccess={() => setIsCreateDialogOpen(false)} />
             </DialogContent>
           </Dialog>
         </div>
