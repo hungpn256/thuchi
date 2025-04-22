@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useEffect, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -21,7 +22,7 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
 }
 
-export function InstallPWA(): JSX.Element {
+export function InstallPWA(): ReactElement {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [installed, setInstalled] = useState<boolean>(false);
@@ -36,7 +37,7 @@ export function InstallPWA(): JSX.Element {
     // Check if already installed
     if (
       window.matchMedia('(display-mode: standalone)').matches ||
-      window.navigator.standalone === true
+      (window.navigator as any).standalone === true
     ) {
       setInstalled(true);
     }
