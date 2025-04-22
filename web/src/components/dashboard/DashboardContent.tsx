@@ -17,7 +17,6 @@ import {
 import { ExpensesChart } from './ExpensesChart';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TransactionForm } from '@/components/transaction/transaction-form';
-import { TransactionAmount } from '@/components/ui/transaction-amount';
 import { InstallPWA } from '@/components/common/InstallPWA';
 
 export default function DashboardContent() {
