@@ -2,6 +2,7 @@
 
 import { ROUTES, STORAGE_KEYS } from '@/constants/app.constant';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { Header } from '@/components/layout/Header';
 import { useUserProfile } from '@/hooks/use-user';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -115,8 +116,9 @@ export default function PrivateLayout({ children }: PrivateLayoutProps) {
 
       {/* Main content with responsive padding */}
       <div
-        className={`flex-1 transition-all duration-300 ${isMobile ? 'pl-0' : sidebarOpen ? 'pl-64' : 'pl-16'}`}
+        className={`flex flex-1 flex-col transition-all duration-300 ${isMobile ? 'pl-0' : sidebarOpen ? 'pl-64' : 'pl-16'}`}
       >
+        <Header />
         {children}
       </div>
     </div>

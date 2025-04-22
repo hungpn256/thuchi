@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Header } from '@/components/layout/Header';
 import { useEventList, useCreateEvent, useUpdateEvent, useDeleteEvent } from '@/hooks/use-events';
 import { Plus, Calendar } from 'lucide-react';
 import { ROUTES } from '@/constants/app.constant';
@@ -136,7 +135,6 @@ export default function EventsPage() {
 
   return (
     <div className="from-background/10 via-background/50 to-background/80 min-h-screen bg-gradient-to-b">
-      <Header />
       <div className="container mx-auto space-y-8 px-4 py-10">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <h1 className="text-3xl font-bold tracking-tight">Sự kiện</h1>

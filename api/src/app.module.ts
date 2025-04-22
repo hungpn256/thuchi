@@ -9,6 +9,7 @@ import { EventModule } from './modules/event/event.module';
 import { ValidationPipe } from '@nestjs/common';
 import { validationConfig } from './configs/validation.config';
 import { ReportsModule } from './modules/reports/reports.module';
+import { SettingsModule } from './modules/settings/settings.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     TransactionModule,
     EventModule,
     ReportsModule,
+    SettingsModule,
   ],
   providers: [
     {

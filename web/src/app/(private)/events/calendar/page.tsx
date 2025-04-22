@@ -1,6 +1,5 @@
 'use client';
 
-import { Header } from '@/components/layout/Header';
 import { EventCalendar } from '@/components/calendar/EventCalendar';
 import { useEventList, useDeleteEvent, useCreateEvent, useUpdateEvent } from '@/hooks/use-events';
 import { Card } from '@/components/ui/card';
@@ -166,7 +165,6 @@ export default function EventCalendarPage() {
 
   return (
     <div className="from-background/10 via-background/50 to-background/80 min-h-screen bg-gradient-to-b">
-      <Header />
       <div className="container mx-auto space-y-8 px-4 py-10">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div className="flex items-center gap-4">

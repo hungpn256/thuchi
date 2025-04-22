@@ -7,7 +7,6 @@ import { addDays, endOfDay, format, isEqual, parseISO, startOfDay } from 'date-f
 import { vi } from 'date-fns/locale';
 import { formatCurrency } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
-import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Plus, ArrowUpCircle, ArrowDownCircle, Wallet, Clock, TrendingUp, Tag } from 'lucide-react';
 import {
@@ -52,7 +51,6 @@ export default function DashboardContent() {
   return (
     <div className="from-background/95 via-background/80 to-primary/10 relative min-h-screen bg-gradient-to-br">
       <div className="from-primary/10 pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] via-transparent to-transparent" />
-      <Header />
       <div className="relative container mx-auto max-w-6xl p-2">
         <div className="space-y-4 py-4">
           <div className="from-background/90 via-background/70 to-background/50 flex items-center justify-between rounded-xl border bg-gradient-to-r p-4 shadow-lg backdrop-blur-md">
@@ -248,11 +246,14 @@ export default function DashboardContent() {
 
           {/* Create Transaction Dialog */}
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>Tạo giao dịch mới</DialogTitle>
               </DialogHeader>
-              <TransactionForm onSuccess={() => setIsCreateDialogOpen(false)} mode="create" />
+              <TransactionForm
+                onSuccess={() => setIsCreateDialogOpen(false)}
+                defaultValues={{ date: new Date() }}
+              />
             </DialogContent>
           </Dialog>
         </div>

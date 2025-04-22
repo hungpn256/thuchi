@@ -1,35 +1,22 @@
 'use client';
 
-import { Header } from '@/components/layout/Header';
+import { MultiCategorySelect } from '@/components/transaction/MultiCategorySelect';
+import { PaginationControl } from '@/components/transaction/PaginationControl';
+import { SearchInput } from '@/components/transaction/SearchInput';
+import { TransactionForm } from '@/components/transaction/transaction-form';
+import { TransactionTypeSelect } from '@/components/transaction/TransactionTypeSelect';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useTransactionList } from '@/hooks/use-transactions';
-import { format, subDays } from 'date-fns';
-import { vi } from 'date-fns/locale';
-import { useState } from 'react';
-import { Plus, Filter, FileEdit, Trash, X } from 'lucide-react';
-import { CalendarIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { cn, formatCurrency } from '@/lib/utils';
-import { DateRange } from 'react-day-picker';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,16 +25,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal } from 'lucide-react';
-import { useDeleteTransaction } from '@/hooks/use-transactions';
-import { TransactionForm } from '@/components/transaction/transaction-form';
-import { ROUTES } from '@/constants/app.constant';
-import { useRouter } from 'next/navigation';
-import { Badge } from '@/components/ui/badge';
-import { PaginationControl } from '@/components/transaction/PaginationControl';
-import { SearchInput } from '@/components/transaction/SearchInput';
-import { TransactionTypeSelect } from '@/components/transaction/TransactionTypeSelect';
-import { MultiCategorySelect } from '@/components/transaction/MultiCategorySelect';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -55,7 +33,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { ROUTES } from '@/constants/app.constant';
+import { useDeleteTransaction, useTransactionList } from '@/hooks/use-transactions';
+import { cn, formatCurrency } from '@/lib/utils';
 import { TransactionType } from '@/types/transaction';
+import { format, subDays } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import { CalendarIcon, FileEdit, Filter, MoreHorizontal, Plus, Trash, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { DateRange } from 'react-day-picker';
 
 export default function TransactionsPage() {
   const router = useRouter();
@@ -166,7 +162,6 @@ export default function TransactionsPage() {
 
   return (
     <div className="from-background/10 via-background/50 to-background/80 min-h-screen bg-gradient-to-b">
-      <Header />
       <div className="container mx-auto space-y-8 px-4 py-10">
         <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
           <h1 className="text-3xl font-bold tracking-tight">Danh sách giao dịch</h1>

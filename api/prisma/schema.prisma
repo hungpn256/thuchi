@@ -50,6 +50,7 @@ model user {
     categories   category[]
     transactions transaction[]
     events       event[]
+    settings     settings?
 
     @@index([email], map: "IDX_USER_EMAIL")
 }
@@ -69,6 +70,20 @@ model event {
 
     @@index([userId], map: "IDX_EVENT_USER")
     @@index([startDate, endDate], map: "IDX_EVENT_DATE_RANGE")
+}
+
+model settings {
+    id                   Int      @id @default(autoincrement())
+    userId               Int      @unique
+    defaultCurrency      String   @default("VND") @db.VarChar(3)
+    language             String   @default("vi") @db.VarChar(2)
+    theme                String   @default("light") @db.VarChar
+    notificationsEnabled Boolean  @default(true)
+    createdAt            DateTime @default(now()) @db.Timestamp(6)
+    updatedAt            DateTime @default(now()) @db.Timestamp(6)
+    user                 user     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@index([userId], map: "IDX_SETTINGS_USER_ID")
 }
 
 enum transaction_type_enum {
