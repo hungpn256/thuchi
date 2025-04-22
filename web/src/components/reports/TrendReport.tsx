@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatCurrency, formatPercentage } from '@/lib/format';
 
 interface TrendReportProps {
-  data: TrendReportType;
+  data?: TrendReportType;
   isLoading: boolean;
 }
 
@@ -36,7 +36,7 @@ export function TrendReport({ data, isLoading }: TrendReportProps) {
         'dd/MM/yyyy',
         { locale: vi },
       )}`;
-    } catch (error) {
+    } catch {
       return `${startDate} - ${endDate}`;
     }
   };

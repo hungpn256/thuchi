@@ -22,7 +22,7 @@ export const ROUTES = {
   REPORTS: {
     ROOT: '/reports',
     SUMMARY: '/reports',
-    BY_CATEGORY: '/reports/by-category',
+    BY_CATEGORY: '/reports/category',
     TRENDS: '/reports/trends',
   },
   SETTINGS: '/settings',

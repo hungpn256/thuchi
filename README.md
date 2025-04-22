@@ -27,9 +27,11 @@ Thu Chi is a comprehensive personal finance management application designed to h
   - Optimized forms with validation
 
 - **Data Visualization**
-  - Overview of income vs expenses
-  - Category-wise breakdown
-  - Time-based analysis
+  - Summary reports with income vs expenses overview
+  - Category-wise breakdown analysis with interactive pie chart
+  - Monthly trend analysis with time-series charts
+  - Historical comparison with prior periods
+  - Visual indicators for financial performance
 
 ## 🏗️ Project Structure
 
@@ -129,6 +131,36 @@ Forms are designed with excellent UX in mind:
 - **Category Selection**: Easy category selection with search functionality
 - **Date Picker**: Intuitive calendar interface for selecting dates
 - **Type Selection**: Visual distinction between income and expense transactions
+
+### Reports System
+
+The application offers powerful reporting capabilities for financial analysis:
+
+- **Summary Report**:
+
+  - Overview dashboard with total income, expenses, and balance
+  - Interactive line chart showing monthly trends
+  - Visual representation of financial health
+
+- **Category Report**:
+
+  - Detailed breakdown of spending or income by category
+  - Interactive pie chart for visualizing proportion of each category
+  - Tabular data with precise amounts and percentages
+  - Toggle between income and expense analysis
+
+- **Trend Report**:
+  - Comparative analysis between time periods
+  - Support for various comparison periods (previous week, month, year, or custom)
+  - Change indicators showing growth or decline
+  - Visual cues (colors and arrows) to highlight positive/negative changes
+
+Each report includes:
+
+- Flexible date range selection
+- Transaction type filtering (income/expense)
+- Responsive design for all devices
+- Real-time data updates
 
 ## 🧪 Testing
 

@@ -1,9 +1,6 @@
 'use client';
 
-import { CategoryReport as CategoryReportType } from '@/types/report';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CategoryReportData } from '@/types/report';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';

@@ -86,7 +86,7 @@ export class ReportsService {
       LEFT JOIN category c ON t."categoryId" = c.id
       WHERE t."userId" = ${userId}
         AND t.date BETWEEN ${startDate} AND ${endDate}
-        AND t.type = ${type}
+        AND t.type = ${type}::transaction_type_enum
       GROUP BY c.id, c.name
       ORDER BY amount DESC
     `;

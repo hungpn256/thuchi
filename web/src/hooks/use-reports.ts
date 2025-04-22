@@ -39,7 +39,6 @@ export const useSummaryReport = (filter: ReportFilterParams) => {
 
 export function useCategoryReport(filter: CategoryReportFilters) {
   const formattedFilter = {
-    ...filter,
     startDate: formatDateIfNeeded(filter.startDate),
     endDate: formatDateIfNeeded(filter.endDate),
   };
@@ -48,7 +47,10 @@ export function useCategoryReport(filter: CategoryReportFilters) {
     queryKey: QUERY_KEYS.REPORTS.CATEGORIES(formattedFilter),
     queryFn: async () => {
       const { data } = await axiosClient.get(API_ENDPOINTS.REPORTS.CATEGORIES, {
-        params: formattedFilter,
+        params: {
+          ...formattedFilter,
+          type: filter.type,
+        },
       });
       return data;
     },

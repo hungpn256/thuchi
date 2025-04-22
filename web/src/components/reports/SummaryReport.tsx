@@ -3,22 +3,20 @@
 import { SummaryReport as SummaryReportType } from '@/types/report';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMemo } from 'react';
-import { format, parseISO } from 'date-fns';
-import { vi } from 'date-fns/locale';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
 } from 'recharts';
 import { formatCurrency } from '@/lib/format';
 
 interface SummaryReportProps {
-  data: SummaryReportType;
+  data?: SummaryReportType;
   isLoading: boolean;
 }
 
@@ -135,7 +133,7 @@ export function SummaryReport({ data, isLoading }: SummaryReportProps) {
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
-                <YAxis 
+                <YAxis
                   tickFormatter={(value) => {
                     if (value >= 1000000) {
                       return (value / 1000000).toLocaleString('vi-VN') + 'M';
@@ -145,7 +143,7 @@ export function SummaryReport({ data, isLoading }: SummaryReportProps) {
                     return value.toLocaleString('vi-VN');
                   }}
                 />
-                <Tooltip 
+                <Tooltip
                   formatter={(value: number) => formatCurrency(value)}
                   labelFormatter={(label) => `Tháng: ${label}`}
                 />
@@ -157,17 +155,12 @@ export function SummaryReport({ data, isLoading }: SummaryReportProps) {
                   stroke="rgb(75, 192, 192)"
                   activeDot={{ r: 8 }}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="expense" 
-                  name="Chi" 
-                  stroke="rgb(255, 99, 132)" 
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="balance" 
-                  name="Chênh lệch" 
-                  stroke="rgb(54, 162, 235)" 
+                <Line type="monotone" dataKey="expense" name="Chi" stroke="rgb(255, 99, 132)" />
+                <Line
+                  type="monotone"
+                  dataKey="balance"
+                  name="Chênh lệch"
+                  stroke="rgb(54, 162, 235)"
                 />
               </LineChart>
             </ResponsiveContainer>
