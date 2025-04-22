@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import axiosClient from '@/lib/axios-client';
@@ -12,6 +13,89 @@ import { STORAGE_KEYS, ROUTES, API_ENDPOINTS } from '@/constants/app.constant';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+
+// Interface cho window.navigator bổ sung với thuộc tính standalone
+interface SafariNavigator extends Navigator {
+  standalone?: boolean;
+}
+
+// Interface bổ sung cho window object
+interface WindowWithMSStream extends Window {
+  MSStream?: any;
+}
+
+// Hàm kiểm tra liệu ứng dụng có đang chạy trong PWA trên iOS hay không
+const isIOSPWA = (): boolean => {
+  if (typeof window === 'undefined') return false;
+
+  // Kiểm tra iOS
+  const isIOS =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as WindowWithMSStream).MSStream;
+
+  // Kiểm tra PWA mode - chế độ standalone hoặc fullscreen
+  const isPWA =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: fullscreen)').matches ||
+    (window.navigator as SafariNavigator).standalone === true;
+
+  return isIOS && isPWA;
+};
+
+// Hàm lưu trạng thái đăng nhập cho chế độ redirect
+const saveAuthState = (redirectUrl: string): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('auth_redirect_pending', 'true');
+    localStorage.setItem('auth_redirect_url', redirectUrl);
+    localStorage.setItem('auth_redirect_timestamp', Date.now().toString());
+  }
+};
+
+// Hàm kiểm tra nếu có redirect trở lại từ quá trình đăng nhập
+const checkAuthRedirect = async (): Promise<AuthResponse | null> => {
+  if (typeof window === 'undefined') return null;
+
+  const isPending = localStorage.getItem('auth_redirect_pending') === 'true';
+  if (!isPending) return null;
+
+  // Xóa trạng thái để tránh xử lý nhiều lần
+  localStorage.removeItem('auth_redirect_pending');
+
+  // Kiểm tra thời gian (để tránh xử lý các trạng thái cũ)
+  const timestamp = parseInt(localStorage.getItem('auth_redirect_timestamp') || '0', 10);
+  if (Date.now() - timestamp > 5 * 60 * 1000) {
+    // 5 phút timeout
+    localStorage.removeItem('auth_redirect_url');
+    localStorage.removeItem('auth_redirect_timestamp');
+    return null;
+  }
+
+  // Nếu có code trong URL, xử lý callback
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+
+  if (code) {
+    try {
+      const { data } = await axiosClient.get<AuthResponse>(`/auth/login/google/callback`, {
+        params: { code },
+      });
+
+      localStorage.removeItem('auth_redirect_url');
+      localStorage.removeItem('auth_redirect_timestamp');
+
+      // Xóa code từ URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      return data;
+    } catch (error) {
+      console.error('Error handling auth redirect:', error);
+      localStorage.removeItem('auth_redirect_url');
+      localStorage.removeItem('auth_redirect_timestamp');
+      return null;
+    }
+  }
+
+  return null;
+};
 
 export const useAuth = (): UseAuthReturn => {
   const router = useRouter();
@@ -61,15 +145,37 @@ export const useAuth = (): UseAuthReturn => {
     },
   });
 
+  // Kiểm tra auth redirect khi trang load
+  const { mutateAsync: checkPendingAuth, isPending: isCheckingAuth } = useMutation({
+    mutationFn: async () => {
+      const authData = await checkAuthRedirect();
+      if (authData) {
+        // Lưu token và redirect
+        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, authData.accessToken);
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, authData.refreshToken);
+        router.push(ROUTES.DASHBOARD);
+      }
+    },
+  });
+
+  // Google login
   const { mutateAsync: loginWithGoogle, isPending: isGoogleLoading } = useMutation({
     mutationFn: async () => {
       try {
         // Get Google login URL
         const {
           data: { url },
-        } = await axiosClient.get(API_ENDPOINTS.AUTH.LOGIN_GOOGLE);
+        } = await axiosClient.get<{ url: string }>(API_ENDPOINTS.AUTH.LOGIN_GOOGLE);
 
-        // Open popup for Google login
+        // Kiểm tra xem có đang chạy trong PWA trên iOS hay không
+        if (isIOSPWA()) {
+          // Trên iOS PWA: Dùng redirect toàn trang thay vì popup
+          saveAuthState(url);
+          window.location.href = url;
+          return;
+        }
+
+        // Trên các môi trường khác: Dùng popup như bình thường
         const popup = window.open(url, 'Google Login', 'width=500,height=600,left=400,top=100');
 
         if (!popup) {
@@ -164,9 +270,15 @@ export const useAuth = (): UseAuthReturn => {
     login,
     register,
     loginWithGoogle,
+    checkPendingAuth,
     refreshToken,
     logout,
-    isLoading: isLoginLoading || isRegisterLoading || isGoogleLoading || isRefreshTokenLoading,
+    isLoading:
+      isLoginLoading ||
+      isRegisterLoading ||
+      isGoogleLoading ||
+      isRefreshTokenLoading ||
+      isCheckingAuth,
     error,
   };
 };

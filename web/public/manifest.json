@@ -2,7 +2,7 @@
   "name": "Thu Chi",
   "short_name": "Thu Chi",
   "description": "Ứng dụng quản lý thu chi",
-  "theme_color": "#1e40af",
+  "theme_color": "#18181b",
   "background_color": "#ffffff",
   "display": "standalone",
   "orientation": "portrait",

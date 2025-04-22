@@ -32,6 +32,7 @@ export interface UseAuthReturn {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  checkPendingAuth: () => Promise<void>;
   refreshToken: () => Promise<AuthResponse>;
   logout: () => void;
   isLoading: boolean;

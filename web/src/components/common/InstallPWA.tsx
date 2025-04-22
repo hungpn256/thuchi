@@ -22,39 +22,50 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
 }
 
-export function InstallPWA(): ReactElement {
+export function InstallPWA(): ReactElement | null {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [installed, setInstalled] = useState<boolean>(false);
+  const [hasBeenShown, setHasBeenShown] = useState<boolean>(true); // Default to true to prevent flash
+
+  useEffect(() => {
+    // Kiểm tra localStorage chỉ trên client-side
+    const checkLocalStorage = () => {
+      // Kiểm tra xem đã cài đặt PWA chưa
+      const isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true;
+
+      // Kiểm tra xem đã hiển thị thông báo PWA chưa
+      const shown = localStorage.getItem('pwa-prompt-shown') === 'true';
+
+      setInstalled(isStandalone);
+      setHasBeenShown(shown);
+    };
+
+    checkLocalStorage();
+  }, []);
 
   useEffect(() => {
     const handler = (e: BeforeInstallPromptEvent) => {
       e.preventDefault();
       setInstallPrompt(e);
-      setIsOpen(true);
-    };
 
-    // Check if already installed
-    if (
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true
-    ) {
-      setInstalled(true);
-    }
+      // Chỉ mở nếu chưa hiển thị trước đó
+      if (!hasBeenShown && !installed) {
+        setIsOpen(true);
+        // Đánh dấu đã hiển thị
+        localStorage.setItem('pwa-prompt-shown', 'true');
+        setHasBeenShown(true);
+      }
+    };
 
     window.addEventListener('beforeinstallprompt', handler as any);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler as any);
     };
-  }, []);
-
-  // Hide modal if already installed
-  useEffect(() => {
-    if (installed) {
-      setIsOpen(false);
-    }
-  }, [installed]);
+  }, [hasBeenShown, installed]);
 
   const handleInstall = async () => {
     if (!installPrompt) return;
@@ -69,8 +80,22 @@ export function InstallPWA(): ReactElement {
     setIsOpen(false);
   };
 
+  const handleClose = () => {
+    setIsOpen(false);
+    localStorage.setItem('pwa-prompt-shown', 'true');
+  };
+
+  // Không hiển thị gì nếu đã cài đặt hoặc đã được hiển thị trước đó
+  if (installed || hasBeenShown) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) handleClose();
+        setIsOpen(open);
+      }}
+    >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Cài đặt ứng dụng Thu Chi</DialogTitle>
@@ -88,7 +113,7 @@ export function InstallPWA(): ReactElement {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
+          <Button variant="outline" onClick={handleClose}>
             Để sau
           </Button>
           <Button type="submit" onClick={handleInstall}>
