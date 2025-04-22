@@ -25,7 +25,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
-import { ThemeToggle } from '@/components/theme/theme-toggle';
 
 const validationSchema = yup.object({
   defaultCurrency: yup.string().oneOf(['VND', 'USD', 'EUR', 'JPY']).required(),
