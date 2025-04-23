@@ -214,4 +214,58 @@ export class AuthService {
   async findUserById(id: number): Promise<user | null> {
     return this.prismaService.user.findUnique({ where: { id } });
   }
+
+  /**
+   * Integrate device token with login response for push notification support
+   * This method is used to login with a device token
+   */
+  async loginWithDevice(
+    user: user,
+    deviceInfo?: {
+      deviceId: string;
+      token: string;
+      deviceType: string;
+      deviceName?: string;
+      deviceModel?: string;
+      osVersion?: string;
+      appVersion?: string;
+    },
+  ) {
+    // Generate tokens for authentication
+    const authResult = await this.login(user);
+
+    // If device info is provided, register the device for push notifications
+    if (deviceInfo) {
+      await this.prismaService.device_token.upsert({
+        where: {
+          userId_deviceId: {
+            userId: user.id,
+            deviceId: deviceInfo.deviceId,
+          },
+        },
+        update: {
+          token: deviceInfo.token,
+          deviceType: deviceInfo.deviceType,
+          deviceName: deviceInfo.deviceName,
+          deviceModel: deviceInfo.deviceModel,
+          osVersion: deviceInfo.osVersion,
+          appVersion: deviceInfo.appVersion,
+          lastActiveAt: new Date(),
+          updatedAt: new Date(),
+        },
+        create: {
+          userId: user.id,
+          deviceId: deviceInfo.deviceId,
+          token: deviceInfo.token,
+          deviceType: deviceInfo.deviceType,
+          deviceName: deviceInfo.deviceName,
+          deviceModel: deviceInfo.deviceModel,
+          osVersion: deviceInfo.osVersion,
+          appVersion: deviceInfo.appVersion,
+        },
+      });
+    }
+
+    return authResult;
+  }
 }

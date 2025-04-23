@@ -10,6 +10,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { validationConfig } from './configs/validation.config';
 import { ReportsModule } from './modules/reports/reports.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { DeviceModule } from './modules/device/device.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { SettingsModule } from './modules/settings/settings.module';
     EventModule,
     ReportsModule,
     SettingsModule,
+    DeviceModule,
   ],
   providers: [
     {

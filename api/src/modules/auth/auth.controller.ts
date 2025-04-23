@@ -1,29 +1,23 @@
 import { Controller, Post, Body, UseGuards, Get, Query, HttpStatus, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiQuery,
-  ApiResponse,
-  ApiBody,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { LoginGoogleDto } from './dto/login-google.dto';
 import { LoginDto } from './dto/login.dto';
-import {
-  BadRequestException,
-  UnauthorizedException,
-  ValidationException,
-} from '@/shared/exceptions/app.exception';
+import { BadRequestException, UnauthorizedException } from '@/shared/exceptions/app.exception';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { GoogleCallbackDto } from './dto/google-callback.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { DeviceService } from '../device/device.service';
+import { LogoutDto } from './dto/logout.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly deviceService: DeviceService,
+  ) {}
 
   @Post('register')
   @ApiOperation({
@@ -290,6 +284,47 @@ export class AuthController {
         throw error;
       }
       throw new BadRequestException('Token refresh failed', { error: error.message });
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post('logout')
+  @ApiOperation({
+    summary: 'Đăng xuất',
+    description: 'Đăng xuất khỏi thiết bị hiện tại bằng cách xóa token thiết bị',
+  })
+  @ApiBody({
+    type: LogoutDto,
+    description: 'Thông tin thiết bị',
+    required: false,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Đăng xuất thành công',
+    schema: {
+      example: {
+        message: 'Đăng xuất thành công',
+      },
+    },
+  })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Token không hợp lệ hoặc hết hạn' })
+  async logout(@Request() req, @Body() logoutDto: LogoutDto) {
+    try {
+      if (logoutDto?.deviceId) {
+        // Logout from specific device
+        await this.deviceService.deleteDevice(req.user.id, logoutDto.deviceId);
+        return { message: 'Đăng xuất thành công' };
+      } else {
+        // Logout from all devices
+        const result = await this.deviceService.deleteAllUserDevices(req.user.id);
+        return {
+          message: 'Đăng xuất thành công khỏi tất cả thiết bị',
+          count: result.count,
+        };
+      }
+    } catch (error) {
+      throw new BadRequestException('Đăng xuất thất bại', { error: error.message });
     }
   }
 }
