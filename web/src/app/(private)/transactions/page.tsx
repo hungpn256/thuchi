@@ -162,18 +162,19 @@ export default function TransactionsPage() {
 
   return (
     <div className="from-background/10 via-background/50 to-background/80 min-h-screen bg-gradient-to-b">
-      <div className="container mx-auto space-y-8 px-4 py-10">
+      <div className="container mx-auto space-y-6 px-4 py-6 md:space-y-8 md:py-10">
         <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-          <h1 className="text-3xl font-bold tracking-tight">Danh sách giao dịch</h1>
+          <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Danh sách giao dịch</h1>
 
           <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className="gap-2"
+              size="sm"
             >
               <Filter className="h-4 w-4" />
-              Bộ lọc
+              <span className="hidden sm:inline">Bộ lọc</span>
               {hasActiveFilters && (
                 <Badge variant="secondary" className="ml-1">
                   {selectedCategories.length + (selectedType ? 1 : 0) + (searchTerm ? 1 : 0)}
@@ -183,20 +184,22 @@ export default function TransactionsPage() {
 
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="gap-2" size="sm">
                   <CalendarIcon className="h-4 w-4" />
-                  {date?.from ? (
-                    date.to ? (
-                      <>
-                        {format(date.from, 'dd/MM/yyyy', { locale: vi })} -{' '}
-                        {format(date.to, 'dd/MM/yyyy', { locale: vi })}
-                      </>
+                  <span className="hidden sm:inline">
+                    {date?.from ? (
+                      date.to ? (
+                        <>
+                          {format(date.from, 'dd/MM/yyyy', { locale: vi })} -{' '}
+                          {format(date.to, 'dd/MM/yyyy', { locale: vi })}
+                        </>
+                      ) : (
+                        format(date.from, 'dd/MM/yyyy', { locale: vi })
+                      )
                     ) : (
-                      format(date.from, 'dd/MM/yyyy', { locale: vi })
-                    )
-                  ) : (
-                    <span>Chọn ngày</span>
-                  )}
+                      <span>Chọn ngày</span>
+                    )}
+                  </span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="end">
@@ -206,23 +209,34 @@ export default function TransactionsPage() {
                   defaultMonth={date?.from}
                   selected={date}
                   onSelect={handleDateChange}
+                  numberOfMonths={1}
+                  locale={vi}
+                  className="sm:hidden"
+                />
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={date?.from}
+                  selected={date}
+                  onSelect={handleDateChange}
                   numberOfMonths={2}
                   locale={vi}
+                  className="hidden sm:block"
                 />
               </PopoverContent>
             </Popover>
 
-            <Button onClick={handleCreateClick} className="gap-2">
+            <Button onClick={handleCreateClick} className="ml-auto gap-2" size="sm">
               <Plus className="h-4 w-4" />
-              Thêm mới
+              <span className="hidden sm:inline">Thêm mới</span>
             </Button>
           </div>
         </div>
 
         {/* Filters panel */}
         {isFilterOpen && (
-          <Card className="p-5">
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+          <Card className="p-3 md:p-5">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Tìm kiếm</label>
                 <SearchInput
@@ -249,7 +263,7 @@ export default function TransactionsPage() {
               </div>
             </div>
 
-            <div className="mt-5 flex justify-end">
+            <div className="mt-4 flex justify-end md:mt-5">
               {hasActiveFilters && (
                 <Button variant="outline" onClick={clearAllFilters} size="sm" className="gap-2">
                   <X className="h-4 w-4" />
@@ -260,14 +274,14 @@ export default function TransactionsPage() {
           </Card>
         )}
 
-        <Card className="p-2">
-          <CardHeader className="px-6 pt-6">
+        <Card className="overflow-hidden p-0 md:p-2">
+          <CardHeader className="px-4 py-4 md:px-6 md:pt-6">
             <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-              <CardTitle>Giao dịch</CardTitle>
+              <CardTitle className="text-xl">Giao dịch</CardTitle>
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground text-sm">Số mục mỗi trang:</span>
+                <span className="text-muted-foreground text-sm">Số mục:</span>
                 <Select value={limit.toString()} onValueChange={handleLimitChange}>
-                  <SelectTrigger className="w-[80px]">
+                  <SelectTrigger className="w-[70px]">
                     <SelectValue placeholder="10" />
                   </SelectTrigger>
                   <SelectContent>
@@ -280,7 +294,7 @@ export default function TransactionsPage() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="px-6 pb-6">
+          <CardContent className="px-4 pb-6 md:px-6">
             {isLoading ? (
               <div className="space-y-4">
                 {Array.from({ length: limit }).map((_, index) => (
@@ -295,32 +309,96 @@ export default function TransactionsPage() {
               </div>
             ) : data?.items?.length ? (
               <>
-                <div className="text-muted-foreground mb-4 text-sm">
+                <div className="text-muted-foreground mb-4 text-xs sm:text-sm">
                   Hiển thị {(page - 1) * limit + 1} đến {Math.min(page * limit, data.total)} trong
                   tổng số {data.total} giao dịch
                 </div>
 
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Mô tả</TableHead>
-                      <TableHead>Danh mục</TableHead>
-                      <TableHead>Ngày</TableHead>
-                      <TableHead className="text-right">Số tiền</TableHead>
-                      <TableHead className="text-right">Thao tác</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data.items.map((transaction) => (
-                      <TableRow key={transaction.id}>
-                        <TableCell className="font-medium">{transaction.description}</TableCell>
-                        <TableCell>{transaction.category?.name || 'Không có danh mục'}</TableCell>
-                        <TableCell>
-                          {format(new Date(transaction.date), 'dd/MM/yyyy', {
-                            locale: vi,
-                          })}
-                        </TableCell>
-                        <TableCell
+                {/* Desktop view - Table */}
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Mô tả</TableHead>
+                        <TableHead>Danh mục</TableHead>
+                        <TableHead>Ngày</TableHead>
+                        <TableHead className="text-right">Số tiền</TableHead>
+                        <TableHead className="text-right">Thao tác</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data.items.map((transaction) => (
+                        <TableRow key={transaction.id}>
+                          <TableCell className="font-medium">{transaction.description}</TableCell>
+                          <TableCell>{transaction.category?.name || 'Không có danh mục'}</TableCell>
+                          <TableCell>
+                            {format(new Date(transaction.date), 'dd/MM/yyyy', {
+                              locale: vi,
+                            })}
+                          </TableCell>
+                          <TableCell
+                            className={cn('text-right font-medium', {
+                              'text-emerald-600 dark:text-emerald-400':
+                                transaction.type === 'INCOME',
+                              'text-rose-600 dark:text-rose-400': transaction.type === 'EXPENSE',
+                            })}
+                          >
+                            {transaction.type === 'INCOME' ? '+' : '-'}
+                            {formatCurrency(transaction.amount)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <span className="sr-only">Mở menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => handleEditClick(transaction.id.toString())}
+                                >
+                                  <FileEdit className="mr-2 h-4 w-4" />
+                                  Chỉnh sửa
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteClick(transaction.id.toString())}
+                                >
+                                  <Trash className="mr-2 h-4 w-4" />
+                                  Xóa
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile view - Card list */}
+                <div className="grid grid-cols-1 gap-4 md:hidden">
+                  {data.items.map((transaction) => (
+                    <div
+                      key={transaction.id}
+                      className="bg-card text-card-foreground rounded-lg border shadow-sm"
+                    >
+                      <div className="flex items-center justify-between p-4">
+                        <div className="space-y-1.5">
+                          <h3 className="font-semibold">{transaction.description}</h3>
+                          <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                            <span>{transaction.category?.name || 'Không có danh mục'}</span>
+                            <span>•</span>
+                            <span>
+                              {format(new Date(transaction.date), 'dd/MM/yyyy', {
+                                locale: vi,
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                        <div
                           className={cn('text-right font-medium', {
                             'text-emerald-600 dark:text-emerald-400': transaction.type === 'INCOME',
                             'text-rose-600 dark:text-rose-400': transaction.type === 'EXPENSE',
@@ -328,37 +406,31 @@ export default function TransactionsPage() {
                         >
                           {transaction.type === 'INCOME' ? '+' : '-'}
                           {formatCurrency(transaction.amount)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Mở menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => handleEditClick(transaction.id.toString())}
-                              >
-                                <FileEdit className="mr-2 h-4 w-4" />
-                                Chỉnh sửa
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteClick(transaction.id.toString())}
-                              >
-                                <Trash className="mr-2 h-4 w-4" />
-                                Xóa
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-end gap-2 border-t p-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditClick(transaction.id.toString())}
+                          className="h-8 w-8 p-0"
+                        >
+                          <FileEdit className="h-4 w-4" />
+                          <span className="sr-only">Chỉnh sửa</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick(transaction.id.toString())}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Trash className="h-4 w-4" />
+                          <span className="sr-only">Xóa</span>
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
                 {data.totalPages > 1 && (
                   <div className="mt-6 flex justify-center">
@@ -371,18 +443,18 @@ export default function TransactionsPage() {
                 )}
               </>
             ) : (
-              <div className="py-12 text-center">
-                <p className="text-muted-foreground">
+              <div className="py-10 text-center md:py-12">
+                <p className="text-muted-foreground text-sm">
                   Không có giao dịch nào trong khoảng thời gian này
                   {hasActiveFilters && ' với các bộ lọc đã chọn'}
                 </p>
-                <div className="mt-4 flex justify-center gap-2">
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
                   {hasActiveFilters && (
-                    <Button variant="outline" onClick={clearAllFilters}>
+                    <Button variant="outline" onClick={clearAllFilters} size="sm">
                       Xóa bộ lọc
                     </Button>
                   )}
-                  <Button variant="outline" onClick={handleCreateClick}>
+                  <Button variant="outline" onClick={handleCreateClick} size="sm">
                     Tạo giao dịch mới
                   </Button>
                 </div>
@@ -418,7 +490,7 @@ export default function TransactionsPage() {
 
       {/* Transaction Dialog (for Edit only) */}
       <Dialog open={isTransactionDialogOpen} onOpenChange={setIsTransactionDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-lg sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Chỉnh sửa giao dịch</DialogTitle>
           </DialogHeader>

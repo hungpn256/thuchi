@@ -135,43 +135,47 @@ export default function EventsPage() {
 
   return (
     <div className="from-background/10 via-background/50 to-background/80 min-h-screen bg-gradient-to-b">
-      <div className="container mx-auto space-y-8 px-4 py-10">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <h1 className="text-3xl font-bold tracking-tight">Sự kiện</h1>
-          <div className="flex items-center space-x-4">
+      <div className="container mx-auto space-y-6 px-4 py-6 md:space-y-8 md:py-10">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center md:gap-4">
+          <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Sự kiện</h1>
+          <div className="flex flex-wrap items-center gap-2 md:space-x-4">
             <Button
               variant="outline"
-              className="gap-2"
+              size="sm"
+              className="flex-1 gap-2 sm:flex-none"
               onClick={() => router.push(ROUTES.EVENTS.CALENDAR)}
             >
               <Calendar className="h-4 w-4" />
-              Xem lịch
+              <span className="hidden sm:inline">Xem lịch</span>
             </Button>
             <Button
-              className="from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 gap-2 bg-gradient-to-r"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 gap-2 sm:flex-none"
+              size="sm"
               onClick={openCreateDialog}
             >
               <Plus className="h-4 w-4" />
-              Tạo sự kiện mới
+              <span className="hidden sm:inline">Tạo sự kiện mới</span>
+              <span className="inline sm:hidden">Tạo mới</span>
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {isLoading ? (
-            <div className="col-span-full flex h-[400px] items-center justify-center">
-              <div className="border-primary h-12 w-12 animate-spin rounded-full border-b-2"></div>
+            <div className="col-span-full flex h-[200px] items-center justify-center md:h-[400px]">
+              <div className="border-primary h-8 w-8 animate-spin rounded-full border-b-2 md:h-12 md:w-12"></div>
             </div>
           ) : events.length === 0 ? (
-            <div className="col-span-full rounded-xl bg-white p-10 text-center shadow dark:bg-gray-800">
-              <div className="flex flex-col items-center justify-center space-y-4">
-                <Calendar className="text-muted-foreground h-12 w-12" />
-                <h3 className="text-xl font-medium">Không có sự kiện nào</h3>
-                <p className="text-muted-foreground">
+            <div className="col-span-full rounded-xl bg-white p-6 text-center shadow md:p-10 dark:bg-gray-800">
+              <div className="flex flex-col items-center justify-center space-y-3 md:space-y-4">
+                <Calendar className="text-muted-foreground h-8 w-8 md:h-12 md:w-12" />
+                <h3 className="text-lg font-medium md:text-xl">Không có sự kiện nào</h3>
+                <p className="text-muted-foreground text-sm">
                   Bạn chưa có sự kiện nào. Hãy tạo sự kiện đầu tiên!
                 </p>
                 <Button
-                  className="from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 mt-2 gap-2 bg-gradient-to-r"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 mt-2 gap-2"
+                  size="sm"
                   onClick={openCreateDialog}
                 >
                   <Plus className="h-4 w-4" />
@@ -188,6 +192,7 @@ export default function EventsPage() {
                 onClick={() => openEditDialog(event)}
                 useDropdownActions={true}
                 onDelete={() => openDeleteDialog(event)}
+                className="text-sm"
               />
             ))
           )}
@@ -196,9 +201,9 @@ export default function EventsPage() {
 
       {/* Dialog tạo/chỉnh sửa sự kiện */}
       <Dialog open={isEventDialogOpen} onOpenChange={setIsEventDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-sm sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">
+            <DialogTitle className="text-lg font-semibold md:text-xl">
               {isEditing ? 'Chỉnh sửa sự kiện' : 'Tạo sự kiện mới'}
             </DialogTitle>
           </DialogHeader>

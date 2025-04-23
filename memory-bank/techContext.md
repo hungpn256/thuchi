@@ -36,8 +36,9 @@
 
 2. Database
 
-   - TypeORM for ORM
-   - Migrations support
+   - Prisma ORM
+   - PostgreSQL database
+   - Database migrations with Prisma
 
 3. API
    - RESTful endpoints
@@ -83,6 +84,57 @@
      - Retries the original request with the new access token
      - If refresh fails, redirects to the login page
    - Each refresh generates new access and refresh tokens (token rotation)
+
+## Notification System (Planned)
+
+1. Backend Architecture
+
+   - Dedicated Notification Module: `notification.module.ts`
+   - Notification Service: `notification.service.ts` for creating and managing notifications
+   - Notification Types: Budget alerts, security alerts, reminders, system updates
+   - Delivery Channels: In-app, email, push notifications
+   - Event-based Architecture: Using NestJS event emitters
+
+2. Frontend Integration
+
+   - Real-time Notifications: Using WebSockets (Socket.io) for immediate delivery
+   - Notification Center: UI component for viewing and managing notifications
+   - Toast Notifications: For immediate alerts and feedback
+   - Notification Preferences: UI for customizing notification settings
+
+3. Implementation Plan
+
+   - Phase 1: In-app notification center with persistent storage
+   - Phase 2: Email notification delivery
+   - Phase 3: Push notifications for mobile devices
+   - Phase 4: Smart notification scheduling and analytics
+
+4. Data Model
+
+   ```
+   // Notification Entity
+   notification {
+     id          Int
+     userId      Int
+     type        NotificationType
+     title       String
+     content     String
+     isRead      Boolean
+     isActioned  Boolean
+     metadata    Json
+     createdAt   DateTime
+     expiresAt   DateTime?
+     priority    NotificationPriority
+   }
+
+   // User Notification Preferences
+   notificationPreference {
+     userId           Int
+     channelType      NotificationChannelType
+     isEnabled        Boolean
+     notificationType NotificationType
+   }
+   ```
 
 ## Development Tools
 

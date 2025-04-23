@@ -165,27 +165,30 @@ export default function EventCalendarPage() {
 
   return (
     <div className="from-background/10 via-background/50 to-background/80 min-h-screen bg-gradient-to-b">
-      <div className="container mx-auto space-y-8 px-4 py-10">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <div className="flex items-center gap-4">
-            <h1 className="text-3xl font-bold tracking-tight">Lịch sự kiện</h1>
+      <div className="container mx-auto space-y-4 px-2 py-4 sm:space-y-6 sm:px-4 sm:py-6 md:space-y-8 md:py-10">
+        <div className="flex flex-row items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <h1 className="text-xl font-bold tracking-tight sm:text-2xl md:text-3xl">
+              Lịch sự kiện
+            </h1>
+            <Button
+              className="bg-primary text-primary-foreground hover:bg-primary/90 ml-2 h-6 px-1.5 sm:ml-4"
+              size="sm"
+              onClick={() => {
+                setSelectedDate(new Date());
+                setIsNewEventDialogOpen(true);
+              }}
+            >
+              <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <span className="text-xs sm:text-sm">Tạo mới</span>
+            </Button>
           </div>
-          <Button
-            className="from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 gap-2 bg-gradient-to-r"
-            onClick={() => {
-              setSelectedDate(new Date());
-              setIsNewEventDialogOpen(true);
-            }}
-          >
-            <Plus className="h-4 w-4" />
-            Tạo sự kiện mới
-          </Button>
         </div>
 
-        <Card className="dark:shadow-neumorphic-dark border border-white/20 bg-white/80 p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-xl dark:bg-gray-800/80">
+        <Card className="dark:shadow-neumorphic-dark border border-white/20 bg-white/80 p-2 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-xl sm:p-4 md:p-6 dark:bg-gray-800/80">
           {isLoading ? (
-            <div className="flex h-[700px] items-center justify-center">
-              <div className="border-primary h-12 w-12 animate-spin rounded-full border-b-2"></div>
+            <div className="flex h-[400px] items-center justify-center sm:h-[550px] md:h-[650px] lg:h-[750px]">
+              <div className="border-primary h-8 w-8 animate-spin rounded-full border-b-2 sm:h-10 sm:w-10 md:h-12 md:w-12"></div>
             </div>
           ) : (
             <EventCalendar
@@ -203,7 +206,7 @@ export default function EventCalendarPage() {
 
       {/* Dialog hiển thị chi tiết sự kiện */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="border-none bg-transparent p-0 shadow-none sm:max-w-md md:max-w-lg">
+        <DialogContent className="max-w-[90vw] border-none bg-transparent p-0 shadow-none sm:max-w-md md:max-w-lg">
           {selectedEvent && events.find((e) => e.id === selectedEvent.id) && (
             <EventCard
               event={events.find((e) => e.id === selectedEvent.id) as EventEntity}
@@ -221,9 +224,9 @@ export default function EventCalendarPage() {
 
       {/* Dialog tạo sự kiện mới sử dụng component chung */}
       <Dialog open={isNewEventDialogOpen} onOpenChange={setIsNewEventDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-[95vw] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Tạo sự kiện mới</DialogTitle>
+            <DialogTitle className="text-lg font-semibold sm:text-xl">Tạo sự kiện mới</DialogTitle>
           </DialogHeader>
           <EventForm
             defaultValues={{
@@ -240,9 +243,11 @@ export default function EventCalendarPage() {
 
       {/* Dialog chỉnh sửa sự kiện sử dụng component chung */}
       <Dialog open={isEditEventDialogOpen} onOpenChange={setIsEditEventDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-[95vw] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Chỉnh sửa sự kiện</DialogTitle>
+            <DialogTitle className="text-lg font-semibold sm:text-xl">
+              Chỉnh sửa sự kiện
+            </DialogTitle>
           </DialogHeader>
           {currentEditEvent && (
             <EventForm
@@ -257,26 +262,37 @@ export default function EventCalendarPage() {
 
       {/* Dialog xác nhận xóa sự kiện */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-[90vw] sm:max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle>Bạn có chắc chắn muốn xóa?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-base sm:text-lg">
+              Bạn có chắc chắn muốn xóa?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs sm:text-sm">
               Hành động này không thể hoàn tác. Sự kiện sẽ bị xóa vĩnh viễn khỏi hệ thống.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col gap-2 sm:flex-row sm:gap-0">
+            <AlertDialogCancel
+              className="mt-0 h-8 px-2 text-xs sm:h-10 sm:px-4 sm:text-sm"
+              disabled={isDeleting}
+              onClick={() => {
+                setIsDeleteDialogOpen(false);
+                setSelectedEvent(null);
+              }}
+            >
+              Hủy
+            </AlertDialogCancel>
             <AlertDialogAction
-              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+              className="h-8 bg-red-500 px-2 text-xs hover:bg-red-600 sm:h-10 sm:px-4 sm:text-sm"
+              onClick={(e) => {
                 e.preventDefault();
                 handleDeleteEvent();
               }}
               disabled={isDeleting}
-              className="bg-red-500 hover:bg-red-600"
             >
               {isDeleting ? (
                 <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
+                  <div className="mr-2 h-3 w-3 animate-spin rounded-full border-b-2 border-white sm:h-4 sm:w-4"></div>
                   Đang xóa...
                 </>
               ) : (

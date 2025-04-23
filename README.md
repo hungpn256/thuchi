@@ -19,6 +19,27 @@ Thu Chi is a comprehensive personal finance management application designed to h
   - Create and manage custom categories
   - Organize finances with a personalized category system
 
+- **Event Tracking**
+
+  - Create financial events (trips, occasions, projects)
+  - Associate transactions with specific events
+  - Track spending and budgets for each event
+  - Analyze event-specific financial data
+
+- **User Settings**
+
+  - Customize application preferences
+  - Set default currency and language
+  - Toggle between light and dark themes
+  - Manage notification preferences
+
+- **Authentication**
+
+  - Secure JWT-based authentication
+  - Refresh token mechanism for seamless experience
+  - Token rotation for enhanced security
+  - Automatic token refresh on expiration
+
 - **User Experience**
 
   - Modern UI with neumorphism design
@@ -35,7 +56,7 @@ Thu Chi is a comprehensive personal finance management application designed to h
 
 ## 🏗️ Project Structure
 
-This is a monorepo containing two main workspaces:
+This is a monorepo containing three main workspaces:
 
 - **Web (`/web`)**: Next.js frontend application
 - **API (`/api`)**: NestJS backend API
@@ -45,13 +66,14 @@ This is a monorepo containing two main workspaces:
 
 ### Frontend (Web)
 
-- [Next.js](https://nextjs.org/) - React framework
+- [Next.js](https://nextjs.org/) - React framework with App Router
 - [TypeScript](https://www.typescriptlang.org/) - Type safety
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
 - [shadcn/ui](https://ui.shadcn.com/) - UI component system
 - [TanStack Query](https://tanstack.com/query) - Data fetching
 - [React Hook Form](https://react-hook-form.com/) - Form management
 - [Yup](https://github.com/jquense/yup) - Schema validation
+- [Axios](https://axios-http.com/) - HTTP client with token refresh
 
 ### Backend (API)
 
@@ -59,7 +81,7 @@ This is a monorepo containing two main workspaces:
 - [TypeScript](https://www.typescriptlang.org/) - Type safety
 - [Prisma](https://www.prisma.io/) - ORM
 - [PostgreSQL](https://www.postgresql.org/) - Database
-- [JWT](https://jwt.io/) - Authentication
+- [JWT](https://jwt.io/) - Authentication with refresh tokens
 
 ## 🛠️ Installation & Setup
 
@@ -123,6 +145,15 @@ The application provides a streamlined interface for managing financial transact
 - **Edit Transaction**: Update existing transaction details
 - **Delete Transaction**: Remove unwanted transactions with confirmation
 
+### Event Tracking
+
+Track financial events with dedicated functionality:
+
+- **Create Event**: Set up events with name, date range, and expected budget
+- **Event Dashboard**: View all financial transactions related to a specific event
+- **Budget Tracking**: Monitor spending against the event's budget
+- **Event Analytics**: Analyze category-wise spending for events
+
 ### Form Experience
 
 Forms are designed with excellent UX in mind:
@@ -161,6 +192,24 @@ Each report includes:
 - Transaction type filtering (income/expense)
 - Responsive design for all devices
 - Real-time data updates
+
+## 🔔 Upcoming Notification System
+
+We're currently developing a comprehensive notification system that will include:
+
+- **Budget Alerts**: Get notified when approaching or exceeding budget limits
+- **Spending Patterns**: Receive insights about unusual spending patterns
+- **Recurring Expenses**: Reminders about upcoming recurring expenses
+- **Financial Goals**: Updates on progress toward financial goals
+- **Security Alerts**: Notifications about important security events
+
+The notification system will feature:
+
+- **Multi-channel Delivery**: In-app, email, and push notifications
+- **Customizable Preferences**: Fine-tune which notifications you receive
+- **Smart Scheduling**: Intelligent timing to avoid notification fatigue
+- **Actionable Notifications**: Take action directly from notifications
+- **Notification History**: Access past notifications and their context
 
 ## 🧪 Testing
 

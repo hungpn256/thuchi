@@ -15,16 +15,16 @@ import {
   type Transaction,
 } from '@/hooks/use-transactions';
 import { ExpensesChart } from './ExpensesChart';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { TransactionForm } from '@/components/transaction/transaction-form';
+import { useRouter } from 'next/navigation';
+import { ROUTES } from '@/constants/app.constant';
 import { InstallPWA } from '@/components/common/InstallPWA';
 
 export default function DashboardContent() {
+  const router = useRouter();
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: startOfDay(addDays(new Date(), -30)),
     to: endOfDay(new Date()),
   });
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const { data: summary } = useTransactionSummary({
     startDate: dateRange?.from,
@@ -46,19 +46,21 @@ export default function DashboardContent() {
   };
 
   const handleCreateClick = () => {
-    setIsCreateDialogOpen(true);
+    router.push(ROUTES.TRANSACTIONS.NEW);
   };
 
   return (
     <div className="from-background/95 via-background/80 to-primary/10 relative min-h-screen bg-gradient-to-br">
       <div className="from-primary/10 pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] via-transparent to-transparent" />
-      <div className="relative container mx-auto max-w-6xl p-2">
+      <div className="relative container mx-auto max-w-6xl p-2 md:p-4">
         <div className="space-y-4 py-4">
-          <div className="from-background/90 via-background/70 to-background/50 flex items-center justify-between rounded-xl border bg-gradient-to-r p-4 shadow-lg backdrop-blur-md">
+          <div className="from-background/90 via-background/70 to-background/50 flex flex-col justify-between gap-3 rounded-xl border bg-gradient-to-r p-4 shadow-lg backdrop-blur-md sm:flex-row sm:items-center">
             <div className="flex items-center gap-4">
               <div className="relative">
                 <div className="from-primary/20 absolute inset-0 bg-gradient-to-r to-transparent blur-xl" />
-                <h1 className="relative text-2xl font-semibold tracking-tight">Tổng quan</h1>
+                <h1 className="relative text-xl font-semibold tracking-tight md:text-2xl">
+                  Tổng quan
+                </h1>
               </div>
               <Button
                 onClick={handleCreateClick}
@@ -73,7 +75,7 @@ export default function DashboardContent() {
             <DatePickerWithRange date={dateRange} setDate={handleDateRangeChange} />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             <Card className="from-background/80 group relative overflow-hidden border bg-gradient-to-br to-emerald-500/10 shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
               <div className="relative p-4">
@@ -110,7 +112,7 @@ export default function DashboardContent() {
               <div className="absolute right-0 bottom-0 left-0 h-0.5 bg-gradient-to-r from-rose-500/50 via-rose-500/30 to-rose-500/50" />
             </Card>
 
-            <Card className="from-background/80 to-primary/10 group relative overflow-hidden border bg-gradient-to-br shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
+            <Card className="from-background/80 to-primary/10 group relative overflow-hidden border bg-gradient-to-br shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:shadow-xl sm:col-span-2 md:col-span-1">
               <div
                 className={`absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity group-hover:opacity-100 ${
                   summary?.balance && summary.balance >= 0
@@ -172,7 +174,7 @@ export default function DashboardContent() {
                   </div>
                   <h2 className="text-lg font-semibold tracking-tight">Giao dịch gần đây</h2>
                 </div>
-                <div className="space-y-4">
+                <div className="max-h-[400px] space-y-4 overflow-y-auto pr-1">
                   {transactions?.items.reduce(
                     (
                       acc: React.ReactNode[],
@@ -217,16 +219,16 @@ export default function DashboardContent() {
                                 <TrendingUp className="h-4 w-4 rotate-180 text-rose-500" />
                               )}
                             </div>
-                            <div>
-                              <p className="font-medium">{transaction.description}</p>
+                            <div className="overflow-hidden">
+                              <p className="truncate font-medium">{transaction.description}</p>
                               <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                                <Tag className="h-3 w-3" />
-                                <span>{transaction.category.name}</span>
+                                <Tag className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate">{transaction.category.name}</span>
                               </div>
                             </div>
                           </div>
                           <p
-                            className={`font-semibold ${
+                            className={`font-semibold whitespace-nowrap ${
                               transaction.type === 'INCOME' ? 'text-emerald-500' : 'text-rose-500'
                             }`}
                           >
@@ -240,23 +242,20 @@ export default function DashboardContent() {
                     },
                     [],
                   )}
+
+                  {transactions?.items.length === 0 && (
+                    <div className="text-muted-foreground p-4 text-center">
+                      Không có giao dịch nào trong khoảng thời gian này
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>
           </div>
 
-          {/* Create Transaction Dialog */}
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Tạo giao dịch mới</DialogTitle>
-              </DialogHeader>
-              <TransactionForm onSuccess={() => setIsCreateDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
+          <InstallPWA />
         </div>
       </div>
-      <InstallPWA />
     </div>
   );
 }

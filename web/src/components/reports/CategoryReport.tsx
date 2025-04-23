@@ -45,8 +45,11 @@ export function CategoryReport({ data, isLoading }: CategoryReportProps) {
   if (!data || data.categories.length === 0) {
     return (
       <Card>
-        <CardContent className="py-10">
-          <div className="text-muted-foreground text-center">Không có dữ liệu để hiển thị</div>
+        <CardHeader className="px-2 py-0.5 sm:px-2.5 sm:py-1">
+          <CardTitle className="text-base sm:text-lg">Báo cáo theo danh mục</CardTitle>
+        </CardHeader>
+        <CardContent className="px-2 py-1 sm:px-2.5 sm:py-1.5">
+          <div className="text-muted-foreground py-4 text-center">Không có dữ liệu để hiển thị</div>
         </CardContent>
       </Card>
     );
@@ -56,12 +59,12 @@ export function CategoryReport({ data, isLoading }: CategoryReportProps) {
   const sortedCategories = [...data.categories].sort((a, b) => b.amount - a.amount);
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
       <Card>
-        <CardHeader>
-          <CardTitle>Biểu đồ phân bổ theo danh mục</CardTitle>
+        <CardHeader className="px-2 py-0.5 sm:px-2.5 sm:py-1">
+          <CardTitle className="text-base sm:text-lg">Biểu đồ phân bổ theo danh mục</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-2 py-1 sm:px-2.5 sm:py-1.5">
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -92,10 +95,10 @@ export function CategoryReport({ data, isLoading }: CategoryReportProps) {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Chi tiết theo danh mục</CardTitle>
+        <CardHeader className="px-2 py-0.5 sm:px-2.5 sm:py-1">
+          <CardTitle className="text-base sm:text-lg">Chi tiết theo danh mục</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-2 py-1 sm:px-2.5 sm:py-1.5">
           <Table>
             <TableHeader>
               <TableRow>
@@ -139,19 +142,19 @@ function CategoryReportSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       <Card>
-        <CardHeader>
-          <CardTitle>Biểu đồ phân bổ theo danh mục</CardTitle>
+        <CardHeader className="px-2 py-0.5 sm:px-2.5 sm:py-1">
+          <CardTitle className="text-base sm:text-lg">Biểu đồ phân bổ theo danh mục</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-2 py-1 sm:px-2.5 sm:py-1.5">
           <Skeleton className="h-[300px] w-full" />
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Chi tiết theo danh mục</CardTitle>
+        <CardHeader className="px-2 py-0.5 sm:px-2.5 sm:py-1">
+          <CardTitle className="text-base sm:text-lg">Chi tiết theo danh mục</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-2 py-1 sm:px-2.5 sm:py-1.5">
           <Skeleton className="mb-2 h-6 w-full" />
           <Skeleton className="mb-2 h-6 w-full" />
           <Skeleton className="mb-2 h-6 w-full" />

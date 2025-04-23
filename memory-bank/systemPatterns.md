@@ -6,10 +6,10 @@
 flowchart TD
     Client[Next.js Client]
     API[NestJS API]
-    DB[Postgres]
+    DB[PostgreSQL]
 
     Client -->|Axios + TanStack Query| API
-    API -->|TypeORM| DB
+    API -->|Prisma ORM| DB
 ```
 
 ## Design Patterns
@@ -20,31 +20,40 @@ flowchart TD
 
    - Smart/Container components for logic
    - Presentational components for UI
-   - Reusable UI components with props
-   - Consolidated dialogs for similar operations
+   - Reusable UI components with shadcn/ui
+   - Context for global state management
+   - Strict type definitions for components
 
 2. State Management
 
    - React Hooks for local state
-   - Context for global state
+   - Context for global state (auth, theme)
    - TanStack Query for server state
    - Form state using react-hook-form
+   - Validation with yup schemas
 
 3. Code Organization
    ```
    web/
-   ├── app/
-   │   ├── (public)/     # Public-facing pages
-   │   ├── (private)/    # Authenticated user pages
-   │   └── api/          # API route handlers
-   ├── components/
-   │   ├── ui/           # Reusable UI components
-   │   ├── layout/       # Layout components
-   │   └── transaction/  # Feature-specific components
-   ├── hooks/            # Custom hooks
-   ├── lib/              # Utility functions
-   ├── types/            # TypeScript type definitions
-   └── constants/        # Application constants
+   ├── src/
+   │   ├── app/
+   │   │   ├── (public)/     # Public-facing pages
+   │   │   ├── (private)/    # Authenticated user pages
+   │   │   └── api/          # API route handlers
+   │   ├── components/
+   │   │   ├── ui/           # Reusable UI components
+   │   │   ├── layout/       # Layout components
+   │   │   ├── transaction/  # Transaction components
+   │   │   ├── auth/         # Authentication components
+   │   │   ├── dashboard/    # Dashboard components
+   │   │   ├── event/        # Event tracking components
+   │   │   └── reports/      # Reporting components
+   │   ├── hooks/            # Custom hooks
+   │   ├── lib/              # Utility functions
+   │   ├── providers/        # Context providers
+   │   ├── services/         # API services
+   │   ├── types/            # TypeScript type definitions
+   │   └── constants/        # Application constants
    ```
 
 ### Form Patterns
@@ -53,62 +62,98 @@ flowchart TD
 
    - react-hook-form for form state
    - yup for validation schemas
-   - Custom form components for reusability
-   - Consistent error handling
+   - Controlled components for complex inputs
+   - Field-level validation with error messages
+   - Form submission with loading states
 
 2. Dialog Management
 
-   - Shared dialog for create/edit operations
-   - Differentiation based on ID presence
-   - Centralized dialog state management
-   - Proper cleanup on dialog close
+   - Shared dialog components for similar operations
+   - Differentiation based on operation type (create/edit)
+   - Clear submission and cancel flows
+   - Proper error handling and validation feedback
+   - Form state reset on dialog close
 
 3. Component Interaction
-   - z-index management for nested components
-   - Event propagation control
-   - Popover positioning and behavior
+   - Controlled event propagation
+   - Proper focus management for accessibility
+   - Mobile-friendly interactions
    - Consistent form submission patterns
+   - Loading state indicators
 
 ### Backend Patterns
 
 1. Module Architecture
 
-   - Feature-based modules
+   - Feature-based modules (auth, transaction, event, reports)
    - Service layer for business logic
-   - Repository pattern for data access
+   - Controller layer for API endpoints
+   - DTOs for type-safe request/response
+   - Prisma for data access
 
 2. Code Organization
    ```
    api/
    ├── src/
-   │   ├── modules/     # Feature modules
-   │   ├── common/      # Shared code
-   │   ├── config/      # Configuration
-   │   └── utils/       # Utility functions
+   │   ├── modules/
+   │   │   ├── auth/         # Authentication module
+   │   │   ├── transaction/  # Transaction management
+   │   │   ├── reports/      # Reporting functionality
+   │   │   ├── event/        # Event tracking
+   │   │   └── settings/     # User settings
+   │   ├── config/           # Application configuration
+   │   ├── constants/        # Shared constants
+   │   └── shared/           # Shared utilities and types
+   ├── prisma/
+   │   ├── schema.prisma     # Data model definition
+   │   └── migrations/       # Database migrations
+   ```
+
+## Data Model
+
+1. Core Entities
+
+   - User: Application user with authentication
+   - Transaction: Financial transaction (income/expense)
+   - Category: Transaction categorization
+   - Event: Financial occasion tracking
+   - Settings: User preferences
+
+2. Entity Relationships
+   ```mermaid
+   erDiagram
+       USER ||--o{ TRANSACTION : has
+       USER ||--o{ CATEGORY : has
+       USER ||--o{ EVENT : has
+       USER ||--|| SETTINGS : has
+       CATEGORY ||--o{ TRANSACTION : categorizes
+       EVENT ||--o{ TRANSACTION : groups
    ```
 
 ## Component Relationships
 
 1. UI Components
 
-   - Follow shadcn patterns
-   - Use Tailwind for styling
-   - Support theme customization
-   - Consistent padding and spacing
+   - Based on shadcn/ui component library
+   - Tailwind CSS for styling
+   - Support for theme switching (light/dark)
+   - Responsive design for all device sizes
+   - Consistent component API patterns
 
 2. Data Flow
 
-   - One-way data flow
+   - One-way data flow pattern
    - Props for component communication
-   - Context for global state
-   - Custom hooks for logic reuse
-   - TanStack Query for server state
+   - Context for global state (auth, theme)
+   - Custom hooks for reusable logic
+   - TanStack Query for server state management
 
-3. Dialog and Popover Pattern
-   - Single dialog with conditional content
-   - Dynamic titles based on operation type
-   - ID-based differentiation for edit/create
-   - State reset on dialog close
+3. Authentication Flow
+   - JWT-based authentication with refresh tokens
+   - Token refresh on 401 responses
+   - Access token (short-lived) for API authorization
+   - Refresh token (long-lived) for getting new access tokens
+   - Token rotation for enhanced security
 
 ## Error Handling
 
@@ -117,23 +162,29 @@ flowchart TD
    - Try/catch for async operations
    - Error boundaries for component errors
    - Toast notifications for user feedback
-   - Form validation with yup schemas
+   - Form validation with meaningful error messages
+   - API error handling with user-friendly messages
 
 2. Backend
-   - Global exception filter
-   - Custom error types
-   - Consistent error responses
+   - Exception filters for consistent error responses
+   - Custom exception types for specific errors
+   - Validation pipes for DTO validation
+   - Logging for error tracking
+   - API responses with appropriate status codes and messages
 
 ## Performance Patterns
 
 1. Frontend
 
    - Lazy loading of components
-   - Memoization of expensive calculations
-   - Optimized re-renders
-   - Controlled API refetching
+   - Memoization for expensive computations
+   - Optimized re-renders with React.memo and useMemo
+   - Pagination for large datasets
+   - Virtualization for long lists
 
 2. Backend
-   - Request caching
    - Database query optimization
-   - Response compression
+   - Caching frequently accessed data
+   - Efficient filtering with database indexes
+   - Pagination of large result sets
+   - Optimized transaction operations

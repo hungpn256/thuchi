@@ -1,32 +1,26 @@
-"use client";
+'use client';
 
-import {
-  Calendar,
-  dateFnsLocalizer,
-  Views,
-  SlotInfo,
-  View,
-} from "react-big-calendar";
-import "react-big-calendar/lib/css/react-big-calendar.css";
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
-import { format, parse, startOfWeek, getDay, addDays } from "date-fns";
-import { vi } from "date-fns/locale";
-import { CalendarEvent } from "@/types/events";
-import { Button } from "@/components/ui/button";
+import { Calendar, dateFnsLocalizer, Views, SlotInfo, View } from 'react-big-calendar';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
+import { format, parse, startOfWeek, getDay, addDays } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import { CalendarEvent } from '@/types/events';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   CalendarDays,
   CalendarIcon,
   ChevronDown,
   Calendar as CalendarMonth,
   LayoutGrid,
-} from "lucide-react";
+} from 'lucide-react';
 
 // Cấu hình date-fns cho tiếng Việt
 const locales = {
@@ -42,7 +36,7 @@ const localizer = dateFnsLocalizer({
 });
 
 // Types for custom views
-type CustomViewKey = "month" | "week" | "day" | "agenda";
+type CustomViewKey = 'month' | 'week' | 'day' | 'agenda';
 type CustomViewType = {
   [key in CustomViewKey]: {
     type: View;
@@ -54,24 +48,24 @@ type CustomViewType = {
 // Custom views configuration
 const customViews: CustomViewType = {
   month: {
-    type: "month",
-    title: "Tháng",
-    icon: <CalendarMonth className="h-4 w-4 mr-2" />,
+    type: 'month',
+    title: 'Tháng',
+    icon: <CalendarMonth className="mr-2 h-4 w-4" />,
   },
   week: {
-    type: "week",
-    title: "Tuần",
-    icon: <CalendarIcon className="h-4 w-4 mr-2" />,
+    type: 'week',
+    title: 'Tuần',
+    icon: <CalendarIcon className="mr-2 h-4 w-4" />,
   },
   day: {
-    type: "day",
-    title: "Ngày",
-    icon: <CalendarDays className="h-4 w-4 mr-2" />,
+    type: 'day',
+    title: 'Ngày',
+    icon: <CalendarDays className="mr-2 h-4 w-4" />,
   },
   agenda: {
-    type: "agenda",
-    title: "Lịch biểu",
-    icon: <LayoutGrid className="h-4 w-4 mr-2" />,
+    type: 'agenda',
+    title: 'Lịch biểu',
+    icon: <LayoutGrid className="mr-2 h-4 w-4" />,
   },
 };
 
@@ -81,11 +75,7 @@ interface EventCalendarProps {
   onSelectSlot?: (slotInfo: SlotInfo) => void;
 }
 
-export const EventCalendar = ({
-  events,
-  onSelectEvent,
-  onSelectSlot,
-}: EventCalendarProps) => {
+export const EventCalendar = ({ events, onSelectEvent, onSelectSlot }: EventCalendarProps) => {
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [currentView, setCurrentView] = useState<View>(Views.MONTH);
@@ -108,10 +98,10 @@ export const EventCalendar = ({
     let newDate = new Date(currentDate);
 
     switch (action) {
-      case "TODAY":
+      case 'TODAY':
         newDate = new Date();
         break;
-      case "PREV":
+      case 'PREV':
         if (currentView === Views.MONTH) {
           newDate.setMonth(newDate.getMonth() - 1);
         } else if (currentView === Views.WEEK) {
@@ -120,7 +110,7 @@ export const EventCalendar = ({
           newDate = addDays(newDate, -1);
         }
         break;
-      case "NEXT":
+      case 'NEXT':
         if (currentView === Views.MONTH) {
           newDate.setMonth(newDate.getMonth() + 1);
         } else if (currentView === Views.WEEK) {
@@ -139,28 +129,28 @@ export const EventCalendar = ({
   // Format the date header
   const formatHeader = (): string => {
     if (currentView === Views.MONTH) {
-      return format(currentDate, "MMMM yyyy", { locale: vi });
+      return format(currentDate, 'MMMM yyyy', { locale: vi });
     } else if (currentView === Views.WEEK) {
       const start = startOfWeek(currentDate, { locale: vi });
       const end = addDays(start, 6);
-      return `${format(start, "dd/MM/yyyy", { locale: vi })} - ${format(end, "dd/MM/yyyy", { locale: vi })}`;
+      return `${format(start, 'dd/MM/yyyy', { locale: vi })} - ${format(end, 'dd/MM/yyyy', { locale: vi })}`;
     } else if (currentView === Views.DAY) {
-      return format(currentDate, "EEEE, dd/MM/yyyy", { locale: vi });
+      return format(currentDate, 'EEEE, dd/MM/yyyy', { locale: vi });
     }
-    return format(currentDate, "MMMM yyyy", { locale: vi });
+    return format(currentDate, 'MMMM yyyy', { locale: vi });
   };
 
   // Get view title and icon for the current view
   const getCurrentViewInfo = () => {
     // Map standard view names to customView keys
     const viewMapping: Record<string, CustomViewKey> = {
-      month: "month",
-      week: "week",
-      day: "day",
-      agenda: "agenda",
+      month: 'month',
+      week: 'week',
+      day: 'day',
+      agenda: 'agenda',
     };
 
-    const mappedView = viewMapping[currentView] || "month";
+    const mappedView = viewMapping[currentView] || 'month';
     return customViews[mappedView];
   };
 
@@ -168,14 +158,15 @@ export const EventCalendar = ({
   const currentViewInfo = getCurrentViewInfo();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 sm:space-y-4">
       {/* Custom calendar controls */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col items-start justify-between gap-2 space-y-2 sm:flex-row sm:items-center sm:gap-4 sm:space-y-0">
+        <div className="flex w-full flex-wrap items-center gap-1 sm:w-auto sm:gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleNavigate("TODAY")}
+            className="h-7 px-2 text-xs sm:h-8 sm:px-3 sm:text-sm"
+            onClick={() => handleNavigate('TODAY')}
           >
             Hôm nay
           </Button>
@@ -183,19 +174,19 @@ export const EventCalendar = ({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => handleNavigate("PREV")}
-              className="h-8 w-8"
+              onClick={() => handleNavigate('PREV')}
+              className="h-7 w-7 sm:h-8 sm:w-8"
             >
               &lt;
             </Button>
-            <span className="px-2 font-medium min-w-40 text-center">
+            <span className="min-w-[100px] px-1 text-center text-xs font-medium sm:min-w-[160px] sm:px-2 sm:text-sm md:min-w-40">
               {formatHeader()}
             </span>
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => handleNavigate("NEXT")}
-              className="h-8 w-8"
+              onClick={() => handleNavigate('NEXT')}
+              className="h-7 w-7 sm:h-8 sm:w-8"
             >
               &gt;
             </Button>
@@ -204,10 +195,14 @@ export const EventCalendar = ({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 gap-1 px-2 text-xs sm:h-8 sm:px-3 sm:text-sm"
+            >
               {currentViewInfo.icon}
-              {currentViewInfo.title}
-              <ChevronDown className="h-4 w-4 ml-1" />
+              <span className="xs:inline hidden">{currentViewInfo.title}</span>
+              <ChevronDown className="ml-0 h-3 w-3 sm:ml-1 sm:h-4 sm:w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -216,7 +211,7 @@ export const EventCalendar = ({
               return (
                 <DropdownMenuItem
                   key={viewKey}
-                  className="flex items-center gap-2 cursor-pointer"
+                  className="flex cursor-pointer items-center gap-2 text-xs sm:text-sm"
                   onClick={() => handleViewChange(view.type)}
                 >
                   {view.icon}
@@ -229,11 +224,72 @@ export const EventCalendar = ({
       </div>
 
       <div
-        className={`h-[650px] w-full ${
-          theme === "dark" ? "calendar-dark" : "calendar-light"
+        className={`xs:h-[450px] h-[400px] w-full sm:h-[550px] md:h-[650px] lg:h-[750px] ${
+          theme === 'dark' ? 'calendar-dark' : 'calendar-light'
         }`}
       >
         <style jsx global>{`
+          /* Common styles for both themes */
+          .rbc-calendar {
+            font-size: 12px;
+          }
+          @media (min-width: 640px) {
+            .rbc-calendar {
+              font-size: 14px;
+            }
+          }
+          .rbc-toolbar {
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 10px;
+            font-size: 12px;
+          }
+          @media (min-width: 640px) {
+            .rbc-toolbar {
+              font-size: 14px;
+            }
+          }
+          .rbc-toolbar button {
+            padding: 5px 8px;
+          }
+          @media (min-width: 640px) {
+            .rbc-toolbar button {
+              padding: 6px 10px;
+            }
+          }
+          .rbc-agenda-view table.rbc-agenda-table {
+            font-size: 12px;
+          }
+          @media (min-width: 640px) {
+            .rbc-agenda-view table.rbc-agenda-table {
+              font-size: 14px;
+            }
+          }
+          .rbc-header {
+            padding: 4px 2px;
+          }
+          @media (min-width: 640px) {
+            .rbc-header {
+              padding: 8px 3px;
+            }
+          }
+          .rbc-event {
+            padding: 2px 3px;
+            font-size: 11px;
+            border-radius: 3px;
+          }
+          @media (min-width: 640px) {
+            .rbc-event {
+              padding: 4px 5px;
+              font-size: 12px;
+              border-radius: 4px;
+            }
+          }
+          .rbc-day-slot .rbc-events-container {
+            margin-right: 4px;
+          }
+
+          /* Dark theme styles */
           .calendar-dark .rbc-calendar {
             background-color: #1e1e2f;
             color: #f8f9fa;
@@ -251,12 +307,7 @@ export const EventCalendar = ({
             border-color: #0284c7;
           }
           .calendar-dark .rbc-header,
-          .calendar-dark
-            .rbc-agenda-view
-            table.rbc-agenda-table
-            thead
-            > tr
-            > th {
+          .calendar-dark .rbc-agenda-view table.rbc-agenda-table thead > tr > th {
             background-color: #1e293b;
             color: #f8f9fa;
             border-color: #1e293b;
@@ -285,12 +336,7 @@ export const EventCalendar = ({
           .calendar-dark .rbc-agenda-view table.rbc-agenda-table tbody > tr {
             border-color: #1e293b;
           }
-          .calendar-dark
-            .rbc-agenda-view
-            table.rbc-agenda-table
-            tbody
-            > tr
-            > td {
+          .calendar-dark .rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
             border-color: #1e293b;
           }
           .calendar-dark .rbc-time-view .rbc-time-gutter,
@@ -325,31 +371,31 @@ export const EventCalendar = ({
           date={currentDate}
           onView={handleViewChange}
           onNavigate={(date) => setCurrentDate(date)}
-          style={{ height: "100%" }}
+          style={{ height: '100%' }}
           onSelectEvent={onSelectEvent}
           onSelectSlot={onSelectSlot}
           selectable
           messages={{
-            today: "Hôm nay",
-            previous: "Trước",
-            next: "Sau",
-            month: "Tháng",
-            week: "Tuần",
-            day: "Ngày",
-            agenda: "Lịch biểu",
-            date: "Ngày",
-            time: "Giờ",
-            event: "Sự kiện",
-            allDay: "Cả ngày",
-            noEventsInRange: "Không có sự kiện nào trong khoảng thời gian này",
+            today: 'Hôm nay',
+            previous: 'Trước',
+            next: 'Sau',
+            month: 'Tháng',
+            week: 'Tuần',
+            day: 'Ngày',
+            agenda: 'Lịch biểu',
+            date: 'Ngày',
+            time: 'Giờ',
+            event: 'Sự kiện',
+            allDay: 'Cả ngày',
+            noEventsInRange: 'Không có sự kiện nào trong khoảng thời gian này',
           }}
           eventPropGetter={() => ({
             style: {
-              backgroundColor: "#0ea5e9", // Màu xanh dương cho events
-              border: "none",
-              borderRadius: "4px",
-              fontSize: "0.8rem",
-              fontWeight: "500",
+              backgroundColor: '#0ea5e9', // Màu xanh dương cho events
+              border: 'none',
+              borderRadius: '4px',
+              fontSize: '0.8rem',
+              fontWeight: '500',
             },
           })}
           dayPropGetter={(date) => {
@@ -360,8 +406,7 @@ export const EventCalendar = ({
                 date.getMonth() === today.getMonth() &&
                 date.getFullYear() === today.getFullYear()
                   ? {
-                      backgroundColor:
-                        theme === "dark" ? "#1e40af20" : "#e0f2fe",
+                      backgroundColor: theme === 'dark' ? '#1e40af20' : '#e0f2fe',
                     }
                   : {},
             };

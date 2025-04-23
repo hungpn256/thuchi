@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import plugin from "tailwindcss/plugin";
 
 const config = {
   darkMode: "class",
@@ -93,7 +94,38 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    plugin(function({ addUtilities }) {
+      const newUtilities = {
+        '.pt-safe': {
+          paddingTop: 'env(safe-area-inset-top)'
+        },
+        '.pr-safe': {
+          paddingRight: 'env(safe-area-inset-right)'
+        },
+        '.pb-safe': {
+          paddingBottom: 'env(safe-area-inset-bottom)'
+        },
+        '.pl-safe': {
+          paddingLeft: 'env(safe-area-inset-left)'
+        },
+        '.mt-safe': {
+          marginTop: 'env(safe-area-inset-top)'
+        },
+        '.mr-safe': {
+          marginRight: 'env(safe-area-inset-right)'
+        },
+        '.mb-safe': {
+          marginBottom: 'env(safe-area-inset-bottom)'
+        },
+        '.ml-safe': {
+          marginLeft: 'env(safe-area-inset-left)'
+        }
+      }
+      addUtilities(newUtilities);
+    })
+  ],
 } satisfies Config;
 
 export default config;

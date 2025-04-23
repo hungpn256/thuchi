@@ -46,10 +46,19 @@ export function EventCard({
     }
   };
 
+  // Format date for compact display
+  const formatDate = (date: string) => {
+    return format(new Date(date), 'dd/MM', { locale: vi });
+  };
+
+  const formatTime = (date: string) => {
+    return format(new Date(date), 'HH:mm', { locale: vi });
+  };
+
   return (
     <Card
       className={cn(
-        'overflow-hidden transition-all duration-200 hover:shadow-lg',
+        'overflow-hidden text-sm transition-all duration-200 hover:shadow-lg',
         hasClickHandler ? 'cursor-pointer' : 'cursor-default',
         className,
       )}
@@ -58,27 +67,31 @@ export function EventCard({
       <CardHeader
         className={cn(
           'from-primary-500/10 to-primary-600/10 bg-gradient-to-r',
-          useDropdownActions ? 'flex flex-row items-center justify-between p-3' : 'p-4 pb-2',
+          useDropdownActions
+            ? 'flex flex-row items-center justify-between p-2 sm:p-3'
+            : 'p-3 pb-2 sm:p-4 sm:pb-2',
         )}
       >
-        <CardTitle className="text-lg leading-tight">{event.name}</CardTitle>
+        <CardTitle className="line-clamp-1 text-base leading-tight sm:text-lg">
+          {event.name}
+        </CardTitle>
         {!hideActions && useDropdownActions && (onEdit || onDelete) && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="h-8 w-8 p-0"
+                className="h-6 w-6 p-0 sm:h-8 sm:w-8"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                 }}
               >
                 <span className="sr-only">Mở menu</span>
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-              <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
+              <DropdownMenuLabel className="text-xs sm:text-sm">Thao tác</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {onEdit && (
                 <DropdownMenuItem
@@ -87,9 +100,9 @@ export function EventCard({
                     e.stopPropagation();
                     onEdit(event);
                   }}
-                  className="text-amber-500 focus:bg-amber-50 focus:text-amber-500 dark:focus:bg-amber-950"
+                  className="text-xs text-amber-500 focus:bg-amber-50 focus:text-amber-500 sm:text-sm dark:focus:bg-amber-950"
                 >
-                  <Edit className="mr-2 h-4 w-4" />
+                  <Edit className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   Chỉnh sửa
                 </DropdownMenuItem>
               )}
@@ -100,9 +113,9 @@ export function EventCard({
                     e.stopPropagation();
                     onDelete(event);
                   }}
-                  className="text-red-500 focus:bg-red-50 focus:text-red-500 dark:focus:bg-red-950"
+                  className="text-xs text-red-500 focus:bg-red-50 focus:text-red-500 sm:text-sm dark:focus:bg-red-950"
                 >
-                  <Trash className="mr-2 h-4 w-4" />
+                  <Trash className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   Xóa
                 </DropdownMenuItem>
               )}
@@ -110,41 +123,62 @@ export function EventCard({
           </DropdownMenu>
         )}
       </CardHeader>
-      <CardContent className={useDropdownActions ? 'p-0' : 'space-y-3 p-4'}>
+      <CardContent className={useDropdownActions ? 'p-0' : 'space-y-2 p-3 sm:space-y-3 sm:p-4'}>
         {event.description &&
           (useDropdownActions ? (
-            <div className="p-4 pb-3">
+            <div className="p-2 pb-2 sm:p-4 sm:pb-3">
               <p
-                className={cn('text-muted-foreground text-sm', !showFullDetails && 'line-clamp-2')}
+                className={cn(
+                  'text-muted-foreground text-xs sm:text-sm',
+                  !showFullDetails && 'line-clamp-2',
+                )}
               >
                 {event.description}
               </p>
             </div>
           ) : (
-            <p className={cn('text-muted-foreground text-sm', !showFullDetails && 'line-clamp-2')}>
+            <p
+              className={cn(
+                'text-muted-foreground text-xs sm:text-sm',
+                !showFullDetails && 'line-clamp-2',
+              )}
+            >
               {event.description}
             </p>
           ))}
 
-        {useDropdownActions && <Separator className="mb-3" />}
+        {useDropdownActions && <Separator className="mb-2 sm:mb-3" />}
 
-        <div className={useDropdownActions ? 'space-y-2 px-4 pb-4' : 'space-y-2'}>
-          <div className="flex items-center gap-2 text-sm">
-            <Calendar className="text-muted-foreground h-4 w-4" />
+        <div
+          className={
+            useDropdownActions
+              ? 'space-y-1.5 px-2 pb-3 sm:space-y-2 sm:px-4 sm:pb-4'
+              : 'space-y-1.5 sm:space-y-2'
+          }
+        >
+          <div className="flex items-center gap-1.5 text-xs sm:gap-2 sm:text-sm">
+            <Calendar className="text-muted-foreground h-3 w-3 sm:h-4 sm:w-4" />
             <p className="text-muted-foreground">
-              {format(new Date(event.startDate), 'dd/MM/yyyy HH:mm', {
-                locale: vi,
-              })}
-              {' - '}
-              {format(new Date(event.endDate), 'dd/MM/yyyy HH:mm', {
-                locale: vi,
-              })}
+              <span className="inline sm:hidden">
+                {formatDate(event.startDate)} {formatTime(event.startDate)}
+                {' - '}
+                {formatDate(event.endDate)} {formatTime(event.endDate)}
+              </span>
+              <span className="hidden sm:inline">
+                {format(new Date(event.startDate), 'dd/MM/yyyy HH:mm', {
+                  locale: vi,
+                })}
+                {' - '}
+                {format(new Date(event.endDate), 'dd/MM/yyyy HH:mm', {
+                  locale: vi,
+                })}
+              </span>
             </p>
           </div>
           {event.expectedAmount && (
-            <div className="flex items-center gap-2">
-              <DollarSign className="text-primary-700 dark:text-primary-400 h-4 w-4" />
-              <div className="text-primary-700 dark:text-primary-400 text-sm font-medium">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <DollarSign className="text-primary-700 dark:text-primary-400 h-3 w-3 sm:h-4 sm:w-4" />
+              <div className="text-primary-700 dark:text-primary-400 text-xs font-medium sm:text-sm">
                 {formatCurrency(event.expectedAmount)}
               </div>
             </div>
@@ -157,13 +191,13 @@ export function EventCard({
               <Button
                 size="sm"
                 variant="outline"
-                className="gap-1 text-amber-500 hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-950"
+                className="h-7 gap-1 px-2 text-xs text-amber-500 hover:bg-amber-50 hover:text-amber-500 sm:h-8 sm:px-3 sm:text-sm dark:hover:bg-amber-950"
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit(event);
                 }}
               >
-                <Edit className="h-4 w-4" />
+                <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                 Chỉnh sửa
               </Button>
             )}
@@ -171,13 +205,13 @@ export function EventCard({
               <Button
                 size="sm"
                 variant="outline"
-                className="gap-1 text-red-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950"
+                className="h-7 gap-1 px-2 text-xs text-red-500 hover:bg-red-50 hover:text-red-500 sm:h-8 sm:px-3 sm:text-sm dark:hover:bg-red-950"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete(event);
                 }}
               >
-                <Trash className="h-4 w-4" />
+                <Trash className="h-3 w-3 sm:h-4 sm:w-4" />
                 Xóa
               </Button>
             )}

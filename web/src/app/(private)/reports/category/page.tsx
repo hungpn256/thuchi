@@ -51,8 +51,9 @@ export default function CategoryReportPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <ReportFilter onFilterChange={handleFilterChange} className="mb-6" showTypeFilter />
+    <div className="container mx-auto px-2 py-4 sm:px-4 sm:py-6 md:py-8">
+      <h1 className="mb-4 text-xl font-bold sm:text-2xl md:text-3xl">Báo cáo theo danh mục</h1>
+      <ReportFilter onFilterChange={handleFilterChange} className="mb-3" showTypeFilter />
       <CategoryReport data={reportData} isLoading={isLoading} />
     </div>
   );

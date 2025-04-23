@@ -14,10 +14,19 @@ import { useUserProfile } from '@/hooks/use-user';
 import { LogOut, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '../theme/theme-toggle';
+import { isIOS } from '@/utils/device';
+import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 export function Header() {
   const { data: profile } = useUserProfile();
   const router = useRouter();
+  const [isIOSDevice, setIsIOSDevice] = useState(false);
+
+  // Check if device is iOS
+  useEffect(() => {
+    setIsIOSDevice(isIOS());
+  }, []);
 
   function handleLogout(): void {
     localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
@@ -25,7 +34,12 @@ export function Header() {
   }
 
   return (
-    <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
+    <header
+      className={cn(
+        'bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 hidden w-full border-b backdrop-blur lg:block',
+        isIOSDevice && 'pt-safe',
+      )}
+    >
       <div className="container mx-auto">
         <div className="flex h-14 items-center justify-between">
           <div className="flex items-center gap-2"></div>

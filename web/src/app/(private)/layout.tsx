@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Menu, X, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 
 interface PrivateLayoutProps {
   children: React.ReactNode;
@@ -66,6 +67,17 @@ export default function PrivateLayout({ children }: PrivateLayoutProps) {
 
   return (
     <div className="flex min-h-screen">
+      {/* Mobile overlay when sidebar is open */}
+      {isMobile && sidebarOpen && (
+        <motion.div
+          className="fixed inset-0 z-10 bg-black/50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.5 }}
+          exit={{ opacity: 0 }}
+          onClick={toggleSidebar}
+        />
+      )}
+
       {/* Sidebar with responsive behavior */}
       <div
         ref={sidebarRef}
@@ -79,13 +91,15 @@ export default function PrivateLayout({ children }: PrivateLayoutProps) {
               : 'w-16 translate-x-0'
         }`}
       >
-        <Sidebar isCollapsed={!isMobile && !sidebarOpen} />
+        <Sidebar isCollapsed={!isMobile && !sidebarOpen} setIsCollapsed={setSidebarOpen} />
       </div>
 
       {/* Mobile toggle button (bottom left) */}
       {isMobile && (
         <div
-          className={`fixed bottom-4 left-4 z-30 ${sidebarOpen ? 'left-64 ml-4' : 'left-4'} transition-all duration-300`}
+          className={`fixed bottom-4 left-4 z-30 ${
+            sidebarOpen ? 'left-64 ml-4' : 'left-4'
+          } transition-all duration-300`}
         >
           <Button
             variant="outline"
@@ -101,7 +115,9 @@ export default function PrivateLayout({ children }: PrivateLayoutProps) {
       {/* Desktop toggle button (on sidebar) */}
       {!isMobile && (
         <div
-          className={`fixed top-4 ${sidebarOpen ? 'left-56' : 'left-8'} z-30 transition-all duration-300`}
+          className={`fixed top-4 ${
+            sidebarOpen ? 'left-56' : 'left-8'
+          } z-30 transition-all duration-300`}
         >
           <Button
             variant="ghost"
@@ -116,7 +132,9 @@ export default function PrivateLayout({ children }: PrivateLayoutProps) {
 
       {/* Main content with responsive padding */}
       <div
-        className={`flex flex-1 flex-col transition-all duration-300 ${isMobile ? 'pl-0' : sidebarOpen ? 'pl-64' : 'pl-16'}`}
+        className={`flex flex-1 flex-col transition-all duration-300 ${
+          isMobile ? 'pl-0' : sidebarOpen ? 'pl-64' : 'pl-16'
+        }`}
       >
         <Header />
         {children}
