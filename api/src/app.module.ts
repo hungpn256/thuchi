@@ -11,6 +11,7 @@ import { validationConfig } from './configs/validation.config';
 import { ReportsModule } from './modules/reports/reports.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { DeviceModule } from './modules/device/device.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { DeviceModule } from './modules/device/device.module';
     ReportsModule,
     SettingsModule,
     DeviceModule,
+    NotificationsModule,
   ],
   providers: [
     {
