@@ -12,19 +12,34 @@ export const useSettings = () => {
 
   const { data, isLoading, error } = useQuery({
     queryKey: SETTINGS_QUERY_KEYS.detail(),
-    queryFn: settingsService.getSettings,
+    queryFn: async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        return null;
+      }
+      const response = await settingsService.getSettings();
+      return response;
+    },
   });
 
   const { mutate: updateSettings, isPending: isUpdating } = useMutation({
     mutationFn: settingsService.updateSettings,
     onSuccess: (updatedSettings) => {
       queryClient.setQueryData(SETTINGS_QUERY_KEYS.detail(), updatedSettings);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        return null;
+      }
       toast({
         title: 'Thành công',
         description: 'Đã cập nhật cài đặt',
       });
     },
     onError: (err) => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        return null;
+      }
       console.error('Error updating settings:', err);
       toast({
         variant: 'destructive',

@@ -137,7 +137,9 @@ export function Sidebar({
   };
 
   useEffect(() => {
-    propSetIsCollapsed?.(false);
+    if (isMobile) {
+      propSetIsCollapsed?.(false);
+    }
   }, [pathname, propSetIsCollapsed]);
 
   // Animation variants for sidebar
