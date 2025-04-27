@@ -3,6 +3,7 @@ import { ThemeProvider } from '@/providers/theme-provider';
 import { Inter } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeDetector } from '@/components/theme/theme-detector';
+import { NotificationPermissionRequest } from '@/components/common/NotificationPermissionRequest';
 import './globals.css';
 import Script from 'next/script';
 
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ThemeDetector />
           <QueryProvider>{children}</QueryProvider>
           <Toaster />
+          <NotificationPermissionRequest />
         </ThemeProvider>
       </body>
     </html>

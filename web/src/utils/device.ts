@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 // Interface cho window.navigator bổ sung với thuộc tính standalone
 export interface SafariNavigator extends Navigator {
   standalone?: boolean;

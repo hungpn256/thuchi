@@ -13,7 +13,6 @@ import { STORAGE_KEYS, ROUTES, API_ENDPOINTS } from '@/constants/app.constant';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { isIOSPWA } from '@/utils/device';
 
 // Hàm lưu trạng thái đăng nhập cho chế độ redirect
 const saveAuthState = (redirectUrl: string): void => {
