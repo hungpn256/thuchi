@@ -7,17 +7,83 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+enum account_status {
+    ACTIVE
+    INACTIVE
+    SUSPENDED
+    DELETED
+}
+
+enum profile_status {
+    ACTIVE
+    INACTIVE
+    DELETED
+}
+
+enum profile_permission {
+    READ
+    WRITE
+    ADMIN
+}
+
+model account {
+    id           Int            @id(map: "PK_a3ffb1c0c8416b9fc6f907b7433") @default(autoincrement())
+    email        String         @unique(map: "UQ_97672ac88f789774dd47f7c8be3") @db.VarChar
+    password     String?        @db.VarChar
+    googleId     String?        @db.VarChar
+    status       account_status @default(ACTIVE)
+    createdAt    DateTime       @default(now()) @db.Timestamp(6)
+    updatedAt    DateTime       @default(now()) @db.Timestamp(6)
+    deviceTokens device_token[]
+    profileUsers profile_user[]
+
+    @@index([email], map: "IDX_ACCOUNT_EMAIL")
+}
+
+model profile {
+    id           Int            @id @default(autoincrement())
+    name         String         @db.VarChar
+    avatar       String?        @db.VarChar
+    status       profile_status @default(ACTIVE)
+    createdAt    DateTime       @default(now()) @db.Timestamp(6)
+    updatedAt    DateTime       @default(now()) @db.Timestamp(6)
+    categories   category[]
+    transactions transaction[]
+    events       event[]
+    settings     settings?
+    profileUsers profile_user[]
+
+    @@index([name], map: "IDX_PROFILE_NAME")
+}
+
+model profile_user {
+    id         Int                @id @default(autoincrement())
+    profileId  Int
+    accountId  Int
+    permission profile_permission @default(READ)
+    isDefault  Boolean            @default(false)
+    createdAt  DateTime           @default(now()) @db.Timestamp(6)
+    updatedAt  DateTime           @default(now()) @db.Timestamp(6)
+    lastLogin  DateTime?          @db.Timestamp(6)
+    profile    profile            @relation(fields: [profileId], references: [id], onDelete: Cascade)
+    account    account            @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+    @@unique([profileId, accountId])
+    @@index([profileId], map: "IDX_PROFILE_USER_PROFILE")
+    @@index([accountId], map: "IDX_PROFILE_USER_ACCOUNT")
+}
+
 model category {
     id           Int           @id(map: "PK_24dbc6126a28ff948da33e97d3b") @default(autoincrement())
     name         String        @db.VarChar
-    userId       Int?
+    profileId    Int?
     createdAt    DateTime      @default(now()) @db.Timestamp(6)
     updatedAt    DateTime      @default(now()) @db.Timestamp(6)
-    users        user?         @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_13e8b2a21988bec6fdcbb1fa741")
+    profile      profile?      @relation(fields: [profileId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_13e8b2a21988bec6fdcbb1fa741")
     transactions transaction[]
 
-    @@unique([name, userId], map: "UQ_c9e95d6cdc8663c1a22269cb54a")
-    @@index([userId], map: "IDX_13e8b2a21988bec6fdcbb1fa74")
+    @@unique([name, profileId], map: "UQ_c9e95d6cdc8663c1a22269cb54a")
+    @@index([profileId], map: "IDX_13e8b2a21988bec6fdcbb1fa74")
 }
 
 model transaction {
@@ -25,35 +91,17 @@ model transaction {
     amount      Decimal               @db.Decimal(10, 2)
     description String?               @db.VarChar
     date        DateTime              @db.Date
-    userId      Int
+    profileId   Int
     createdAt   DateTime              @default(now()) @db.Timestamp(6)
     updatedAt   DateTime              @default(now()) @db.Timestamp(6)
     categoryId  Int?
     eventId     Int?
     id          Int                   @id(map: "PK_a219afd8dd77ed80f5a862f1db9") @default(autoincrement())
-    users       user                  @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6bb58f2b6e30cb51a6504599f41")
+    profile     profile               @relation(fields: [profileId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6bb58f2b6e30cb51a6504599f41")
     category    category?             @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_86e965e74f9cc66149cf6c90f64")
     event       event?                @relation(fields: [eventId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_event_transaction")
 
-    @@index([userId, date], map: "IDX_TRANSACTION_USER_DATE")
-}
-
-model user {
-    id           Int            @id(map: "PK_a3ffb1c0c8416b9fc6f907b7433") @default(autoincrement())
-    email        String         @unique(map: "UQ_97672ac88f789774dd47f7c8be3") @db.VarChar
-    name         String         @db.VarChar
-    password     String?        @db.VarChar
-    googleId     String?        @db.VarChar
-    avatar       String?        @db.VarChar
-    createdAt    DateTime       @default(now()) @db.Timestamp(6)
-    updatedAt    DateTime       @default(now()) @db.Timestamp(6)
-    categories   category[]
-    transactions transaction[]
-    events       event[]
-    settings     settings?
-    deviceTokens device_token[]
-
-    @@index([email], map: "IDX_USER_EMAIL")
+    @@index([profileId, date], map: "IDX_TRANSACTION_PROFILE_DATE")
 }
 
 model event {
@@ -63,33 +111,33 @@ model event {
     startDate      DateTime      @db.Timestamp(6)
     endDate        DateTime      @db.Timestamp(6)
     expectedAmount Decimal?      @db.Decimal(10, 2)
-    userId         Int
+    profileId      Int
     createdAt      DateTime      @default(now()) @db.Timestamp(6)
     updatedAt      DateTime      @default(now()) @db.Timestamp(6)
-    user           user          @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    profile        profile       @relation(fields: [profileId], references: [id], onDelete: NoAction, onUpdate: NoAction)
     transactions   transaction[]
 
-    @@index([userId], map: "IDX_EVENT_USER")
+    @@index([profileId], map: "IDX_EVENT_PROFILE")
     @@index([startDate, endDate], map: "IDX_EVENT_DATE_RANGE")
 }
 
 model settings {
     id                   Int      @id @default(autoincrement())
-    userId               Int      @unique
+    profileId            Int      @unique
     defaultCurrency      String   @default("VND") @db.VarChar(3)
     language             String   @default("vi") @db.VarChar(2)
     theme                String   @default("light") @db.VarChar
     notificationsEnabled Boolean  @default(true)
     createdAt            DateTime @default(now()) @db.Timestamp(6)
     updatedAt            DateTime @default(now()) @db.Timestamp(6)
-    user                 user     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    profile              profile  @relation(fields: [profileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-    @@index([userId], map: "IDX_SETTINGS_USER_ID")
+    @@index([profileId], map: "IDX_SETTINGS_PROFILE_ID")
 }
 
 model device_token {
     id           Int      @id @default(autoincrement())
-    userId       Int
+    accountId    Int
     deviceId     String   @db.VarChar(255)
     token        String   @db.VarChar(512)
     deviceType   String   @db.VarChar(50) // 'android', 'ios', 'web'
@@ -100,10 +148,10 @@ model device_token {
     lastActiveAt DateTime @default(now()) @db.Timestamp(6)
     createdAt    DateTime @default(now()) @db.Timestamp(6)
     updatedAt    DateTime @default(now()) @db.Timestamp(6)
-    user         user     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    account      account  @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-    @@unique([userId, deviceId], name: "userId_deviceId")
-    @@index([userId], map: "IDX_DEVICE_TOKEN_USER_ID")
+    @@unique([accountId, deviceId], name: "accountId_deviceId")
+    @@index([accountId], map: "IDX_DEVICE_TOKEN_ACCOUNT_ID")
     @@index([token], map: "IDX_DEVICE_TOKEN_TOKEN")
 }
 

@@ -15,6 +15,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiBody, ApiResponse } from '@nestjs/swagger';
+import { Profile } from '@/shared/decorators/profile.decorator';
 
 @ApiTags('Events')
 @ApiBearerAuth()
@@ -46,8 +47,8 @@ export class EventController {
       },
     },
   })
-  create(@Request() req, @Body() createEventDto: CreateEventDto) {
-    return this.eventService.create(req.user.id, createEventDto);
+  create(@Request() req, @Body() createEventDto: CreateEventDto, @Profile() profile) {
+    return this.eventService.create(profile.id, createEventDto);
   }
 
   @Get()
@@ -72,8 +73,8 @@ export class EventController {
       ],
     },
   })
-  findAll(@Request() req) {
-    return this.eventService.findAll(req.user.id);
+  findAll(@Request() req, @Profile() profile) {
+    return this.eventService.findAll(profile.id);
   }
 
   @Get(':id')
@@ -97,8 +98,8 @@ export class EventController {
     },
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Không tìm thấy sự kiện' })
-  findOne(@Request() req, @Param('id') id: string) {
-    return this.eventService.findOne(req.user.id, +id);
+  findOne(@Request() req, @Param('id') id: string, @Profile() profile) {
+    return this.eventService.findOne(profile.id, +id);
   }
 
   @Patch(':id')
@@ -126,15 +127,20 @@ export class EventController {
     },
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Không tìm thấy sự kiện' })
-  update(@Request() req, @Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
-    return this.eventService.update(req.user.id, +id, updateEventDto);
+  update(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() updateEventDto: UpdateEventDto,
+    @Profile() profile,
+  ) {
+    return this.eventService.update(profile.id, +id, updateEventDto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Xóa sự kiện' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Xóa sự kiện thành công' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Không tìm thấy sự kiện' })
-  remove(@Request() req, @Param('id') id: string) {
-    return this.eventService.remove(req.user.id, +id);
+  remove(@Request() req, @Param('id') id: string, @Profile() profile) {
+    return this.eventService.remove(profile.id, +id);
   }
 }

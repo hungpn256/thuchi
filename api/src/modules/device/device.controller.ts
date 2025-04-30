@@ -13,6 +13,7 @@ import { DeviceService } from './device.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RegisterDeviceDto } from './dto/register-device.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
+import { Account } from '@/shared/decorators/account.decorator';
 
 @ApiTags('Device Management')
 @Controller('devices')
@@ -30,8 +31,12 @@ export class DeviceController {
     status: HttpStatus.OK,
     description: 'The device has been successfully registered',
   })
-  async registerDevice(@Request() req, @Body() registerDeviceDto: RegisterDeviceDto) {
-    const result = await this.deviceService.registerDevice(req.user.id, registerDeviceDto);
+  async registerDevice(
+    @Request() req,
+    @Body() registerDeviceDto: RegisterDeviceDto,
+    @Account() account,
+  ) {
+    const result = await this.deviceService.registerDevice(account.id, registerDeviceDto);
     return {
       message: 'Device registered successfully',
       deviceId: result.deviceId,
@@ -50,7 +55,7 @@ export class DeviceController {
     description: 'List of registered devices',
   })
   async getUserDevices(@Request() req) {
-    return this.deviceService.getUserDevices(req.user.id);
+    return this.deviceService.getUserDevices(req.account.id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -69,8 +74,8 @@ export class DeviceController {
     status: HttpStatus.OK,
     description: 'The device has been successfully deleted',
   })
-  async deleteDevice(@Request() req, @Param('deviceId') deviceId: string) {
-    await this.deviceService.deleteDevice(req.user.id, deviceId);
+  async deleteDevice(@Request() req, @Param('deviceId') deviceId: string, @Account() account) {
+    await this.deviceService.deleteDevice(account.id, deviceId);
     return {
       message: 'Device deleted successfully',
     };
@@ -87,8 +92,8 @@ export class DeviceController {
     status: HttpStatus.OK,
     description: 'All devices have been successfully deleted',
   })
-  async deleteAllDevices(@Request() req) {
-    const result = await this.deviceService.deleteAllUserDevices(req.user.id);
+  async deleteAllDevices(@Request() req, @Account() account) {
+    const result = await this.deviceService.deleteAllUserDevices(account.id);
     return {
       message: 'All devices deleted successfully',
       count: result.count,

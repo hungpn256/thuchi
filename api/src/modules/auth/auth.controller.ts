@@ -10,6 +10,11 @@ import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { DeviceService } from '../device/device.service';
 import { LogoutDto } from './dto/logout.dto';
+import { account, profile } from '@prisma/client';
+import { Profile } from '@/shared/decorators/profile.decorator';
+import { Account } from '@/shared/decorators/account.decorator';
+import { SwitchProfileDto } from './dto/switch-profile.dto';
+import { CreateProfileDto } from './dto/create-profile.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -94,7 +99,7 @@ export class AuthController {
       if (!user) {
         throw new UnauthorizedException('Sai email hoặc mật khẩu');
       }
-      return await this.authService.login(user);
+      return await this.authService.login(user.account, user.profile);
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
@@ -231,13 +236,15 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Token không hợp lệ hoặc hết hạn' })
-  async getProfile(@Request() req) {
+  async getProfile(@Account() account: account, @Profile() profile: profile) {
     try {
-      const user = await this.authService.findUserById(req.user.id);
-      if (!user) {
+      if (!account || !profile) {
         throw new UnauthorizedException('User not found');
       }
-      return user;
+      return {
+        account,
+        profile,
+      };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
@@ -313,11 +320,11 @@ export class AuthController {
     try {
       if (logoutDto?.deviceId) {
         // Logout from specific device
-        await this.deviceService.deleteDevice(req.user.id, logoutDto.deviceId);
+        await this.deviceService.deleteDevice(req.account.id, logoutDto.deviceId);
         return { message: 'Đăng xuất thành công' };
       } else {
         // Logout from all devices
-        const result = await this.deviceService.deleteAllUserDevices(req.user.id);
+        const result = await this.deviceService.deleteAllUserDevices(req.account.id);
         return {
           message: 'Đăng xuất thành công khỏi tất cả thiết bị',
           count: result.count,
@@ -325,6 +332,57 @@ export class AuthController {
       }
     } catch (error) {
       throw new BadRequestException('Đăng xuất thất bại', { error: error.message });
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post('switch-profile')
+  @ApiOperation({
+    summary: 'Chuyển đổi profile',
+    description: 'API được bảo vệ, yêu cầu token để truy cập',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Chuyển đổi profile thành công',
+  })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Token không hợp lệ hoặc hết hạn' })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Profile không tồn tại hoặc không có quyền truy cập',
+  })
+  async switchProfile(@Account() account: account, @Body() switchProfileDto: SwitchProfileDto) {
+    try {
+      return await this.authService.switchProfile(account.id, switchProfileDto.profileId);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new BadRequestException('Failed to switch profile', { error: error.message });
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post('profiles')
+  @ApiOperation({
+    summary: 'Tạo profile mới',
+    description: 'API được bảo vệ, yêu cầu token để truy cập',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Tạo profile thành công',
+  })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Token không hợp lệ hoặc hết hạn' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Dữ liệu không hợp lệ' })
+  async createProfile(@Account() account: account, @Body() createProfileDto: CreateProfileDto) {
+    try {
+      return await this.authService.createProfile(account.id, createProfileDto);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new BadRequestException('Failed to create profile', { error: error.message });
     }
   }
 }

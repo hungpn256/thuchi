@@ -4,7 +4,7 @@ import { ROUTES, STORAGE_KEYS } from '@/constants/app.constant';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { useUserProfile } from '@/hooks/use-user';
-import { useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Menu, X, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
@@ -15,7 +15,6 @@ interface PrivateLayoutProps {
 }
 
 export default function PrivateLayout({ children }: PrivateLayoutProps) {
-  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -48,17 +47,16 @@ export default function PrivateLayout({ children }: PrivateLayoutProps) {
 
   const { isLoading, error } = useUserProfile();
 
-  if (error || !token) {
-    router.push(ROUTES.AUTH.LOGIN);
-    return null;
-  }
-
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="border-primary h-8 w-8 animate-spin rounded-full border-b-2"></div>
       </div>
     );
+  }
+
+  if (error || !token) {
+    redirect(ROUTES.AUTH.LOGIN);
   }
 
   const toggleSidebar = () => {

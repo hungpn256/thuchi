@@ -7,6 +7,7 @@ import { SummaryReportResponseDto } from './dto/summary-report-response.dto';
 import { CategoryReportResponseDto } from './dto/category-report-response.dto';
 import { TrendReportResponseDto } from './dto/trend-report-response.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Profile } from '@/shared/decorators/profile.decorator';
 
 @ApiTags('reports')
 @ApiBearerAuth()
@@ -25,8 +26,9 @@ export class ReportsController {
   async getSummaryReport(
     @Request() req,
     @Query(ValidationPipe) filter: ReportFilterDto,
+    @Profile() profile,
   ): Promise<SummaryReportResponseDto> {
-    return this.reportsService.getSummaryReport(req.user.id, filter);
+    return this.reportsService.getSummaryReport(profile.id, filter);
   }
 
   @Get('categories')
@@ -39,8 +41,9 @@ export class ReportsController {
   async getCategoryReport(
     @Request() req,
     @Query(ValidationPipe) filter: ReportFilterDto,
+    @Profile() profile,
   ): Promise<CategoryReportResponseDto> {
-    return this.reportsService.getCategoryReport(req.user.id, filter);
+    return this.reportsService.getCategoryReport(profile.id, filter);
   }
 
   @Get('trends')
@@ -53,7 +56,8 @@ export class ReportsController {
   async getTrendReport(
     @Request() req,
     @Query(ValidationPipe) filter: TrendFilterDto,
+    @Profile() profile,
   ): Promise<TrendReportResponseDto> {
-    return this.reportsService.getTrendReport(req.user.id, filter);
+    return this.reportsService.getTrendReport(profile.id, filter);
   }
 }

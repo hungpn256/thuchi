@@ -18,6 +18,7 @@ import { NotificationsService } from './notifications.service';
 import { CreateSubscriptionDto } from './dto/subscription.dto';
 import { SendNotificationDto } from './dto/send-notification.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Account } from '@/shared/decorators/account.decorator';
 
 @ApiTags('notifications')
 @Controller('notifications')
@@ -44,15 +45,14 @@ export class NotificationsController {
   @ApiOperation({ summary: 'Subscribe to push notifications' })
   @ApiResponse({ status: HttpStatus.CREATED, description: 'Subscription created' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid subscription data' })
-  async subscribe(@Req() req, @Body() subscriptionDto: CreateSubscriptionDto) {
+  async subscribe(@Req() req, @Body() subscriptionDto: CreateSubscriptionDto, @Account() account) {
     try {
       if (subscriptionDto.deviceType !== 'web') {
         throw new BadRequestException(
           'Invalid device type. Must be "web" for web push notifications',
         );
       }
-      const userId = req.user.id;
-      return await this.notificationsService.subscribe(userId, subscriptionDto);
+      return await this.notificationsService.subscribe(account.id, subscriptionDto);
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error;
@@ -67,10 +67,9 @@ export class NotificationsController {
   @ApiOperation({ summary: 'Unsubscribe from push notifications' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Subscription deleted' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Subscription not found' })
-  async unsubscribe(@Req() req, @Param('deviceId') deviceId: string) {
+  async unsubscribe(@Req() req, @Param('deviceId') deviceId: string, @Account() account) {
     try {
-      const userId = req.user.id;
-      return await this.notificationsService.unsubscribe(userId, deviceId);
+      return await this.notificationsService.unsubscribe(account.id, deviceId);
     } catch (error) {
       throw new NotFoundException(`Subscription not found: ${error.message}`);
     }
@@ -83,11 +82,10 @@ export class NotificationsController {
   @ApiResponse({ status: HttpStatus.OK, description: 'Notification sent' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Failed to send notification' })
   @HttpCode(HttpStatus.OK)
-  async sendToMe(@Req() req, @Body() notificationDto: SendNotificationDto) {
+  async sendToMe(@Req() req, @Body() notificationDto: SendNotificationDto, @Account() account) {
     try {
-      const userId = req.user.id;
       const result = await this.notificationsService.sendNotificationToUser(
-        userId,
+        account.id,
         notificationDto,
       );
       if (result.sent === 0) {
@@ -102,7 +100,7 @@ export class NotificationsController {
     }
   }
 
-  @Post('send-to-user/:userId')
+  @Post('send-to-user/:accountId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Send a notification to a specific user (admin only)' })
@@ -110,11 +108,14 @@ export class NotificationsController {
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Failed to send notification' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
   @HttpCode(HttpStatus.OK)
-  async sendToUser(@Param('userId') userId: string, @Body() notificationDto: SendNotificationDto) {
+  async sendToUser(
+    @Param('accountId') accountId: string,
+    @Body() notificationDto: SendNotificationDto,
+  ) {
     try {
       // Here you might want to add an admin check
       const result = await this.notificationsService.sendNotificationToUser(
-        parseInt(userId, 10),
+        parseInt(accountId, 10),
         notificationDto,
       );
       if (result.sent === 0) {

@@ -7,29 +7,29 @@ import { category, Prisma } from '@prisma/client';
 export class CategoryService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async create(data: CreateCategoryDto & { userId?: number }): Promise<category> {
+  async create(data: CreateCategoryDto & { profileId?: number }): Promise<category> {
     const category = this.prismaService.category.create({ data });
     return category;
   }
 
-  async findAll(userId?: number): Promise<category[]> {
+  async findAll(profileId?: number): Promise<category[]> {
     return await this.prismaService.category.findMany({
       where: {
         OR: [
-          { userId }, // Global categories
-          { userId: null }, // Global categories
+          { profileId }, // Global categories
+          { profileId: null }, // Global categories
         ],
       },
       orderBy: { name: Prisma.SortOrder.asc },
     });
   }
 
-  async findOne(id: number, userId?: number): Promise<category> {
+  async findOne(id: number, profileId?: number): Promise<category> {
     const category = await this.prismaService.category.findFirst({
       where: {
         OR: [
-          { id, userId },
-          { id, userId: null },
+          { id, profileId },
+          { id, profileId: null },
         ],
       },
     });
@@ -41,10 +41,10 @@ export class CategoryService {
     return category;
   }
 
-  async update(id: number, userId: number, data: Partial<CreateCategoryDto>): Promise<category> {
+  async update(id: number, profileId: number, data: Partial<CreateCategoryDto>): Promise<category> {
     // Chỉ cho phép update category của user, không cho update global categories
     const category = await this.prismaService.category.findFirst({
-      where: { id, userId },
+      where: { id, profileId },
     });
 
     if (!category) {
@@ -53,12 +53,12 @@ export class CategoryService {
 
     Object.assign(category, data);
     return await this.prismaService.category.update({
-      where: { id, userId },
+      where: { id, profileId },
       data,
     });
   }
 
-  async remove(id: number, userId: number): Promise<void> {
-    await this.prismaService.category.delete({ where: { id, userId } });
+  async remove(id: number, profileId: number): Promise<void> {
+    await this.prismaService.category.delete({ where: { id, profileId } });
   }
 }

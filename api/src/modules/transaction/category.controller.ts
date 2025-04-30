@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { category } from '@prisma/client';
+import { Profile } from '@/shared/decorators/profile.decorator';
 
 @ApiTags('Categories')
 @Controller('categories')
@@ -31,11 +32,14 @@ export class CategoryController {
     status: HttpStatus.CREATED,
     description: 'Tạo danh mục thành công',
   })
-  async create(@Body() createCategoryDto: CreateCategoryDto, @Request() req): Promise<category> {
+  async create(
+    @Body() createCategoryDto: CreateCategoryDto,
+    @Profile() profile,
+  ): Promise<category> {
     try {
       return await this.categoryService.create({
         ...createCategoryDto,
-        userId: req.user.id,
+        profileId: profile.id,
       });
     } catch (error) {
       throw new BadRequestException('Failed to create category: ' + error.message);
@@ -45,9 +49,9 @@ export class CategoryController {
   @Get()
   @ApiOperation({ summary: 'Lấy danh sách danh mục' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Danh sách danh mục' })
-  async findAll(@Request() req): Promise<category[]> {
+  async findAll(@Profile() profile): Promise<category[]> {
     try {
-      const categories = await this.categoryService.findAll(req.user.id);
+      const categories = await this.categoryService.findAll(profile.id);
       return categories;
     } catch (error) {
       throw new BadRequestException('Failed to get categories: ' + error.message);
@@ -58,9 +62,9 @@ export class CategoryController {
   @ApiOperation({ summary: 'Lấy chi tiết danh mục' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Chi tiết danh mục' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Không tìm thấy danh mục' })
-  async findOne(@Param('id') id: number, @Request() req): Promise<category> {
+  async findOne(@Param('id') id: number, @Profile() profile): Promise<category> {
     try {
-      const category = await this.categoryService.findOne(id, req.user.id);
+      const category = await this.categoryService.findOne(id, profile.id);
       if (!category) {
         throw new NotFoundException('Category not found');
       }
@@ -83,10 +87,10 @@ export class CategoryController {
   async update(
     @Param('id') id: number,
     @Body() updateCategoryDto: Partial<CreateCategoryDto>,
-    @Request() req,
+    @Profile() profile,
   ): Promise<category> {
     try {
-      return await this.categoryService.update(id, req.user.id, updateCategoryDto);
+      return await this.categoryService.update(id, profile.id, updateCategoryDto);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -99,9 +103,9 @@ export class CategoryController {
   @ApiOperation({ summary: 'Xóa danh mục' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Xóa danh mục thành công' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Không tìm thấy danh mục' })
-  async remove(@Param('id') id: number, @Request() req): Promise<void> {
+  async remove(@Param('id') id: number, @Profile() profile): Promise<void> {
     try {
-      await this.categoryService.remove(id, req.user.id);
+      await this.categoryService.remove(id, profile.id);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;

@@ -7,36 +7,36 @@ import { UpdateEventDto } from './dto/update-event.dto';
 export class EventService {
   constructor(private prisma: PrismaService) {}
 
-  create(userId: number, createEventDto: CreateEventDto) {
+  create(profileId: number, createEventDto: CreateEventDto) {
     return this.prisma.event.create({
       data: {
         ...createEventDto,
         startDate: new Date(createEventDto.startDate),
         endDate: new Date(createEventDto.endDate),
-        userId,
+        profileId,
       },
     });
   }
 
-  findAll(userId: number) {
+  findAll(profileId: number) {
     return this.prisma.event.findMany({
-      where: { userId },
+      where: { profileId },
       include: {
         transactions: true,
       },
     });
   }
 
-  findOne(userId: number, id: number) {
+  findOne(profileId: number, id: number) {
     return this.prisma.event.findFirst({
-      where: { id, userId },
+      where: { id, profileId },
       include: {
         transactions: true,
       },
     });
   }
 
-  update(userId: number, id: number, updateEventDto: UpdateEventDto) {
+  update(profileId: number, id: number, updateEventDto: UpdateEventDto) {
     const data: any = { ...updateEventDto };
     if (updateEventDto.startDate) {
       data.startDate = new Date(updateEventDto.startDate);
@@ -46,7 +46,7 @@ export class EventService {
     }
 
     return this.prisma.event.update({
-      where: { id, userId },
+      where: { id, profileId },
       data,
       include: {
         transactions: true,
@@ -54,9 +54,9 @@ export class EventService {
     });
   }
 
-  remove(userId: number, id: number) {
+  remove(profileId: number, id: number) {
     return this.prisma.event.delete({
-      where: { id, userId },
+      where: { id, profileId },
     });
   }
 }

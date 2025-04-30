@@ -70,7 +70,7 @@ export class NotificationsService implements OnModuleInit {
     return true;
   }
 
-  async subscribe(userId: number, subscriptionDto: CreateSubscriptionDto) {
+  async subscribe(accountId: number, subscriptionDto: CreateSubscriptionDto) {
     this.checkInitialization();
     const { deviceId, deviceType, deviceName, deviceModel, osVersion, appVersion, endpoint, keys } =
       subscriptionDto;
@@ -95,8 +95,8 @@ export class NotificationsService implements OnModuleInit {
       // Upsert the device token (create or update if exists)
       const deviceToken = await this.prisma.device_token.upsert({
         where: {
-          userId_deviceId: {
-            userId,
+          accountId_deviceId: {
+            accountId,
             deviceId,
           },
         },
@@ -110,7 +110,7 @@ export class NotificationsService implements OnModuleInit {
           lastActiveAt: new Date(),
         },
         create: {
-          userId,
+          accountId,
           deviceId,
           token,
           deviceType,
@@ -128,13 +128,13 @@ export class NotificationsService implements OnModuleInit {
     }
   }
 
-  async unsubscribe(userId: number, deviceId: string) {
+  async unsubscribe(accountId: number, deviceId: string) {
     this.checkInitialization();
     try {
       return await this.prisma.device_token.delete({
         where: {
-          userId_deviceId: {
-            userId,
+          accountId_deviceId: {
+            accountId,
             deviceId,
           },
         },
@@ -211,19 +211,19 @@ export class NotificationsService implements OnModuleInit {
     }
   }
 
-  async sendNotificationToUser(userId: number, notificationPayload: SendNotificationDto) {
+  async sendNotificationToUser(accountId: number, notificationPayload: SendNotificationDto) {
     this.checkInitialization();
     try {
       // Get all active web device tokens for the user
       const deviceTokens = await this.prisma.device_token.findMany({
         where: {
-          userId,
+          accountId,
           deviceType: 'web',
         },
       });
 
       if (!deviceTokens.length) {
-        this.logger.warn(`No web devices found for user ${userId}`);
+        this.logger.warn(`No web devices found for user ${accountId}`);
         return { sent: 0, failed: 0 };
       }
 
@@ -240,7 +240,7 @@ export class NotificationsService implements OnModuleInit {
         } catch (error) {
           failed++;
           this.logger.error(
-            `Failed to send notification to device ${device.deviceId} for user ${userId}: ${error.message}`,
+            `Failed to send notification to device ${device.deviceId} for user ${accountId}: ${error.message}`,
             error.stack,
           );
         }
@@ -249,7 +249,7 @@ export class NotificationsService implements OnModuleInit {
       return { sent, failed };
     } catch (error) {
       this.logger.error(
-        `Failed to send notification to user ${userId}: ${error.message}`,
+        `Failed to send notification to user ${accountId}: ${error.message}`,
         error.stack,
       );
       throw error;

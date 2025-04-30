@@ -11,13 +11,13 @@ export class DeviceService {
    * Register or update a device token for a user
    */
   async registerDevice(
-    userId: number,
+    accountId: number,
     registerDeviceDto: RegisterDeviceDto,
   ): Promise<device_token> {
     return this.prisma.device_token.upsert({
       where: {
-        userId_deviceId: {
-          userId,
+        accountId_deviceId: {
+          accountId,
           deviceId: registerDeviceDto.deviceId,
         },
       },
@@ -32,7 +32,7 @@ export class DeviceService {
         updatedAt: new Date(),
       },
       create: {
-        userId,
+        accountId,
         deviceId: registerDeviceDto.deviceId,
         token: registerDeviceDto.token,
         deviceType: registerDeviceDto.deviceType,
@@ -47,10 +47,10 @@ export class DeviceService {
   /**
    * Get all device tokens for a user
    */
-  async getUserDevices(userId: number): Promise<device_token[]> {
+  async getUserDevices(accountId: number): Promise<device_token[]> {
     return this.prisma.device_token.findMany({
       where: {
-        userId,
+        accountId,
       },
     });
   }
@@ -58,11 +58,11 @@ export class DeviceService {
   /**
    * Delete a specific device token
    */
-  async deleteDevice(userId: number, deviceId: string): Promise<device_token> {
+  async deleteDevice(accountId: number, deviceId: string): Promise<device_token> {
     return this.prisma.device_token.delete({
       where: {
-        userId_deviceId: {
-          userId,
+        accountId_deviceId: {
+          accountId,
           deviceId,
         },
       },
@@ -72,10 +72,10 @@ export class DeviceService {
   /**
    * Delete all device tokens for a user
    */
-  async deleteAllUserDevices(userId: number): Promise<{ count: number }> {
+  async deleteAllUserDevices(accountId: number): Promise<{ count: number }> {
     const result = await this.prisma.device_token.deleteMany({
       where: {
-        userId,
+        accountId,
       },
     });
 
@@ -85,11 +85,11 @@ export class DeviceService {
   /**
    * Update device last active time
    */
-  async updateDeviceLastActive(userId: number, deviceId: string): Promise<device_token> {
+  async updateDeviceLastActive(accountId: number, deviceId: string): Promise<device_token> {
     return this.prisma.device_token.update({
       where: {
-        userId_deviceId: {
-          userId,
+        accountId_deviceId: {
+          accountId,
           deviceId,
         },
       },
@@ -102,10 +102,10 @@ export class DeviceService {
   /**
    * Get device tokens for sending push notifications
    */
-  async getDeviceTokensForUser(userId: number): Promise<string[]> {
+  async getDeviceTokensForUser(accountId: number): Promise<string[]> {
     const devices = await this.prisma.device_token.findMany({
       where: {
-        userId,
+        accountId,
       },
       select: {
         token: true,

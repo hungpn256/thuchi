@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../shared/services/prisma/prisma.service';
 import { UpdateSettingsDto } from './dto/settings.dto';
 
@@ -6,16 +6,16 @@ import { UpdateSettingsDto } from './dto/settings.dto';
 export class SettingsService {
   constructor(private prisma: PrismaService) {}
 
-  async getSettings(userId: number) {
+  async getSettings(profileId: number) {
     const settings = await this.prisma.settings.findUnique({
-      where: { userId },
+      where: { profileId },
     });
 
     if (!settings) {
       // Create default settings for user if not exist
       return this.prisma.settings.create({
         data: {
-          userId,
+          profileId,
           defaultCurrency: 'VND',
           language: 'vi',
           theme: 'light',
@@ -27,17 +27,17 @@ export class SettingsService {
     return settings;
   }
 
-  async updateSettings(userId: number, updateSettingsDto: UpdateSettingsDto) {
+  async updateSettings(profileId: number, updateSettingsDto: UpdateSettingsDto) {
     // Check if settings exist
     const existingSettings = await this.prisma.settings.findUnique({
-      where: { userId },
+      where: { profileId },
     });
 
     if (!existingSettings) {
       // Create settings with provided values and defaults for missing ones
       return this.prisma.settings.create({
         data: {
-          userId,
+          profileId,
           defaultCurrency: updateSettingsDto.defaultCurrency || 'VND',
           language: updateSettingsDto.language || 'vi',
           theme: updateSettingsDto.theme || 'light',
@@ -51,7 +51,7 @@ export class SettingsService {
 
     // Update existing settings
     return this.prisma.settings.update({
-      where: { userId },
+      where: { profileId },
       data: updateSettingsDto,
     });
   }

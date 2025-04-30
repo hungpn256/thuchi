@@ -3,12 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { OAuth2Client } from 'google-auth-library';
 import { PrismaService } from '@/shared/services/prisma/prisma.service';
-import { user } from '@prisma/client';
+import { account, account_status, profile, profile_permission } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
+import { CreateProfileDto } from './dto/create-profile.dto';
 
 interface TokenPayload {
-  id: number;
+  accountId: number;
+  profileId: number;
 }
 
 interface Tokens {
@@ -31,29 +33,56 @@ export class AuthService {
     });
   }
 
-  async validateUser(email: string, password: string): Promise<any> {
+  async validateUser(
+    email: string,
+    password: string,
+  ): Promise<{ account: account; profile: profile } | null> {
     try {
       // Tìm user theo email
-      const user = await this.prismaService.user.findUnique({
+      const account = await this.prismaService.account.findUnique({
         where: { email },
+        include: { profileUsers: { include: { profile: true } } },
       });
 
-      if (!user) {
+      if (!account) {
         return null;
       }
 
       // Kiểm tra nếu người dùng đăng nhập bằng Google
-      if (!user.password) {
+      if (!account.password) {
         return null;
       }
 
       // Kiểm tra mật khẩu
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+      const isPasswordValid = await bcrypt.compare(password, account.password);
       if (!isPasswordValid) {
         return null;
       }
 
-      return user;
+      // Get the last profile associated with this account
+      const profileUser = await this.prismaService.profile_user.findFirst({
+        where: {
+          accountId: account.id,
+        },
+        orderBy: {
+          lastLogin: 'desc',
+        },
+        include: {
+          profile: true,
+        },
+      });
+
+      if (!profileUser) {
+        return null;
+      }
+
+      // Update last login time
+      await this.prismaService.profile_user.update({
+        where: { id: profileUser.id },
+        data: { lastLogin: new Date() },
+      });
+
+      return { account, profile: profileUser.profile };
     } catch (error) {
       console.error('Error validating user:', error);
       return null;
@@ -78,13 +107,14 @@ export class AuthService {
     };
   }
 
-  async login(user: user) {
-    const payload = { id: user.id };
+  async login(account: account, profile: profile) {
+    const payload = { accountId: account.id, profileId: profile.id };
     const tokens = await this.generateTokens(payload);
     return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
-      user: user,
+      account,
+      profile,
     };
   }
 
@@ -95,22 +125,24 @@ export class AuthService {
         secret: this.configService.get('REFRESH_TOKEN_SECRET_KEY'),
       });
 
-      // Check if user exists
-      const user = await this.prismaService.user.findUnique({
-        where: { id: payload.id },
+      // Check if account exists
+      const account = await this.prismaService.account.findUnique({
+        where: { id: payload.accountId, status: account_status.ACTIVE },
       });
 
-      if (!user) {
-        throw new UnauthorizedException('User not found');
+      if (!account) {
+        throw new UnauthorizedException('Account not found');
       }
 
       // Generate new tokens
-      const tokens = await this.generateTokens({ id: user.id });
+      const tokens = await this.generateTokens({
+        accountId: payload.accountId,
+        profileId: payload.profileId,
+      });
 
       return {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
-        user,
       };
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token');
@@ -119,7 +151,7 @@ export class AuthService {
 
   async register(registerDto: RegisterDto) {
     // Check if user with this email already exists
-    const existingUser = await this.prismaService.user.findUnique({
+    const existingUser = await this.prismaService.account.findUnique({
       where: { email: registerDto.email },
     });
 
@@ -132,16 +164,30 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(registerDto.password, salt);
 
     // Create new user
-    const newUser = await this.prismaService.user.create({
+    const newUser = await this.prismaService.account.create({
       data: {
         email: registerDto.email,
-        name: registerDto.name,
         password: hashedPassword,
+        profileUsers: {
+          create: {
+            permission: profile_permission.ADMIN,
+            profile: {
+              create: {
+                name: registerDto.name,
+              },
+            },
+          },
+        },
       },
+      include: { profileUsers: { include: { profile: true } } },
     });
 
+    if (!newUser || !newUser.profileUsers[0]?.profile) {
+      throw new Error('Failed to create user profile');
+    }
+
     // Return user with access token
-    return this.login(newUser);
+    return this.login(newUser, newUser.profileUsers[0].profile);
   }
 
   async verifyGoogleToken(idToken: string) {
@@ -154,18 +200,31 @@ export class AuthService {
       const payload = ticket.getPayload();
       if (!payload) throw new UnauthorizedException('Invalid token');
 
-      let user = await this.prismaService.user.findUnique({ where: { email: payload.email } });
-      if (!user) {
-        user = await this.prismaService.user.create({
+      let account = await this.prismaService.account.findUnique({
+        where: { email: payload.email },
+        include: { profileUsers: { include: { profile: true } } },
+      });
+      if (!account) {
+        account = await this.prismaService.account.create({
           data: {
             email: payload.email,
-            name: payload.name,
             googleId: payload.sub,
+            profileUsers: {
+              create: {
+                permission: profile_permission.ADMIN,
+                profile: {
+                  create: {
+                    name: payload.name,
+                  },
+                },
+              },
+            },
           },
+          include: { profileUsers: { include: { profile: true } } },
         });
       }
 
-      return this.login(user);
+      return this.login(account, account.profileUsers[0].profile);
     } catch (error) {
       console.log('🚀 ~ AuthService ~ verifyGoogleToken ~ error:', error);
       throw new UnauthorizedException('Google authentication failed');
@@ -211,8 +270,15 @@ export class AuthService {
     }
   }
 
-  async findUserById(id: number): Promise<user | null> {
-    return this.prismaService.user.findUnique({ where: { id } });
+  async findAccountById(id: number): Promise<account | null> {
+    return this.prismaService.account.findUnique({
+      where: { id, status: account_status.ACTIVE },
+      include: { profileUsers: { include: { profile: true } } },
+    });
+  }
+
+  async findProfileById(id: number): Promise<profile | null> {
+    return this.prismaService.profile.findUnique({ where: { id } });
   }
 
   /**
@@ -220,7 +286,8 @@ export class AuthService {
    * This method is used to login with a device token
    */
   async loginWithDevice(
-    user: user,
+    account: account,
+    profile: profile,
     deviceInfo?: {
       deviceId: string;
       token: string;
@@ -232,14 +299,14 @@ export class AuthService {
     },
   ) {
     // Generate tokens for authentication
-    const authResult = await this.login(user);
+    const authResult = await this.login(account, profile);
 
     // If device info is provided, register the device for push notifications
     if (deviceInfo) {
       await this.prismaService.device_token.upsert({
         where: {
-          userId_deviceId: {
-            userId: user.id,
+          accountId_deviceId: {
+            accountId: account.id,
             deviceId: deviceInfo.deviceId,
           },
         },
@@ -254,7 +321,7 @@ export class AuthService {
           updatedAt: new Date(),
         },
         create: {
-          userId: user.id,
+          accountId: account.id,
           deviceId: deviceInfo.deviceId,
           token: deviceInfo.token,
           deviceType: deviceInfo.deviceType,
@@ -267,5 +334,64 @@ export class AuthService {
     }
 
     return authResult;
+  }
+
+  async switchProfile(accountId: number, profileId: number) {
+    // Check if profile exists and user has access to it
+    const profileUser = await this.prismaService.profile_user.findFirst({
+      where: {
+        accountId,
+        profileId,
+      },
+      include: {
+        profile: true,
+      },
+    });
+
+    if (!profileUser) {
+      throw new BadRequestException('Profile không tồn tại hoặc bạn không có quyền truy cập');
+    }
+
+    // Update last login time for the profile
+    await this.prismaService.profile_user.update({
+      where: { id: profileUser.id },
+      data: { lastLogin: new Date() },
+    });
+
+    // Generate new access token with the new profile
+    const account = await this.findAccountById(accountId);
+
+    if (!account) {
+      throw new UnauthorizedException('Account không tồn tại');
+    }
+
+    return this.login(account, profileUser.profile);
+  }
+
+  async createProfile(accountId: number, createProfileDto: CreateProfileDto) {
+    // Create new profile and link it to the account
+    const profileUser = await this.prismaService.profile_user.create({
+      data: {
+        account: {
+          connect: { id: accountId },
+        },
+        profile: {
+          create: {
+            name: createProfileDto.name,
+          },
+        },
+        permission: profile_permission.ADMIN,
+      },
+      include: {
+        profile: true,
+      },
+    });
+
+    if (!profileUser || !profileUser.profile) {
+      throw new BadRequestException('Failed to create profile');
+    }
+
+    // Return the new profile with tokens
+    return profileUser.profile;
   }
 }

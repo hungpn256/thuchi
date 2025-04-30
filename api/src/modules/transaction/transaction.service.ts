@@ -1,5 +1,4 @@
 import { DateRangeQueryDto } from '@/shared/dto/date-range-query.dto';
-import { PaginationQueryDto } from '@/shared/dto/pagination-query.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
@@ -18,22 +17,22 @@ export interface PaginatedTransactions {
 export class TransactionService {
   constructor(private prismaService: PrismaService) {}
 
-  async create(data: CreateTransactionDto & { userId: number }): Promise<transaction> {
+  async create(data: CreateTransactionDto & { profileId: number }): Promise<transaction> {
     const transaction = this.prismaService.transaction.create({
       data: {
         ...data,
-        userId: data.userId,
+        profileId: data.profileId,
       },
     });
     return transaction;
   }
 
-  async findAll(userId: number, query: GetTransactionsDto): Promise<PaginatedTransactions> {
+  async findAll(profileId: number, query: GetTransactionsDto): Promise<PaginatedTransactions> {
     const { page = 1, limit = 10, startDate, endDate, categoryIds, type, search } = query;
     const skip = (page - 1) * limit;
 
     const where: Prisma.transactionWhereInput = {
-      userId,
+      profileId,
       date: {
         gte: startDate,
         lte: endDate,
@@ -92,12 +91,12 @@ export class TransactionService {
     await this.prismaService.transaction.delete({ where: { id } });
   }
 
-  async getSummary(userId: number, query: DateRangeQueryDto) {
+  async getSummary(profileId: number, query: DateRangeQueryDto) {
     const { startDate, endDate } = query;
 
     const transactions = await this.prismaService.transaction.findMany({
       where: {
-        userId,
+        profileId,
         date: {
           gte: startDate,
           lte: endDate,
@@ -121,14 +120,14 @@ export class TransactionService {
   }
 
   async getExpensesByCategory(
-    userId: number,
+    profileId: number,
     startDate?: Date,
     endDate?: Date,
   ): Promise<{ categoryid: number; categoryname: string; total: number }[]> {
     const transactions = await this.prismaService.transaction.groupBy({
       by: ['categoryId'],
       where: {
-        userId,
+        profileId,
         type: 'EXPENSE',
         date: {
           ...(startDate && { gte: startDate }),

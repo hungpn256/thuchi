@@ -3,12 +3,14 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../shared/services/prisma/prisma.service';
+import { AuthService } from './auth.service';
 
 interface JwtPayload {
-  id: number;
+  accountId: number;
   email: string;
   iat?: number;
   exp?: number;
+  profileId?: number;
 }
 
 @Injectable()
@@ -16,6 +18,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private configService: ConfigService,
     private prisma: PrismaService,
+    private authService: AuthService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -25,26 +28,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload) {
-    if (!payload || !payload.id) {
+    if (!payload || !payload.accountId) {
       throw new UnauthorizedException('Invalid token payload');
     }
 
     // Get user from database to ensure they still exist and get latest data
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        avatar: true,
-        // Don't include password for security reasons
-      },
-    });
+    const [account, profile] = await Promise.all([
+      this.authService.findAccountById(payload.accountId),
+      this.authService.findProfileById(payload.profileId),
+    ]);
 
-    if (!user) {
+    if (!account || !profile) {
       throw new UnauthorizedException('User no longer exists');
     }
 
-    return user;
+    return { account, profile };
   }
 }

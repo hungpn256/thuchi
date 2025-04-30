@@ -49,6 +49,8 @@ export const API_ENDPOINTS = {
     LOGIN_GOOGLE: '/auth/login/google',
     GOOGLE: '/auth/google',
     REFRESH_TOKEN: '/auth/refresh-token',
+    SWITCH_PROFILE: '/auth/switch-profile',
+    CREATE_PROFILE: '/auth/profiles',
   },
   EVENTS: {
     LIST: '/events',

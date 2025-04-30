@@ -16,7 +16,7 @@ export class ReportsService {
    * Lấy báo cáo tổng quan thu chi trong khoảng thời gian
    */
   async getSummaryReport(
-    userId: number,
+    profileId: number,
     filter: ReportFilterDto,
   ): Promise<SummaryReportResponseDto> {
     // Parse ngày từ string sang Date
@@ -25,7 +25,7 @@ export class ReportsService {
 
     // Lấy tổng thu
     const totalIncome = await this.getTotalAmount(
-      userId,
+      profileId,
       startDate,
       endDate,
       transaction_type_enum.INCOME,
@@ -33,7 +33,7 @@ export class ReportsService {
 
     // Lấy tổng chi
     const totalExpense = await this.getTotalAmount(
-      userId,
+      profileId,
       startDate,
       endDate,
       transaction_type_enum.EXPENSE,
@@ -43,7 +43,7 @@ export class ReportsService {
     const balance = totalIncome - totalExpense;
 
     // Lấy dữ liệu theo tháng
-    const monthlyData = await this.getMonthlyData(userId, startDate, endDate);
+    const monthlyData = await this.getMonthlyData(profileId, startDate, endDate);
 
     return {
       totalIncome,
@@ -57,7 +57,7 @@ export class ReportsService {
    * Lấy báo cáo chi tiết theo danh mục
    */
   async getCategoryReport(
-    userId: number,
+    profileId: number,
     filter: ReportFilterDto,
   ): Promise<CategoryReportResponseDto> {
     // Parse ngày từ string sang Date
@@ -68,7 +68,7 @@ export class ReportsService {
     const type = filter.type || transaction_type_enum.EXPENSE;
 
     // Lấy tổng số tiền theo loại giao dịch
-    const total = await this.getTotalAmount(userId, startDate, endDate, type);
+    const total = await this.getTotalAmount(profileId, startDate, endDate, type);
 
     // Lấy dữ liệu chi tiết theo danh mục
     const categoryData = await this.prisma.$queryRaw<
@@ -84,7 +84,7 @@ export class ReportsService {
         SUM(t.amount::numeric) as amount
       FROM transaction t
       LEFT JOIN category c ON t."categoryId" = c.id
-      WHERE t."userId" = ${userId}
+      WHERE t."profileId" = ${profileId}
         AND t.date BETWEEN ${startDate} AND ${endDate}
         AND t.type = ${type}::transaction_type_enum
       GROUP BY c.id, c.name
@@ -109,7 +109,7 @@ export class ReportsService {
   /**
    * Lấy báo cáo xu hướng (so sánh 2 kỳ)
    */
-  async getTrendReport(userId: number, filter: TrendFilterDto): Promise<TrendReportResponseDto> {
+  async getTrendReport(profileId: number, filter: TrendFilterDto): Promise<TrendReportResponseDto> {
     // Parse ngày từ string sang Date
     const currentStartDate = new Date(filter.startDate);
     const currentEndDate = new Date(filter.endDate);
@@ -142,14 +142,14 @@ export class ReportsService {
     // Thêm các chỉ số so sánh
     // 1. Tổng thu
     const currentTotalIncome = await this.getTotalAmount(
-      userId,
+      profileId,
       currentStartDate,
       currentEndDate,
       transaction_type_enum.INCOME,
     );
 
     const previousTotalIncome = await this.getTotalAmount(
-      userId,
+      profileId,
       previousStartDate,
       previousEndDate,
       transaction_type_enum.INCOME,
@@ -161,14 +161,14 @@ export class ReportsService {
 
     // 2. Tổng chi
     const currentTotalExpense = await this.getTotalAmount(
-      userId,
+      profileId,
       currentStartDate,
       currentEndDate,
       transaction_type_enum.EXPENSE,
     );
 
     const previousTotalExpense = await this.getTotalAmount(
-      userId,
+      profileId,
       previousStartDate,
       previousEndDate,
       transaction_type_enum.EXPENSE,
@@ -203,14 +203,14 @@ export class ReportsService {
    * Tính tổng số tiền theo loại giao dịch và khoảng thời gian
    */
   private async getTotalAmount(
-    userId: number,
+    profileId: number,
     startDate: Date,
     endDate: Date,
     type: transaction_type_enum,
   ): Promise<number> {
     const result = await this.prisma.transaction.aggregate({
       where: {
-        userId,
+        profileId,
         date: {
           gte: startDate,
           lte: endDate,
@@ -229,7 +229,7 @@ export class ReportsService {
    * Lấy dữ liệu thu chi theo tháng
    */
   private async getMonthlyData(
-    userId: number,
+    profileId: number,
     startDate: Date,
     endDate: Date,
   ): Promise<MonthlyData[]> {
@@ -246,7 +246,7 @@ export class ReportsService {
         type,
         SUM(amount::numeric) as amount
       FROM transaction
-      WHERE "userId" = ${userId}
+      WHERE "profileId" = ${profileId}
         AND date BETWEEN ${startDate} AND ${endDate}
       GROUP BY month, type
       ORDER BY month

@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ROUTES, STORAGE_KEYS } from '@/constants/app.constant';
 import { useUserProfile } from '@/hooks/use-user';
-import { LogOut, User } from 'lucide-react';
+import { useSwitchProfile } from '@/hooks/use-switch-profile';
+import { LogOut, User, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '../theme/theme-toggle';
 import { isIOS } from '@/utils/device';
@@ -19,7 +20,8 @@ import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 export function Header() {
-  const { data: profile } = useUserProfile();
+  const { data: user } = useUserProfile();
+  const switchProfile = useSwitchProfile();
   const router = useRouter();
   const [isIOSDevice, setIsIOSDevice] = useState(false);
 
@@ -32,6 +34,14 @@ export function Header() {
     localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
     router.push(ROUTES.AUTH.LOGIN);
   }
+
+  const handleSwitchProfile = async (profileId: number) => {
+    try {
+      await switchProfile.mutateAsync({ profileId });
+    } catch (error) {
+      console.error('Failed to switch profile:', error);
+    }
+  };
 
   return (
     <header
@@ -50,17 +60,44 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative">
                   <User className="mr-2 h-5 w-5" />
-                  <span className="hidden md:inline-block">{profile?.email}</span>
+                  <span className="hidden md:inline-block">{user?.account?.email}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm leading-none font-medium">{user?.account?.email}</p>
+                    <p className="text-muted-foreground text-xs leading-none">
+                      {user?.profile?.name}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Thông tin cá nhân</span>
+                {user?.account?.profileUsers?.map((profileUser) => (
+                  <DropdownMenuItem
+                    key={profileUser.id}
+                    className={cn(
+                      'cursor-pointer',
+                      profileUser.profileId === user.profile.id && 'bg-accent',
+                    )}
+                    onClick={() => handleSwitchProfile(Number(profileUser.profileId))}
+                  >
+                    {profileUser.profile?.name}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => router.push('/profiles/create')}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  <span>Tạo Profile Mới</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout}>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive cursor-pointer"
+                  onClick={handleLogout}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Đăng xuất</span>
                 </DropdownMenuItem>

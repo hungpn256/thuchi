@@ -41,7 +41,7 @@ export function Sidebar({
   const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const { data: profile } = useUserProfile();
+  const { data: user } = useUserProfile();
 
   // Use prop if provided, otherwise detect if sidebar is in collapsed state
   useEffect(() => {
@@ -325,7 +325,7 @@ export function Sidebar({
               <div className="flex items-center gap-3 px-2 py-2">
                 <User className="h-5 w-5" />
                 <div className="flex-1 overflow-hidden">
-                  <p className="truncate text-sm font-medium">{profile?.email}</p>
+                  <p className="truncate text-sm font-medium">{user?.account?.email}</p>
                   <Link href="/profile" className="text-muted-foreground text-xs hover:underline">
                     Thông tin cá nhân
                   </Link>

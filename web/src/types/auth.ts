@@ -12,20 +12,45 @@ export interface RegisterCredentials {
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
-  user: User;
+  account: Account;
+  profile: Profile;
 }
 
-export interface RefreshTokenRequest {
-  refreshToken: string;
-}
-
-export interface User {
+export interface Account {
   id: string;
   email: string;
+  createdAt: string;
+  updatedAt: string;
+  profileUsers: ProfileUser[];
+}
+
+export interface Profile {
+  id: string;
   name: string;
   avatar?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ProfileUser {
+  id: string;
+  profileId: string;
+  accountId: string;
+  createdAt: string;
+  updatedAt: string;
+  permission: Permission;
+  profile?: Profile;
+  account?: Account;
+}
+
+export enum Permission {
+  ADMIN = 'ADMIN',
+  WRITE = 'WRITE',
+  READ = 'READ',
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
 }
 
 export interface UseAuthReturn {

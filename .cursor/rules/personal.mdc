@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+1. Match Existing Code Style
+2. Reuse Existing Libraries
+3. Detect Package Manager (yarn or npm)
+4. Only perform what is explicitly requested; do not modify unrelated parts.

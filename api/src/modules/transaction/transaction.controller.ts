@@ -1,5 +1,4 @@
 import { DateRangeQueryDto } from '@/shared/dto/date-range-query.dto';
-import { PaginationQueryDto } from '@/shared/dto/pagination-query.dto';
 import {
   BadRequestException,
   NotFoundException,
@@ -24,8 +23,8 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { TransactionService } from './transaction.service';
-import { DatePagingQueryDto } from '@/shared/dto/date-paging-query.dto';
 import { GetTransactionsDto } from './dto/get-transactions.dto';
+import { Profile } from '@/shared/decorators/profile.decorator';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -67,12 +66,12 @@ export class TransactionController {
     description: 'Tạo giao dịch thành công',
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Dữ liệu không hợp lệ' })
-  async createTransaction(@Request() req, @Body() createTransactionDto: CreateTransactionDto) {
+  async createTransaction(@Profile() profile, @Body() createTransactionDto: CreateTransactionDto) {
     try {
       // Validation is handled by class-validator through CreateTransactionDto
       return await this.transactionService.create({
         ...createTransactionDto,
-        userId: req.user.id,
+        profileId: profile.id,
       });
     } catch (error) {
       if (error instanceof ValidationException) {
@@ -88,12 +87,12 @@ export class TransactionController {
     description: 'API lấy danh sách chi tiêu theo danh mục có phân trang và lọc theo ngày',
   })
   async getExpensesByCategory(
-    @Request() req,
+    @Profile() profile,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
     const transactions = await this.transactionService.getExpensesByCategory(
-      req.user.id,
+      profile.id,
       startDate ? new Date(startDate) : undefined,
       endDate ? new Date(endDate) : undefined,
     );
@@ -113,9 +112,9 @@ export class TransactionController {
     status: HttpStatus.OK,
     description: 'Lấy danh sách giao dịch thành công',
   })
-  async getTransactions(@Request() req, @Query() query: GetTransactionsDto) {
+  async getTransactions(@Profile() profile, @Query() query: GetTransactionsDto) {
     try {
-      return await this.transactionService.findAll(req.user.id, {
+      return await this.transactionService.findAll(profile.id, {
         ...query,
       });
     } catch (error) {
@@ -139,9 +138,9 @@ export class TransactionController {
       },
     },
   })
-  async getTransactionSummary(@Request() req, @Query() dateRange: DateRangeQueryDto) {
+  async getTransactionSummary(@Profile() profile, @Query() dateRange: DateRangeQueryDto) {
     try {
-      return await this.transactionService.getSummary(req.user.id, dateRange);
+      return await this.transactionService.getSummary(profile.id, dateRange);
     } catch (error) {
       throw new BadRequestException('Failed to get transaction summary', { error: error.message });
     }
@@ -157,13 +156,13 @@ export class TransactionController {
     description: 'Lấy chi tiết giao dịch thành công',
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Không tìm thấy giao dịch' })
-  async getTransactionById(@Request() req, @Param('id') id: number) {
+  async getTransactionById(@Profile() profile, @Param('id') id: number) {
     try {
       const transaction = await this.transactionService.findOne(id);
       if (!transaction) {
         throw new NotFoundException('Transaction not found');
       }
-      if (transaction.userId !== req.user.id) {
+      if (transaction.profileId !== profile.id) {
         throw new UnauthorizedException('You do not have permission to access this transaction');
       }
       return transaction;
@@ -187,7 +186,7 @@ export class TransactionController {
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Không tìm thấy giao dịch' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Dữ liệu không hợp lệ' })
   async updateTransaction(
-    @Request() req,
+    @Profile() profile,
     @Param('id') id: number,
     @Body() updateTransactionDto: UpdateTransactionDto,
   ) {
@@ -196,7 +195,7 @@ export class TransactionController {
       if (!transaction) {
         throw new NotFoundException('Transaction not found');
       }
-      if (transaction.userId !== req.user.id) {
+      if (transaction.profileId !== profile.id) {
         throw new UnauthorizedException('You do not have permission to update this transaction');
       }
       if (updateTransactionDto.amount && updateTransactionDto.amount <= 0) {
@@ -225,13 +224,13 @@ export class TransactionController {
     description: 'Xóa giao dịch thành công',
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Không tìm thấy giao dịch' })
-  async deleteTransaction(@Request() req, @Param('id') id: number) {
+  async deleteTransaction(@Profile() profile, @Param('id') id: number) {
     try {
       const transaction = await this.transactionService.findOne(id);
       if (!transaction) {
         throw new NotFoundException('Transaction not found');
       }
-      if (transaction.userId !== req.user.id) {
+      if (transaction.profileId !== profile.id) {
         throw new UnauthorizedException('You do not have permission to delete this transaction');
       }
       await this.transactionService.remove(id);
