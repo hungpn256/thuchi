@@ -6,7 +6,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useInvitations, useAcceptInvitation, useRejectInvitation } from '@/hooks/use-invitations';
 import { useProfileMembers } from '@/hooks/use-profile-members';
 import { useInviteMember } from '@/hooks/use-invite-member';
-import { Check, Mail, User, X, Shield, ShieldCheck, ShieldAlert, Plus } from 'lucide-react';
+import {
+  Check,
+  Mail,
+  User,
+  X,
+  Shield,
+  ShieldCheck,
+  ShieldAlert,
+  Plus,
+  ArrowLeftRight,
+} from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useUserProfile } from '@/hooks/use-user';
 import { useEffect, useState } from 'react';
@@ -41,6 +51,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ProfileSwitcher } from '@/components/profile/profile-switcher';
 
 interface ProfileUser {
   id: number;
@@ -200,6 +211,10 @@ export default function ProfilePage() {
               </span>
             )}
           </TabsTrigger>
+          <TabsTrigger value="switch" className="flex items-center gap-2">
+            <ArrowLeftRight className="h-4 w-4" />
+            Chuyển đổi profile
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="space-y-4">
@@ -314,6 +329,20 @@ export default function ProfilePage() {
               ))
             )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="switch" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Chuyển đổi profile</CardTitle>
+              <CardDescription>
+                Chọn profile bạn muốn chuyển đổi. Sau khi chuyển đổi, trang sẽ được tải lại.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ProfileSwitcher />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

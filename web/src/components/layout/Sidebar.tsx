@@ -8,11 +8,9 @@ import {
   CreditCard,
   Home,
   LayoutDashboard,
-  LineChart,
   LogOut,
   PieChart,
   Plus,
-  Settings,
   User,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -127,21 +125,21 @@ export function Sidebar({
       href: '/reports',
       icon: <PieChart className="h-5 w-5" />,
     },
-    {
-      name: 'Phân tích',
-      href: '/analytics',
-      icon: <LineChart className="h-5 w-5" />,
-    },
+    // {
+    //   name: 'Phân tích',
+    //   href: '/analytics',
+    //   icon: <LineChart className="h-5 w-5" />,
+    // },
     {
       name: 'Quản lý hồ sơ',
       href: ROUTES.PROFILES.LIST,
       icon: <User className="h-5 w-5" />,
     },
-    {
-      name: 'Cài đặt',
-      href: '/settings',
-      icon: <Settings className="h-5 w-5" />,
-    },
+    // {
+    //   name: 'Cài đặt',
+    //   href: '/settings',
+    //   icon: <Settings className="h-5 w-5" />,
+    // },
   ];
 
   function handleLogout(): void {
