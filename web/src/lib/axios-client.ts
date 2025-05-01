@@ -1,6 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { STORAGE_KEYS, ROUTES, API_ENDPOINTS } from '@/constants/app.constant';
 import { AuthResponse, RefreshTokenRequest } from '@/types/auth';
+import { clearTokens, updateTokens } from './auth';
 
 // Extended request config with _retry property
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -85,8 +86,7 @@ axiosClient.interceptors.response.use(
 
       // If no refresh token, logout and redirect
       if (!refreshToken) {
-        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        clearTokens();
         window.location.href = ROUTES.AUTH.LOGIN;
         return Promise.reject(error);
       }
@@ -101,8 +101,7 @@ axiosClient.interceptors.response.use(
         const { accessToken, refreshToken: newRefreshToken } = response.data;
 
         // Update tokens in localStorage
-        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
+        updateTokens(accessToken, newRefreshToken);
 
         // Update Authorization header for the original request
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;

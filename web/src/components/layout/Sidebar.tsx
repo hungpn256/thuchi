@@ -121,7 +121,7 @@ export function Sidebar({
       icon: <LineChart className="h-5 w-5" />,
     },
     {
-      name: 'Quản lý profile',
+      name: 'Quản lý hồ sơ',
       href: ROUTES.PROFILES.LIST,
       icon: <User className="h-5 w-5" />,
     },
@@ -335,7 +335,6 @@ export function Sidebar({
                     Thông tin cá nhân
                   </Link>
                 </div>
-                {isMobile && <ThemeToggle />}
               </div>
 
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>

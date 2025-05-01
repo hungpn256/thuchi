@@ -348,34 +348,66 @@ function MemberTable({ members }: { members: ProfileUser[] }) {
   };
 
   return (
-    <div className="rounded-md border">
-      <Table className="w-[600px]">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Email</TableHead>
-            <TableHead>Quyền hạn</TableHead>
-            <TableHead>Trạng thái</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {members.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell className="font-medium">{user.account.email}</TableCell>
-              <TableCell>
+    <>
+      {/* Desktop View */}
+      <div className="hidden md:block">
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Email</TableHead>
+                <TableHead>Quyền hạn</TableHead>
+                <TableHead>Trạng thái</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {members.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">{user.account.email}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {getPermissionIcon(user.permission)}
+                      <span>{getPermissionLabel(user.permission)}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={user.status === 'ACTIVE' ? 'default' : 'secondary'}>
+                      {user.status === 'ACTIVE' ? 'Đã chấp nhận' : 'Đang chờ xác nhận'}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+
+      {/* Mobile View */}
+      <div className="grid gap-4 md:hidden">
+        {members.map((user) => (
+          <Card key={user.id}>
+            <CardHeader>
+              <CardTitle className="text-base">{user.account.email}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   {getPermissionIcon(user.permission)}
-                  <span>{getPermissionLabel(user.permission)}</span>
+                  <span className="text-muted-foreground text-sm">
+                    {getPermissionLabel(user.permission)}
+                  </span>
                 </div>
-              </TableCell>
-              <TableCell>
-                <Badge variant={user.status === 'ACTIVE' ? 'default' : 'secondary'}>
+                <Badge
+                  className="w-fit"
+                  variant={user.status === 'ACTIVE' ? 'default' : 'secondary'}
+                >
                   {user.status === 'ACTIVE' ? 'Đã chấp nhận' : 'Đang chờ xác nhận'}
                 </Badge>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </>
   );
 }
