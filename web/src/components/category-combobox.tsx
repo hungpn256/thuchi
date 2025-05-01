@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -7,34 +7,29 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { useCategories } from "@/hooks/use-categories";
-import { cn } from "@/lib/utils";
-import { Check, ChevronsUpDown, Plus } from "lucide-react";
-import { useState } from "react";
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useCategories } from '@/hooks/use-categories';
+import { cn } from '@/lib/utils';
+import { Check, ChevronsUpDown, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from './ui/use-toast';
+import { getErrorMessage } from '@/utils/error';
 
 interface CategoryComboboxProps {
   value?: number;
   onValueChange?: (value: number) => void;
 }
 
-export function CategoryCombobox({
-  value,
-  onValueChange,
-}: CategoryComboboxProps) {
+export function CategoryCombobox({ value, onValueChange }: CategoryComboboxProps) {
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const { categories, createCategory } = useCategories();
 
   const selectedCategory = categories.find((category) => category.id === value);
 
   const filteredCategories = categories.filter((category) =>
-    category.name.toLowerCase().includes(search.toLowerCase())
+    category.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleCreateCategory = async (e?: React.MouseEvent) => {
@@ -44,9 +39,13 @@ export function CategoryCombobox({
       const newCategory = await createCategory.mutateAsync({ name: search });
       onValueChange?.(newCategory.id);
       setOpen(false);
-      setSearch("");
+      setSearch('');
     } catch (error) {
-      console.error("Failed to create category:", error);
+      toast({
+        title: 'Có lỗi xảy ra',
+        description: getErrorMessage(error, 'Không thể tạo danh mục'),
+      });
+      console.error('Failed to create category:', error);
     }
   };
 
@@ -61,25 +60,19 @@ export function CategoryCombobox({
           onClick={(e) => e.stopPropagation()}
           onPointerDownCapture={(e) => e.stopPropagation()}
         >
-          {selectedCategory ? selectedCategory.name : "Chọn danh mục..."}
+          {selectedCategory ? selectedCategory.name : 'Chọn danh mục...'}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        className="w-full p-0"
-        onPointerDownOutside={(e) => e.preventDefault()}
-      >
-        <Command
-          shouldFilter={false}
-          onPointerDownCapture={(e) => e.stopPropagation()}
-        >
+      <PopoverContent className="w-full p-0" onPointerDownOutside={(e) => e.preventDefault()}>
+        <Command shouldFilter={false} onPointerDownCapture={(e) => e.stopPropagation()}>
           <CommandInput
             placeholder="Tìm kiếm danh mục..."
             value={search}
             onValueChange={setSearch}
           />
           <CommandList>
-            <CommandEmpty className="py-2 px-4">
+            <CommandEmpty className="px-4 py-2">
               <div className="flex items-center justify-between">
                 <span>Không tìm thấy danh mục</span>
                 <Button
@@ -104,7 +97,7 @@ export function CategoryCombobox({
                   value={category.name}
                   onSelect={(value) => {
                     const categoryToSelect = categories.find(
-                      (c) => c.name.toLowerCase() === value.toLowerCase()
+                      (c) => c.name.toLowerCase() === value.toLowerCase(),
                     );
                     if (categoryToSelect) {
                       onValueChange?.(categoryToSelect.id);
@@ -114,8 +107,8 @@ export function CategoryCombobox({
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
-                      value === category.id ? "opacity-100" : "opacity-0"
+                      'mr-2 h-4 w-4',
+                      value === category.id ? 'opacity-100' : 'opacity-0',
                     )}
                   />
                   {category.name}

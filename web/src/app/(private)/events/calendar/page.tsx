@@ -27,6 +27,7 @@ import {
 import { toast } from '@/components/ui/use-toast';
 import { EventEntity } from '@/types/event';
 import { EventCard } from '@/components/event/EventCard';
+import { getErrorMessage } from '@/utils/error';
 
 export default function EventCalendarPage() {
   const { data: events = [], isLoading } = useEventList();
@@ -105,26 +106,21 @@ export default function EventCalendarPage() {
   };
 
   const handleCreateEvent = async (data: EventFormValues) => {
-    console.log('🚀 ~ handleCreateEvent ~ data:', data);
     try {
       setIsCreating(true);
-
-      // Chuyển đổi dữ liệu form sang dữ liệu event
       const eventData = formValuesToEventData(data);
-
-      // Gửi request tạo event
       await createEvent.mutateAsync(eventData);
       setIsNewEventDialogOpen(false);
 
       toast({
-        title: 'Tạo sự kiện thành công',
+        title: 'Thành công',
         description: 'Sự kiện mới đã được thêm vào lịch của bạn',
       });
-    } catch (error: unknown) {
+    } catch (error) {
       console.error('Lỗi khi tạo sự kiện:', error);
       toast({
-        title: 'Lỗi khi tạo sự kiện',
-        description: 'Đã xảy ra lỗi, vui lòng thử lại sau',
+        title: 'Có lỗi xảy ra',
+        description: getErrorMessage(error, 'Không thể tạo sự kiện'),
         variant: 'destructive',
       });
     } finally {
@@ -148,14 +144,14 @@ export default function EventCalendarPage() {
       setCurrentEditEvent(null);
 
       toast({
-        title: 'Cập nhật sự kiện thành công',
+        title: 'Thành công',
         description: 'Sự kiện đã được cập nhật thành công',
       });
-    } catch (error: unknown) {
+    } catch (error) {
       console.error('Lỗi khi cập nhật sự kiện:', error);
       toast({
-        title: 'Lỗi khi cập nhật sự kiện',
-        description: 'Đã xảy ra lỗi, vui lòng thử lại sau',
+        title: 'Có lỗi xảy ra',
+        description: getErrorMessage(error, 'Không thể cập nhật sự kiện'),
         variant: 'destructive',
       });
     } finally {

@@ -16,6 +16,7 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { Profile } from '@/shared/decorators/profile.decorator';
+import { AdminOrWriteGuard } from '../auth/guards/admin-write.guard';
 
 @ApiTags('Events')
 @ApiBearerAuth()
@@ -25,6 +26,7 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post()
+  @UseGuards(AdminOrWriteGuard)
   @ApiOperation({ summary: 'Tạo sự kiện mới' })
   @ApiBody({
     type: CreateEventDto,
@@ -103,6 +105,7 @@ export class EventController {
   }
 
   @Patch(':id')
+  @UseGuards(AdminOrWriteGuard)
   @ApiOperation({ summary: 'Cập nhật sự kiện' })
   @ApiBody({
     type: UpdateEventDto,
@@ -137,6 +140,7 @@ export class EventController {
   }
 
   @Delete(':id')
+  @UseGuards(AdminOrWriteGuard)
   @ApiOperation({ summary: 'Xóa sự kiện' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Xóa sự kiện thành công' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Không tìm thấy sự kiện' })

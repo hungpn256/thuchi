@@ -1,6 +1,5 @@
 'use client';
 
-import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card } from '@/components/ui/card';
@@ -26,6 +25,8 @@ import { useRouter } from 'next/navigation';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import * as yup from 'yup';
 import { CategoryCombobox } from '@/components/category-combobox';
+import { toast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/utils/error';
 
 interface FormValues {
   type: 'INCOME' | 'EXPENSE';
@@ -78,13 +79,19 @@ export default function NewTransactionPage() {
         onSuccess: () => {
           router.push(ROUTES.TRANSACTIONS.LIST);
         },
+        onError: (error) => {
+          console.error('Lỗi khi tạo giao dịch:', error);
+          toast({
+            title: 'Có lỗi xảy ra',
+            description: getErrorMessage(error, 'Không thể tạo giao dịch'),
+          });
+        },
       },
     );
   };
 
   return (
     <div className="from-background/10 via-background/50 to-background/80 min-h-screen bg-gradient-to-b">
-      <Header />
       <div className="container mx-auto max-w-2xl space-y-8 py-8">
         <div className="flex items-center gap-4">
           <Button variant="ghost" className="gap-2" onClick={() => router.back()}>

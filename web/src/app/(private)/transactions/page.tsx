@@ -42,10 +42,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { toast } from '@/components/ui/use-toast';
 import { ROUTES } from '@/constants/app.constant';
 import { useDeleteTransaction, useTransactionList } from '@/hooks/use-transactions';
 import { cn, formatCurrency } from '@/lib/utils';
 import { TransactionType } from '@/types/transaction';
+import { getErrorMessage } from '@/utils/error';
 import { format, subDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { CalendarIcon, FileEdit, Filter, MoreHorizontal, Plus, Trash, X } from 'lucide-react';
@@ -127,6 +129,14 @@ export default function TransactionsPage() {
       deleteTransaction(selectedTransactionId, {
         onSuccess: () => {
           setIsDeleteDialogOpen(false);
+        },
+        onError: (error) => {
+          console.error('Lỗi khi xóa giao dịch:', error);
+          toast({
+            title: 'Có lỗi xảy ra',
+            description: getErrorMessage(error, 'Không thể xóa giao dịch'),
+            variant: 'destructive',
+          });
         },
       });
     }

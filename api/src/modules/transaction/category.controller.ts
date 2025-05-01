@@ -18,6 +18,7 @@ import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { category } from '@prisma/client';
 import { Profile } from '@/shared/decorators/profile.decorator';
+import { AdminOrWriteGuard } from '../auth/guards/admin-write.guard';
 
 @ApiTags('Categories')
 @Controller('categories')
@@ -32,6 +33,7 @@ export class CategoryController {
     status: HttpStatus.CREATED,
     description: 'Tạo danh mục thành công',
   })
+  @UseGuards(AdminOrWriteGuard)
   async create(
     @Body() createCategoryDto: CreateCategoryDto,
     @Profile() profile,
@@ -42,7 +44,7 @@ export class CategoryController {
         profileId: profile.id,
       });
     } catch (error) {
-      throw new BadRequestException('Failed to create category: ' + error.message);
+      throw new BadRequestException('Không thể tạo danh mục: ' + error.message);
     }
   }
 
@@ -54,7 +56,7 @@ export class CategoryController {
       const categories = await this.categoryService.findAll(profile.id);
       return categories;
     } catch (error) {
-      throw new BadRequestException('Failed to get categories: ' + error.message);
+      throw new BadRequestException('Không thể lấy danh sách danh mục: ' + error.message);
     }
   }
 
@@ -66,18 +68,19 @@ export class CategoryController {
     try {
       const category = await this.categoryService.findOne(id, profile.id);
       if (!category) {
-        throw new NotFoundException('Category not found');
+        throw new NotFoundException('Không tìm thấy danh mục');
       }
       return category;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new BadRequestException('Failed to get category: ' + error.message);
+      throw new BadRequestException('Không thể lấy thông tin danh mục: ' + error.message);
     }
   }
 
   @Put(':id')
+  @UseGuards(AdminOrWriteGuard)
   @ApiOperation({ summary: 'Cập nhật danh mục' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -95,11 +98,12 @@ export class CategoryController {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new BadRequestException('Failed to update category: ' + error.message);
+      throw new BadRequestException('Không thể cập nhật danh mục: ' + error.message);
     }
   }
 
   @Delete(':id')
+  @UseGuards(AdminOrWriteGuard)
   @ApiOperation({ summary: 'Xóa danh mục' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Xóa danh mục thành công' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Không tìm thấy danh mục' })
@@ -110,7 +114,7 @@ export class CategoryController {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new BadRequestException('Failed to delete category: ' + error.message);
+      throw new BadRequestException('Không thể xóa danh mục: ' + error.message);
     }
   }
 }

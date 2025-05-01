@@ -15,34 +15,43 @@ import { toast } from '@/components/ui/use-toast';
 import { useCreateProfile } from '@/hooks/use-create-profile';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { getErrorMessage } from '@/utils/error';
 
 export default function CreateProfilePage() {
   const router = useRouter();
   const createProfile = useCreateProfile();
   const [name, setName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!name.trim()) {
+
+    if (!name) {
       toast({
-        title: 'Vui lòng nhập tên profile',
+        title: 'Có lỗi xảy ra',
+        description: 'Vui lòng nhập tên hồ sơ',
         variant: 'destructive',
       });
       return;
     }
 
     try {
+      setIsSubmitting(true);
       await createProfile.mutateAsync({ name });
+      router.push('/profiles');
       toast({
-        title: 'Tạo profile thành công',
-        variant: 'default',
+        title: 'Thành công',
+        description: 'Hồ sơ mới đã được tạo thành công',
       });
-      router.push('/');
-    } catch {
+    } catch (error) {
+      console.error('Lỗi khi tạo hồ sơ:', error);
       toast({
-        title: 'Tạo profile thất bại',
+        title: 'Có lỗi xảy ra',
+        description: getErrorMessage(error, 'Không thể tạo hồ sơ'),
         variant: 'destructive',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -63,7 +72,7 @@ export default function CreateProfilePage() {
                   placeholder="Nhập tên hồ sơ"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  disabled={createProfile.isPending}
+                  disabled={isSubmitting}
                   className="h-10"
                 />
               </div>
@@ -73,12 +82,12 @@ export default function CreateProfilePage() {
                 type="button"
                 variant="outline"
                 onClick={() => router.back()}
-                disabled={createProfile.isPending}
+                disabled={isSubmitting}
               >
                 Hủy
               </Button>
-              <Button type="submit" disabled={createProfile.isPending}>
-                {createProfile.isPending ? 'Đang tạo...' : 'Tạo hồ sơ'}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Đang tạo...' : 'Tạo hồ sơ'}
               </Button>
             </CardFooter>
           </form>

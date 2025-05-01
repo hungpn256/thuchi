@@ -34,7 +34,7 @@ export class NotificationsController {
   getVapidPublicKey() {
     const publicKey = this.configService.get<string>('PUBLIC_VAPID_KEY');
     if (!publicKey) {
-      throw new BadRequestException('VAPID public key is not configured');
+      throw new BadRequestException('Chưa cấu hình VAPID public key');
     }
     return { publicKey };
   }
@@ -89,14 +89,14 @@ export class NotificationsController {
         notificationDto,
       );
       if (result.sent === 0) {
-        throw new BadRequestException('No active web subscriptions found for the user');
+        throw new BadRequestException('Không tìm thấy thiết bị đăng ký nhận thông báo');
       }
       return result;
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      throw new BadRequestException(`Failed to send notification: ${error.message}`);
+      throw new BadRequestException(`Không thể gửi thông báo: ${error.message}`);
     }
   }
 
@@ -119,14 +119,14 @@ export class NotificationsController {
         notificationDto,
       );
       if (result.sent === 0) {
-        throw new BadRequestException('No active web subscriptions found for the user');
+        throw new BadRequestException('Không tìm thấy thiết bị đăng ký nhận thông báo');
       }
       return result;
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      throw new BadRequestException(`Failed to send notification: ${error.message}`);
+      throw new BadRequestException(`Không thể gửi thông báo: ${error.message}`);
     }
   }
 

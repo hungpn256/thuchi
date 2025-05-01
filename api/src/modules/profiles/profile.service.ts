@@ -37,6 +37,7 @@ export class ProfileService {
         accountId: account.id,
         status: profile_user_status.PENDING,
         profileId: profile.id,
+        permission: dto.permission,
       },
     });
   }

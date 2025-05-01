@@ -26,6 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { getErrorMessage } from '@/utils/error';
 
 export default function EventsPage() {
   const router = useRouter();
@@ -66,66 +67,57 @@ export default function EventsPage() {
   }, []);
 
   // Action handlers
-  const handleDeleteEvent = () => {
-    if (!eventToDelete) return;
-
-    setIsDeleting(true);
-    deleteEvent.mutate(Number(eventToDelete.id), {
-      onSuccess: () => {
-        setIsDeleteDialogOpen(false);
-        toast({
-          title: 'Xóa sự kiện thành công',
-          description: 'Sự kiện đã được xóa khỏi danh sách của bạn',
-        });
-        setEventToDelete(null);
-      },
-      onError: (error) => {
-        console.error('Lỗi khi xóa sự kiện:', error);
-        toast({
-          title: 'Lỗi khi xóa sự kiện',
-          description: 'Đã xảy ra lỗi, vui lòng thử lại sau',
-          variant: 'destructive',
-        });
-      },
-      onSettled: () => {
-        setIsDeleting(false);
-      },
-    });
+  const handleDeleteEvent = async (id: number) => {
+    try {
+      setIsDeleting(true);
+      await deleteEvent.mutateAsync(id);
+      setIsDeleteDialogOpen(false);
+      setEventToDelete(null);
+      toast({
+        title: 'Thành công',
+        description: 'Sự kiện đã được xóa thành công',
+      });
+    } catch (error) {
+      console.error('Lỗi khi xóa sự kiện:', error);
+      toast({
+        title: 'Có lỗi xảy ra',
+        description: getErrorMessage(error, 'Không thể xóa sự kiện'),
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleSubmitEvent = async (data: EventFormValues) => {
-    setIsSubmitting(true);
-    const eventData = formValuesToEventData(data);
-
     try {
-      if (isEditing && data.id) {
-        // Cập nhật sự kiện
+      setIsSubmitting(true);
+      const eventData = formValuesToEventData(data);
+
+      if (data.id) {
         await updateEvent.mutateAsync({
           id: data.id,
           data: eventData,
         });
-        setIsEventDialogOpen(false);
         toast({
-          title: 'Cập nhật sự kiện thành công',
-          description: 'Sự kiện đã được cập nhật',
+          title: 'Thành công',
+          description: 'Sự kiện đã được cập nhật thành công',
         });
-        setCurrentEvent(null);
-        setIsEditing(false);
       } else {
-        // Tạo sự kiện mới
         await createEvent.mutateAsync(eventData);
-        setIsEventDialogOpen(false);
         toast({
-          title: 'Tạo sự kiện thành công',
-          description: 'Sự kiện mới đã được thêm vào danh sách của bạn',
+          title: 'Thành công',
+          description: 'Sự kiện mới đã được thêm vào lịch của bạn',
         });
-        setCurrentEvent(null);
       }
+
+      setIsEventDialogOpen(false);
+      setCurrentEvent(null);
     } catch (error) {
-      console.error('Lỗi khi xử lý sự kiện:', error);
+      console.error('Lỗi khi lưu sự kiện:', error);
       toast({
-        title: isEditing ? 'Lỗi khi cập nhật sự kiện' : 'Lỗi khi tạo sự kiện',
-        description: 'Đã xảy ra lỗi, vui lòng thử lại sau',
+        title: 'Có lỗi xảy ra',
+        description: getErrorMessage(error, 'Không thể lưu sự kiện'),
         variant: 'destructive',
       });
     } finally {
@@ -239,7 +231,9 @@ export default function EventsPage() {
             <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault();
-                handleDeleteEvent();
+                if (eventToDelete?.id) {
+                  handleDeleteEvent(eventToDelete.id);
+                }
               }}
               disabled={isDeleting}
               className="bg-red-500 hover:bg-red-600"

@@ -286,7 +286,10 @@ export class AuthService {
   }
 
   async findProfileById(id: number): Promise<profile | null> {
-    return this.prismaService.profile.findUnique({ where: { id } });
+    return this.prismaService.profile.findUnique({
+      where: { id },
+      include: { profileUsers: true },
+    });
   }
 
   /**
@@ -389,8 +392,7 @@ export class AuthService {
             name: createProfileDto.name,
           },
         },
-        permission: createProfileDto.permission,
-        status: createProfileDto.status,
+        status: profile_user_status.ACTIVE,
       },
       include: {
         profile: true,

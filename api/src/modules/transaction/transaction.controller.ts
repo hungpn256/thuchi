@@ -25,6 +25,7 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { TransactionService } from './transaction.service';
 import { GetTransactionsDto } from './dto/get-transactions.dto';
 import { Profile } from '@/shared/decorators/profile.decorator';
+import { AdminOrWriteGuard } from '../auth/guards/admin-write.guard';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -34,6 +35,7 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
   @Post()
+  @UseGuards(AdminOrWriteGuard)
   @ApiOperation({
     summary: 'Tạo giao dịch mới',
     description: 'API tạo giao dịch thu/chi mới',
@@ -160,21 +162,22 @@ export class TransactionController {
     try {
       const transaction = await this.transactionService.findOne(id);
       if (!transaction) {
-        throw new NotFoundException('Transaction not found');
+        throw new NotFoundException('Không tìm thấy giao dịch');
       }
       if (transaction.profileId !== profile.id) {
-        throw new UnauthorizedException('You do not have permission to access this transaction');
+        throw new UnauthorizedException('Bạn không có quyền truy cập giao dịch này');
       }
       return transaction;
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new BadRequestException('Failed to get transaction', { error: error.message });
+      throw new BadRequestException('Không thể lấy thông tin giao dịch', { error: error.message });
     }
   }
 
   @Put(':id')
+  @UseGuards(AdminOrWriteGuard)
   @ApiOperation({
     summary: 'Cập nhật giao dịch',
     description: 'API cập nhật thông tin của một giao dịch theo ID',
@@ -193,13 +196,13 @@ export class TransactionController {
     try {
       const transaction = await this.transactionService.findOne(id);
       if (!transaction) {
-        throw new NotFoundException('Transaction not found');
+        throw new NotFoundException('Không tìm thấy giao dịch');
       }
       if (transaction.profileId !== profile.id) {
-        throw new UnauthorizedException('You do not have permission to update this transaction');
+        throw new UnauthorizedException('Bạn không có quyền cập nhật giao dịch này');
       }
       if (updateTransactionDto.amount && updateTransactionDto.amount <= 0) {
-        throw new ValidationException({ amount: 'Amount must be greater than 0' });
+        throw new ValidationException({ amount: 'Số tiền phải lớn hơn 0' });
       }
       return await this.transactionService.update(id, updateTransactionDto);
     } catch (error) {
@@ -210,11 +213,12 @@ export class TransactionController {
       ) {
         throw error;
       }
-      throw new BadRequestException('Failed to update transaction', { error: error.message });
+      throw new BadRequestException('Không thể cập nhật giao dịch', { error: error.message });
     }
   }
 
   @Delete(':id')
+  @UseGuards(AdminOrWriteGuard)
   @ApiOperation({
     summary: 'Xóa giao dịch',
     description: 'API xóa một giao dịch theo ID',
@@ -228,18 +232,18 @@ export class TransactionController {
     try {
       const transaction = await this.transactionService.findOne(id);
       if (!transaction) {
-        throw new NotFoundException('Transaction not found');
+        throw new NotFoundException('Không tìm thấy giao dịch');
       }
       if (transaction.profileId !== profile.id) {
-        throw new UnauthorizedException('You do not have permission to delete this transaction');
+        throw new UnauthorizedException('Bạn không có quyền xóa giao dịch này');
       }
       await this.transactionService.remove(id);
-      return { message: 'Transaction deleted successfully' };
+      return { message: 'Xóa giao dịch thành công' };
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new BadRequestException('Failed to delete transaction', { error: error.message });
+      throw new BadRequestException('Không thể xóa giao dịch', { error: error.message });
     }
   }
 }

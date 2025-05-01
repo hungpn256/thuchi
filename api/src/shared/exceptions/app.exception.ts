@@ -6,7 +6,7 @@ export class ValidationException extends BaseException {
     super(
       {
         code: 'VALIDATION_ERROR',
-        message: 'Validation failed',
+        message: 'Dữ liệu không hợp lệ',
         details,
       },
       HttpStatus.BAD_REQUEST,
@@ -27,7 +27,7 @@ export class NotFoundException extends BaseException {
 }
 
 export class UnauthorizedException extends BaseException {
-  constructor(message = 'Unauthorized access') {
+  constructor(message = 'Không có quyền truy cập') {
     super(
       {
         code: 'UNAUTHORIZED',
@@ -39,7 +39,7 @@ export class UnauthorizedException extends BaseException {
 }
 
 export class ForbiddenException extends BaseException {
-  constructor(message = 'Access forbidden') {
+  constructor(message = 'Truy cập bị từ chối') {
     super(
       {
         code: 'FORBIDDEN',
@@ -55,7 +55,7 @@ export class ConflictException extends BaseException {
     super(
       {
         code: 'CONFLICT',
-        message: `${resource} already exists`,
+        message: `${resource} đã tồn tại`,
       },
       HttpStatus.CONFLICT,
     );

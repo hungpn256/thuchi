@@ -140,14 +140,14 @@ export class AuthController {
     try {
       const user = await this.authService.verifyGoogleToken(loginDto.idToken);
       if (!user) {
-        throw new UnauthorizedException('Invalid Google token');
+        throw new UnauthorizedException('Token Google không hợp lệ');
       }
       return user;
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new BadRequestException('Google login failed', { error: error.message });
+      throw new BadRequestException('Đăng nhập Google thất bại', { error: error.message });
     }
   }
 
@@ -202,14 +202,14 @@ export class AuthController {
     try {
       const user = await this.authService.handleGoogleCallback(query.code);
       if (!user) {
-        throw new UnauthorizedException('Invalid authorization code');
+        throw new UnauthorizedException('Mã xác thực không hợp lệ');
       }
       return await this.authService.verifyGoogleToken(user.idToken);
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new BadRequestException('Google callback failed', { error: error.message });
+      throw new BadRequestException('Xử lý callback Google thất bại', { error: error.message });
     }
   }
 
@@ -239,7 +239,7 @@ export class AuthController {
   async getProfile(@Account() account: account, @Profile() profile: profile) {
     try {
       if (!account || !profile) {
-        throw new UnauthorizedException('User not found');
+        throw new UnauthorizedException('Không tìm thấy người dùng');
       }
       return {
         account,
@@ -249,7 +249,7 @@ export class AuthController {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new BadRequestException('Failed to get profile', { error: error.message });
+      throw new BadRequestException('Không thể lấy thông tin profile', { error: error.message });
     }
   }
 
@@ -358,7 +358,7 @@ export class AuthController {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new BadRequestException('Failed to switch profile', { error: error.message });
+      throw new BadRequestException('Không thể chuyển đổi profile', { error: error.message });
     }
   }
 
@@ -382,7 +382,7 @@ export class AuthController {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new BadRequestException('Failed to create profile', { error: error.message });
+      throw new BadRequestException('Không thể tạo profile mới', { error: error.message });
     }
   }
 }
