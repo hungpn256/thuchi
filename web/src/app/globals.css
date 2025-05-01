@@ -307,15 +307,6 @@ a {
   background-attachment: fixed !important;
 }
 
-/* Apply transitions progressively after PWA loads */
-.transitions-enabled * {
-  transition-duration: var(--theme-transition-duration);
-  transition-property:
-    background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter,
-    backdrop-filter;
-  transition-timing-function: var(--theme-transition-timing);
-}
-
 .transitions-enabled .animate-float {
   animation: floatAnimation 2s ease-in-out infinite;
   animation-delay: 0ms;

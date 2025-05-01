@@ -93,7 +93,7 @@ export function Header() {
                   onClick={() => router.push('/profiles/create')}
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  <span>Tạo Profile Mới</span>
+                  <span>Tạo hồ sơ mới</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

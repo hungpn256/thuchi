@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ROUTES, STORAGE_KEYS } from '@/constants/app.constant';
+import { ROUTES } from '@/constants/app.constant';
 import { cn } from '@/lib/utils';
 import {
   Calendar,
@@ -21,6 +21,16 @@ import { useEffect, useState } from 'react';
 import { ThemeToggle } from '../theme/theme-toggle';
 import { useUserProfile } from '@/hooks/use-user';
 import { AnimatePresence, motion } from 'framer-motion';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useSwitchProfile } from '@/hooks/use-switch-profile';
+import { useAuth } from '@/hooks/use-auth';
 
 interface SidebarItem {
   name: string;
@@ -42,6 +52,8 @@ export function Sidebar({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const { data: user } = useUserProfile();
+  const switchProfile = useSwitchProfile();
+  const { logout } = useAuth();
 
   // Use prop if provided, otherwise detect if sidebar is in collapsed state
   useEffect(() => {
@@ -133,7 +145,7 @@ export function Sidebar({
   ];
 
   function handleLogout(): void {
-    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    logout();
     router.push(ROUTES.AUTH.LOGIN);
   }
 
@@ -199,6 +211,14 @@ export function Sidebar({
         y: { stiffness: 1000 },
       },
     },
+  };
+
+  const handleSwitchProfile = async (profileId: number) => {
+    try {
+      await switchProfile.mutateAsync({ profileId });
+    } catch (error) {
+      console.error('Failed to switch profile:', error);
+    }
   };
 
   return (
@@ -286,28 +306,10 @@ export function Sidebar({
           </ul>
         </motion.nav>
 
-        {/* Mobile Collapsed - User Profile & Logout at bottom */}
+        {/* Mobile Collapsed - Theme Toggle only */}
         {isMobile && isCollapsed && (
           <div className="mt-auto flex flex-col items-center gap-3 border-t py-4">
             <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 rounded-full"
-              title="Thông tin cá nhân"
-              onClick={() => router.push('/profile')}
-            >
-              <User className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-destructive hover:text-destructive hover:bg-destructive/10 h-10 w-10 rounded-full"
-              title="Đăng xuất"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
           </div>
         )}
 
@@ -327,22 +329,54 @@ export function Sidebar({
             )}
 
             <motion.div className="px-4 py-2" variants={childVariants}>
-              <div className="flex items-center gap-3 px-2 py-2">
-                <User className="h-5 w-5" />
-                <div className="flex-1">
-                  <p className="truncate text-sm font-medium">{user?.account?.email}</p>
-                  <Link href="/profile" className="text-muted-foreground text-xs hover:underline">
-                    Thông tin cá nhân
-                  </Link>
-                </div>
-              </div>
-
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                <Button variant="destructive" onClick={handleLogout} className="mt-2 w-full gap-2">
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-start gap-2">
+                      <User className="h-5 w-5" />
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-medium">{user?.account?.email}</span>
+                        <span className="text-muted-foreground text-xs">{user?.profile?.name}</span>
+                      </div>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="start">
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm leading-none font-medium">{user?.account?.email}</p>
+                        <p className="text-muted-foreground text-xs leading-none">
+                          {user?.profile?.name}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {user?.account?.profileUsers?.map((profileUser) => (
+                      <DropdownMenuItem
+                        key={profileUser.id}
+                        className={cn(
+                          'cursor-pointer',
+                          profileUser.profileId === user?.profile?.id && 'bg-accent',
+                        )}
+                        onClick={() => handleSwitchProfile(Number(profileUser.profileId))}
+                      >
+                        {profileUser.profile?.name}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => router.push('/profiles/create')}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      <span>Tạo hồ sơ mới</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button variant="destructive" onClick={handleLogout} className="mt-4 w-full gap-2">
                   <LogOut className="h-4 w-4" />
                   <span>Đăng xuất</span>
                 </Button>
-              </motion.div>
+              </>
             </motion.div>
           </motion.div>
         )}

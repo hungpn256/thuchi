@@ -18,9 +18,12 @@ import { ExpensesChart } from './ExpensesChart';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/app.constant';
 import { InstallPWA } from '@/components/common/InstallPWA';
+import { OverviewCard } from './OverviewCard';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 export default function DashboardContent() {
   const router = useRouter();
+  const isMobile = useMediaQuery('(max-width: 640px)');
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: startOfDay(addDays(new Date(), -30)),
     to: endOfDay(new Date()),
@@ -75,87 +78,99 @@ export default function DashboardContent() {
             <DatePickerWithRange date={dateRange} setDate={handleDateRangeChange} />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-            <Card className="from-background/80 group relative overflow-hidden border bg-gradient-to-br to-emerald-500/10 shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <div className="relative p-4">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-full bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 p-2 shadow-inner">
-                    <ArrowUpCircle className="h-4 w-4 text-emerald-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-muted-foreground text-sm font-medium">Thu</h3>
-                    <p className="text-lg font-bold text-emerald-500 drop-shadow-sm">
-                      {formatCurrency(summary?.totalIncome || 0)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="absolute right-0 bottom-0 left-0 h-0.5 bg-gradient-to-r from-emerald-500/50 via-emerald-500/30 to-emerald-500/50" />
-            </Card>
-
-            <Card className="from-background/80 group relative overflow-hidden border bg-gradient-to-br to-rose-500/10 shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
-              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <div className="relative p-4">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-full bg-gradient-to-br from-rose-500/30 to-rose-500/10 p-2 shadow-inner">
-                    <ArrowDownCircle className="h-4 w-4 text-rose-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-muted-foreground text-sm font-medium">Chi</h3>
-                    <p className="text-lg font-bold text-rose-500 drop-shadow-sm">
-                      {formatCurrency(summary?.totalExpense || 0)}
-                    </p>
+          {isMobile ? (
+            <OverviewCard
+              totalIncome={summary?.totalIncome || 0}
+              totalExpense={summary?.totalExpense || 0}
+              balance={summary?.balance || 0}
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+              <Card className="from-background/80 group relative overflow-hidden border bg-gradient-to-br to-emerald-500/10 shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                <div className="relative p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-full bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 p-2 shadow-inner">
+                      <ArrowUpCircle className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div>
+                      <h3 className="text-muted-foreground text-sm font-medium">Thu</h3>
+                      <p className="text-lg font-bold text-emerald-500 drop-shadow-sm">
+                        {formatCurrency(summary?.totalIncome || 0)}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="absolute right-0 bottom-0 left-0 h-0.5 bg-gradient-to-r from-rose-500/50 via-rose-500/30 to-rose-500/50" />
-            </Card>
+                <div className="absolute right-0 bottom-0 left-0 h-0.5 bg-gradient-to-r from-emerald-500/50 via-emerald-500/30 to-emerald-500/50" />
+              </Card>
 
-            <Card className="from-background/80 to-primary/10 group relative overflow-hidden border bg-gradient-to-br shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:shadow-xl sm:col-span-2 md:col-span-1">
-              <div
-                className={`absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity group-hover:opacity-100 ${
-                  summary?.balance && summary.balance >= 0
-                    ? 'from-primary/5 to-transparent'
-                    : 'from-rose-500/5 to-transparent'
-                }`}
-              />
-              <div className="relative p-4">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`rounded-full bg-gradient-to-br p-2 shadow-inner ${
-                      summary?.balance && summary.balance >= 0
-                        ? 'from-primary/30 to-primary/10'
-                        : 'from-rose-500/30 to-rose-500/10'
-                    }`}
-                  >
-                    <Wallet
-                      className={`h-4 w-4 ${
-                        summary?.balance && summary.balance >= 0 ? 'text-primary' : 'text-rose-500'
-                      }`}
-                    />
+              <Card className="from-background/80 group relative overflow-hidden border bg-gradient-to-br to-rose-500/10 shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                <div className="relative p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-full bg-gradient-to-br from-rose-500/30 to-rose-500/10 p-2 shadow-inner">
+                      <ArrowDownCircle className="h-4 w-4 text-rose-500" />
+                    </div>
+                    <div>
+                      <h3 className="text-muted-foreground text-sm font-medium">Chi</h3>
+                      <p className="text-lg font-bold text-rose-500 drop-shadow-sm">
+                        {formatCurrency(summary?.totalExpense || 0)}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-muted-foreground text-sm font-medium">Số dư</h3>
-                    <p
-                      className={`text-lg font-bold drop-shadow-sm ${
-                        summary?.balance && summary.balance >= 0 ? 'text-primary' : 'text-rose-500'
+                </div>
+                <div className="absolute right-0 bottom-0 left-0 h-0.5 bg-gradient-to-r from-rose-500/50 via-rose-500/30 to-rose-500/50" />
+              </Card>
+
+              <Card className="from-background/80 to-primary/10 group relative overflow-hidden border bg-gradient-to-br shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:shadow-xl sm:col-span-2 md:col-span-1">
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity group-hover:opacity-100 ${
+                    summary?.balance && summary.balance >= 0
+                      ? 'from-primary/5 to-transparent'
+                      : 'from-rose-500/5 to-transparent'
+                  }`}
+                />
+                <div className="relative p-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`rounded-full bg-gradient-to-br p-2 shadow-inner ${
+                        summary?.balance && summary.balance >= 0
+                          ? 'from-primary/30 to-primary/10'
+                          : 'from-rose-500/30 to-rose-500/10'
                       }`}
                     >
-                      {formatCurrency(summary?.balance || 0)}
-                    </p>
+                      <Wallet
+                        className={`h-4 w-4 ${
+                          summary?.balance && summary.balance >= 0
+                            ? 'text-primary'
+                            : 'text-rose-500'
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <h3 className="text-muted-foreground text-sm font-medium">Số dư</h3>
+                      <p
+                        className={`text-lg font-bold drop-shadow-sm ${
+                          summary?.balance && summary.balance >= 0
+                            ? 'text-primary'
+                            : 'text-rose-500'
+                        }`}
+                      >
+                        {formatCurrency(summary?.balance || 0)}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div
-                className={`absolute right-0 bottom-0 left-0 h-0.5 bg-gradient-to-r ${
-                  summary?.balance && summary.balance >= 0
-                    ? 'from-primary/50 via-primary/30 to-primary/50'
-                    : 'from-rose-500/50 via-rose-500/30 to-rose-500/50'
-                }`}
-              />
-            </Card>
-          </div>
+                <div
+                  className={`absolute right-0 bottom-0 left-0 h-0.5 bg-gradient-to-r ${
+                    summary?.balance && summary.balance >= 0
+                      ? 'from-primary/50 via-primary/30 to-primary/50'
+                      : 'from-rose-500/50 via-rose-500/30 to-rose-500/50'
+                  }`}
+                />
+              </Card>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Card className="from-background/80 via-background/60 to-background/40 group relative overflow-hidden border bg-gradient-to-br shadow-lg backdrop-blur-md">
@@ -205,9 +220,9 @@ export default function DashboardContent() {
                           key={transaction.id}
                           className="from-background/60 to-background/40 hover:from-accent/30 hover:to-accent/10 group/item flex items-center justify-between rounded-lg border bg-gradient-to-r p-3 transition-all hover:shadow-md"
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex min-w-0 flex-1 items-center gap-3">
                             <div
-                              className={`rounded-full p-1.5 transition-colors ${
+                              className={`flex-shrink-0 rounded-full p-1.5 transition-colors ${
                                 transaction.type === 'INCOME'
                                   ? 'bg-gradient-to-br from-emerald-500/30 to-emerald-500/10'
                                   : 'bg-gradient-to-br from-rose-500/30 to-rose-500/10'
@@ -219,7 +234,7 @@ export default function DashboardContent() {
                                 <TrendingUp className="h-4 w-4 rotate-180 text-rose-500" />
                               )}
                             </div>
-                            <div className="overflow-hidden">
+                            <div className="min-w-0 flex-1">
                               <p className="truncate font-medium">{transaction.description}</p>
                               <div className="text-muted-foreground flex items-center gap-2 text-sm">
                                 <Tag className="h-3 w-3 flex-shrink-0" />
@@ -228,11 +243,10 @@ export default function DashboardContent() {
                             </div>
                           </div>
                           <p
-                            className={`font-semibold whitespace-nowrap ${
+                            className={`flex-shrink-0 pl-3 font-medium ${
                               transaction.type === 'INCOME' ? 'text-emerald-500' : 'text-rose-500'
                             }`}
                           >
-                            {transaction.type === 'INCOME' ? '+' : '-'}{' '}
                             {formatCurrency(transaction.amount)}
                           </p>
                         </div>,
@@ -241,12 +255,6 @@ export default function DashboardContent() {
                       return acc;
                     },
                     [],
-                  )}
-
-                  {transactions?.items.length === 0 && (
-                    <div className="text-muted-foreground p-4 text-center">
-                      Không có giao dịch nào trong khoảng thời gian này
-                    </div>
                   )}
                 </div>
               </div>

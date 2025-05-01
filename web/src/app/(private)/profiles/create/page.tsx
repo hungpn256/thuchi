@@ -47,20 +47,20 @@ export default function CreateProfilePage() {
   };
 
   return (
-    <div className="container py-10">
+    <div className="container mx-auto px-4 py-10 md:px-6">
       <div className="mx-auto max-w-2xl">
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">Tạo Profile Mới</CardTitle>
-            <CardDescription>Tạo một profile mới để quản lý chi tiêu riêng biệt</CardDescription>
+            <CardTitle className="text-2xl font-bold">Tạo hồ sơ mới</CardTitle>
+            <CardDescription>Tạo một hồ sơ mới để quản lý chi tiêu riêng biệt</CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
+            <CardContent className="mb-4 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Tên Profile</Label>
+                <Label htmlFor="name">Tên hồ sơ</Label>
                 <Input
                   id="name"
-                  placeholder="Nhập tên profile"
+                  placeholder="Nhập tên hồ sơ"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   disabled={createProfile.isPending}
@@ -78,7 +78,7 @@ export default function CreateProfilePage() {
                 Hủy
               </Button>
               <Button type="submit" disabled={createProfile.isPending}>
-                {createProfile.isPending ? 'Đang tạo...' : 'Tạo Profile'}
+                {createProfile.isPending ? 'Đang tạo...' : 'Tạo hồ sơ'}
               </Button>
             </CardFooter>
           </form>
