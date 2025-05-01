@@ -1,5 +1,7 @@
 'use client';
 
+import { Action } from '@/casl/ability';
+import { Can } from '@/components/Can';
 import { MultiCategorySelect } from '@/components/transaction/MultiCategorySelect';
 import { PaginationControl } from '@/components/transaction/PaginationControl';
 import { SearchInput } from '@/components/transaction/SearchInput';
@@ -235,11 +237,12 @@ export default function TransactionsPage() {
                 />
               </PopoverContent>
             </Popover>
-
-            <Button onClick={handleCreateClick} className="ml-auto gap-2" size="sm">
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Thêm mới</span>
-            </Button>
+            <Can action={Action.Create} subject="Transaction">
+              <Button onClick={handleCreateClick} className="ml-auto gap-2" size="sm">
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Thêm mới</span>
+              </Button>
+            </Can>
           </div>
         </div>
 
@@ -464,9 +467,11 @@ export default function TransactionsPage() {
                       Xóa bộ lọc
                     </Button>
                   )}
-                  <Button variant="outline" onClick={handleCreateClick} size="sm">
-                    Tạo giao dịch mới
-                  </Button>
+                  <Can action={Action.Create} subject="Transaction">
+                    <Button variant="outline" onClick={handleCreateClick} size="sm">
+                      Tạo giao dịch mới
+                    </Button>
+                  </Can>
                 </div>
               </div>
             )}

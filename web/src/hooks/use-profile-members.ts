@@ -3,11 +3,15 @@ import { QUERY_KEYS } from '@/constants/query-keys.constant';
 import axiosClient from '@/lib/axios-client';
 import { API_ENDPOINTS } from '@/constants/app.constant';
 
-interface ProfileUser {
+export interface ProfileUser {
   id: number;
-  account: {
+  account?: {
     id: number;
     email: string;
+  };
+  profile?: {
+    id: number;
+    name: string;
   };
   status: 'ACTIVE' | 'PENDING';
   permission: 'ADMIN' | 'WRITE' | 'READ';

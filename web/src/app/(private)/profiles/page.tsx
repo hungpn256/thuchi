@@ -52,6 +52,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ProfileSwitcher } from '@/components/profile/profile-switcher';
+import { Can } from '@/components/Can';
+import { Action } from '@/casl/ability';
 
 interface ProfileUser {
   id: number;
@@ -218,64 +220,74 @@ export default function ProfilePage() {
         </TabsList>
 
         <TabsContent value="users" className="space-y-4">
-          <div className="flex justify-end">
-            <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Mời thành viên
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Mời thành viên mới</DialogTitle>
-                  <DialogDescription>
-                    Nhập email để mời thành viên tham gia profile của bạn
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="example@email.com"
-                      {...register('email')}
-                    />
-                    {errors.email && (
-                      <p className="text-destructive text-sm">{errors.email.message}</p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="permission">Quyền hạn</Label>
-                    <Controller
-                      name="permission"
-                      control={control}
-                      render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Chọn quyền hạn" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="ADMIN">Quản trị viên</SelectItem>
-                            <SelectItem value="WRITE">Chỉnh sửa</SelectItem>
-                            <SelectItem value="READ">Xem</SelectItem>
-                          </SelectContent>
-                        </Select>
+          <div className="flex justify-between">
+            <h2 className="text-lg font-semibold">Danh sách thành viên</h2>
+            <Can action={Action.Invite} subject="ProfileMember">
+              <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Mời thành viên
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Mời thành viên mới</DialogTitle>
+                    <DialogDescription>
+                      Nhập email và chọn quyền hạn cho thành viên mới
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="example@email.com"
+                        {...register('email')}
+                      />
+                      {errors.email && (
+                        <p className="text-destructive text-sm">{errors.email.message}</p>
                       )}
-                    />
-                    {errors.permission && (
-                      <p className="text-destructive text-sm">{errors.permission.message}</p>
-                    )}
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit" disabled={isInviting}>
-                      {isInviting ? 'Đang gửi...' : 'Gửi lời mời'}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="permission">Quyền hạn</Label>
+                      <Controller
+                        name="permission"
+                        control={control}
+                        render={({ field }) => (
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Chọn quyền hạn" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="ADMIN">Admin</SelectItem>
+                              <SelectItem value="WRITE">Write</SelectItem>
+                              <SelectItem value="READ">Read</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.permission && (
+                        <p className="text-destructive text-sm">{errors.permission.message}</p>
+                      )}
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsInviteDialogOpen(false)}
+                      >
+                        Hủy
+                      </Button>
+                      <Button type="submit" disabled={isInviting}>
+                        {isInviting ? 'Đang gửi...' : 'Gửi lời mời'}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </Can>
           </div>
           {!members || members.length === 0 ? (
             <Card>
@@ -284,7 +296,7 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
           ) : (
-            <MemberTable members={members} />
+            <MemberTable members={members as ProfileUser[]} />
           )}
         </TabsContent>
 

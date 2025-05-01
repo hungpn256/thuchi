@@ -36,6 +36,7 @@ export const QUERY_KEYS = {
     }) => [...QUERY_KEYS.REPORTS.ALL, 'trends', params] as const,
   },
   AUTH: {
+    CURRENT_PROFILE_USER: ['auth', 'profile', 'current-profile-user'] as const,
     PROFILE: ['auth', 'profile'] as const,
   },
   USER: {

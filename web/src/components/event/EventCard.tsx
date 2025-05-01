@@ -15,6 +15,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
+import { Can } from '@/components/Can';
+import { Action } from '@/casl/ability';
 
 interface EventCardProps {
   event: EventEntity;
@@ -94,30 +96,34 @@ export function EventCard({
               <DropdownMenuLabel className="text-xs sm:text-sm">Thao tác</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {onEdit && (
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onEdit(event);
-                  }}
-                  className="text-xs text-amber-500 focus:bg-amber-50 focus:text-amber-500 sm:text-sm dark:focus:bg-amber-950"
-                >
-                  <Edit className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                  Chỉnh sửa
-                </DropdownMenuItem>
+                <Can action={Action.Update} subject="Event">
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onEdit(event);
+                    }}
+                    className="text-xs text-amber-500 focus:bg-amber-50 focus:text-amber-500 sm:text-sm dark:focus:bg-amber-950"
+                  >
+                    <Edit className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                    Chỉnh sửa
+                  </DropdownMenuItem>
+                </Can>
               )}
               {onDelete && (
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onDelete(event);
-                  }}
-                  className="text-xs text-red-500 focus:bg-red-50 focus:text-red-500 sm:text-sm dark:focus:bg-red-950"
-                >
-                  <Trash className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                  Xóa
-                </DropdownMenuItem>
+                <Can action={Action.Delete} subject="Event">
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onDelete(event);
+                    }}
+                    className="text-xs text-red-500 focus:bg-red-50 focus:text-red-500 sm:text-sm dark:focus:bg-red-950"
+                  >
+                    <Trash className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                    Xóa
+                  </DropdownMenuItem>
+                </Can>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -188,32 +194,36 @@ export function EventCard({
         {!hideActions && !useDropdownActions && (
           <div className="flex justify-end space-x-2 pt-1">
             {onEdit && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 gap-1 px-2 text-xs text-amber-500 hover:bg-amber-50 hover:text-amber-500 sm:h-8 sm:px-3 sm:text-sm dark:hover:bg-amber-950"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(event);
-                }}
-              >
-                <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-                Chỉnh sửa
-              </Button>
+              <Can action={Action.Update} subject="Event">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 gap-1 px-2 text-xs text-amber-500 hover:bg-amber-50 hover:text-amber-500 sm:h-8 sm:px-3 sm:text-sm dark:hover:bg-amber-950"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(event);
+                  }}
+                >
+                  <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                  Chỉnh sửa
+                </Button>
+              </Can>
             )}
             {onDelete && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 gap-1 px-2 text-xs text-red-500 hover:bg-red-50 hover:text-red-500 sm:h-8 sm:px-3 sm:text-sm dark:hover:bg-red-950"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(event);
-                }}
-              >
-                <Trash className="h-3 w-3 sm:h-4 sm:w-4" />
-                Xóa
-              </Button>
+              <Can action={Action.Delete} subject="Event">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 gap-1 px-2 text-xs text-red-500 hover:bg-red-50 hover:text-red-500 sm:h-8 sm:px-3 sm:text-sm dark:hover:bg-red-950"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(event);
+                  }}
+                >
+                  <Trash className="h-3 w-3 sm:h-4 sm:w-4" />
+                  Xóa
+                </Button>
+              </Can>
             )}
           </div>
         )}

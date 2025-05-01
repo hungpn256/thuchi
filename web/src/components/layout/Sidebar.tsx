@@ -29,6 +29,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useSwitchProfile } from '@/hooks/use-switch-profile';
 import { useAuth } from '@/hooks/use-auth';
+import { Action } from '@/casl/ability';
+import { Can } from '../Can';
 
 interface SidebarItem {
   name: string;
@@ -249,30 +251,34 @@ export function Sidebar({
         </div>
 
         {!isCollapsed && (
-          <motion.div className="px-4 pt-4" variants={itemVariants}>
-            <motion.div variants={childVariants}>
-              <Button
-                onClick={handleCreateTransaction}
-                className="from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary w-full gap-2 bg-gradient-to-r"
-              >
-                <Plus className="h-4 w-4" />
-                Tạo giao dịch mới
-              </Button>
+          <Can action={Action.Create} subject="Transaction">
+            <motion.div className="px-4 pt-4" variants={itemVariants}>
+              <motion.div variants={childVariants}>
+                <Button
+                  onClick={handleCreateTransaction}
+                  className="from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary w-full gap-2 bg-gradient-to-r"
+                >
+                  <Plus className="h-4 w-4" />
+                  Tạo giao dịch mới
+                </Button>
+              </motion.div>
             </motion.div>
-          </motion.div>
+          </Can>
         )}
 
         {isCollapsed && (
-          <div className="flex justify-center py-4">
-            <Button
-              size="icon"
-              onClick={handleCreateTransaction}
-              className="bg-primary text-primary-foreground h-10 w-10 rounded-full"
-              title="Tạo giao dịch mới"
-            >
-              <Plus className="h-5 w-5" />
-            </Button>
-          </div>
+          <Can action={Action.Create} subject="Transaction">
+            <div className="flex justify-center py-4">
+              <Button
+                size="icon"
+                onClick={handleCreateTransaction}
+                className="bg-primary text-primary-foreground h-10 w-10 rounded-full"
+                title="Tạo giao dịch mới"
+              >
+                <Plus className="h-5 w-5" />
+              </Button>
+            </div>
+          </Can>
         )}
 
         <motion.nav className="flex-1 overflow-y-auto py-4" variants={itemVariants}>

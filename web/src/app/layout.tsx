@@ -6,6 +6,7 @@ import { ThemeDetector } from '@/components/theme/theme-detector';
 import { NotificationPermissionRequest } from '@/components/common/NotificationPermissionRequest';
 import './globals.css';
 import Script from 'next/script';
+import { CaslProvider } from '@/contexts/casl-context';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -42,7 +43,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} safe-bottom`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <ThemeDetector />
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            <CaslProvider>{children}</CaslProvider>
+          </QueryProvider>
           <Toaster />
           <NotificationPermissionRequest />
         </ThemeProvider>

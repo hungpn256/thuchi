@@ -28,6 +28,8 @@ import { toast } from '@/components/ui/use-toast';
 import { EventEntity } from '@/types/event';
 import { EventCard } from '@/components/event/EventCard';
 import { getErrorMessage } from '@/utils/error';
+import { Can } from '@/components/Can';
+import { Action } from '@/casl/ability';
 
 export default function EventCalendarPage() {
   const { data: events = [], isLoading } = useEventList();
@@ -167,17 +169,19 @@ export default function EventCalendarPage() {
             <h1 className="text-xl font-bold tracking-tight sm:text-2xl md:text-3xl">
               Lịch sự kiện
             </h1>
-            <Button
-              className="bg-primary text-primary-foreground hover:bg-primary/90 ml-2 h-6 px-1.5 sm:ml-4"
-              size="sm"
-              onClick={() => {
-                setSelectedDate(new Date());
-                setIsNewEventDialogOpen(true);
-              }}
-            >
-              <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-              <span className="text-xs sm:text-sm">Tạo mới</span>
-            </Button>
+            <Can action={Action.Create} subject="Event">
+              <Button
+                className="bg-primary text-primary-foreground hover:bg-primary/90 ml-2 h-6 px-1.5 sm:ml-4"
+                size="sm"
+                onClick={() => {
+                  setSelectedDate(new Date());
+                  setIsNewEventDialogOpen(true);
+                }}
+              >
+                <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                <span className="text-xs sm:text-sm">Tạo mới</span>
+              </Button>
+            </Can>
           </div>
         </div>
 
@@ -200,61 +204,87 @@ export default function EventCalendarPage() {
         </Card>
       </div>
 
-      {/* Dialog hiển thị chi tiết sự kiện */}
+      {/* Dialog chi tiết sự kiện */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-[90vw] border-none bg-transparent p-0 shadow-none sm:max-w-md md:max-w-lg">
-          {selectedEvent && events.find((e) => e.id === selectedEvent.id) && (
-            <EventCard
-              event={events.find((e) => e.id === selectedEvent.id) as EventEntity}
-              hideActions={false}
-              onEdit={() => openEditEventDialog()}
-              onDelete={() => setIsDeleteDialogOpen(true)}
-              className="max-w-full shadow-xl"
-              onClick={() => {}}
-              showFullDetails={true}
-              useDropdownActions={false}
-            />
+        <DialogContent className="max-w-sm sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold md:text-xl">Chi tiết sự kiện</DialogTitle>
+          </DialogHeader>
+          {selectedEvent && (
+            <div className="space-y-4">
+              <EventCard
+                event={events.find((e) => e.id === selectedEvent.id) as EventEntity}
+                hideActions={true}
+                showFullDetails={true}
+              />
+              <div className="flex justify-end gap-2">
+                <Can action={Action.Update} subject="Event">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={openEditEventDialog}
+                    className="text-amber-500 hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-950"
+                  >
+                    Chỉnh sửa
+                  </Button>
+                </Can>
+                <Can action={Action.Delete} subject="Event">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                    className="text-red-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950"
+                  >
+                    Xóa
+                  </Button>
+                </Can>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Dialog tạo sự kiện mới sử dụng component chung */}
-      <Dialog open={isNewEventDialogOpen} onOpenChange={setIsNewEventDialogOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold sm:text-xl">Tạo sự kiện mới</DialogTitle>
-          </DialogHeader>
-          <EventForm
-            defaultValues={{
-              date: selectedDate,
-              startTime: '08:00',
-              endTime: '17:00',
-            }}
-            onSubmit={handleCreateEvent}
-            onCancel={closeNewEventDialog}
-            isSubmitting={isCreating}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog chỉnh sửa sự kiện sử dụng component chung */}
-      <Dialog open={isEditEventDialogOpen} onOpenChange={setIsEditEventDialogOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold sm:text-xl">
-              Chỉnh sửa sự kiện
-            </DialogTitle>
-          </DialogHeader>
-          {currentEditEvent && (
+      {/* Dialog tạo sự kiện mới */}
+      <Can action={Action.Create} subject="Event">
+        <Dialog open={isNewEventDialogOpen} onOpenChange={setIsNewEventDialogOpen}>
+          <DialogContent className="max-w-sm sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold md:text-xl">
+                Tạo sự kiện mới
+              </DialogTitle>
+            </DialogHeader>
             <EventForm
-              defaultValues={eventToFormValues(currentEditEvent)}
+              defaultValues={{
+                startDate: selectedDate,
+                endDate: selectedDate,
+              }}
+              onSubmit={handleCreateEvent}
+              onCancel={closeNewEventDialog}
+              isSubmitting={isCreating}
+            />
+          </DialogContent>
+        </Dialog>
+      </Can>
+
+      {/* Dialog chỉnh sửa sự kiện */}
+      <Can action={Action.Update} subject="Event">
+        <Dialog open={isEditEventDialogOpen} onOpenChange={setIsEditEventDialogOpen}>
+          <DialogContent className="max-w-sm sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold md:text-xl">
+                Chỉnh sửa sự kiện
+              </DialogTitle>
+            </DialogHeader>
+            <EventForm
+              defaultValues={currentEditEvent ? eventToFormValues(currentEditEvent) : undefined}
               onSubmit={handleUpdateEvent}
               onCancel={closeEditEventDialog}
               isSubmitting={isUpdating}
+              isEditing={true}
             />
-          )}
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      </Can>
 
       {/* Dialog xác nhận xóa sự kiện */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

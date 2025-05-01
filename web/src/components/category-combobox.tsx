@@ -15,6 +15,8 @@ import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from './ui/use-toast';
 import { getErrorMessage } from '@/utils/error';
+import { Can } from '@/components/Can';
+import { Action } from '@/casl/ability';
 
 interface CategoryComboboxProps {
   value?: number;
@@ -85,8 +87,10 @@ export function CategoryCombobox({ value, onValueChange }: CategoryComboboxProps
                   }}
                   disabled={!search || createCategory.isPending}
                 >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Tạo mới
+                  <Can action={Action.Create} subject="Category">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Tạo mới
+                  </Can>
                 </Button>
               </div>
             </CommandEmpty>
@@ -128,8 +132,10 @@ export function CategoryCombobox({ value, onValueChange }: CategoryComboboxProps
                     }}
                     disabled={createCategory.isPending}
                   >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Tạo mới &quot;{search}&quot;
+                    <Can action={Action.Create} subject="Category">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Tạo mới &quot;{search}&quot;
+                    </Can>
                   </CommandItem>
                 </CommandGroup>
               </>

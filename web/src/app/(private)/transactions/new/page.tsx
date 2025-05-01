@@ -27,6 +27,8 @@ import * as yup from 'yup';
 import { CategoryCombobox } from '@/components/category-combobox';
 import { toast } from '@/components/ui/use-toast';
 import { getErrorMessage } from '@/utils/error';
+import { Can } from '@/components/Can';
+import { Action } from '@/casl/ability';
 
 interface FormValues {
   type: 'INCOME' | 'EXPENSE';
@@ -91,180 +93,186 @@ export default function NewTransactionPage() {
   };
 
   return (
-    <div className="from-background/10 via-background/50 to-background/80 min-h-screen bg-gradient-to-b">
-      <div className="container mx-auto max-w-2xl space-y-8 py-8">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" className="gap-2" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4" />
-            Quay lại
-          </Button>
-          <h1 className="text-3xl font-bold tracking-tight">Tạo giao dịch mới</h1>
-        </div>
+    <Can action={Action.Create} subject="Transaction">
+      <div className="from-background/10 via-background/50 to-background/80 min-h-screen bg-gradient-to-b">
+        <div className="container mx-auto max-w-2xl space-y-8 py-8">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" className="gap-2" onClick={() => router.back()}>
+              <ArrowLeft className="h-4 w-4" />
+              Quay lại
+            </Button>
+            <h1 className="text-3xl font-bold tracking-tight">Tạo giao dịch mới</h1>
+          </div>
 
-        <Card className="dark:shadow-neumorphic-dark border border-white/20 bg-white/80 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-xl dark:bg-gray-800/80">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormLabel>Loại giao dịch</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="grid grid-cols-2 gap-4"
-                      >
-                        <FormItem>
-                          <FormControl>
-                            <RadioGroupItem value="EXPENSE" id="expense" className="peer sr-only" />
-                          </FormControl>
-                          <FormLabel
-                            htmlFor="expense"
-                            className="border-muted hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary flex flex-col items-center justify-between rounded-md border-2 bg-transparent p-4"
-                          >
-                            <ArrowDownCircle className="mb-3 h-6 w-6 text-rose-500" />
-                            Chi tiêu
-                          </FormLabel>
-                        </FormItem>
-                        <FormItem>
-                          <FormControl>
-                            <RadioGroupItem value="INCOME" id="income" className="peer sr-only" />
-                          </FormControl>
-                          <FormLabel
-                            htmlFor="income"
-                            className="border-muted hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary flex flex-col items-center justify-between rounded-md border-2 bg-transparent p-4"
-                          >
-                            <ArrowUpCircle className="mb-3 h-6 w-6 text-emerald-500" />
-                            Thu nhập
-                          </FormLabel>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <Card className="dark:shadow-neumorphic-dark border border-white/20 bg-white/80 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-xl dark:bg-gray-800/80">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel>Loại giao dịch</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="grid grid-cols-2 gap-4"
+                        >
+                          <FormItem>
+                            <FormControl>
+                              <RadioGroupItem
+                                value="EXPENSE"
+                                id="expense"
+                                className="peer sr-only"
+                              />
+                            </FormControl>
+                            <FormLabel
+                              htmlFor="expense"
+                              className="border-muted hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary flex flex-col items-center justify-between rounded-md border-2 bg-transparent p-4"
+                            >
+                              <ArrowDownCircle className="mb-3 h-6 w-6 text-rose-500" />
+                              Chi tiêu
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem>
+                            <FormControl>
+                              <RadioGroupItem value="INCOME" id="income" className="peer sr-only" />
+                            </FormControl>
+                            <FormLabel
+                              htmlFor="income"
+                              className="border-muted hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary flex flex-col items-center justify-between rounded-md border-2 bg-transparent p-4"
+                            >
+                              <ArrowUpCircle className="mb-3 h-6 w-6 text-emerald-500" />
+                              Thu nhập
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Số tiền</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          placeholder="Nhập số tiền"
-                          {...field}
-                          value={formatAmount(field.value?.toString() || '')}
-                          onChange={(e) => {
-                            const value = unFormatAmount(e.target.value);
-                            field.onChange(value);
-                          }}
-                        />
-                        <div className="text-muted-foreground pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                          VND
+                <FormField
+                  control={form.control}
+                  name="amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Số tiền</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            placeholder="Nhập số tiền"
+                            {...field}
+                            value={formatAmount(field.value?.toString() || '')}
+                            onChange={(e) => {
+                              const value = unFormatAmount(e.target.value);
+                              field.onChange(value);
+                            }}
+                          />
+                          <div className="text-muted-foreground pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                            VND
+                          </div>
                         </div>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mô tả</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nhập mô tả giao dịch" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mô tả</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nhập mô tả giao dịch" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="categoryId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Danh mục</FormLabel>
-                    <FormControl>
-                      <CategoryCombobox
-                        value={field.value ? Number(field.value) : undefined}
-                        onValueChange={(value) => field.onChange(Number(value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Ngày giao dịch</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={'outline'}
-                            className={cn(
-                              'w-full pl-3 text-left font-normal',
-                              !field.value && 'text-muted-foreground',
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, 'dd MMMM, yyyy', {
-                                locale: vi,
-                              })
-                            ) : (
-                              <span>Chọn ngày</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date: Date) =>
-                            date > new Date() || date < new Date('1900-01-01')
-                          }
-                          initialFocus
+                <FormField
+                  control={form.control}
+                  name="categoryId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Danh mục</FormLabel>
+                      <FormControl>
+                        <CategoryCombobox
+                          value={field.value ? Number(field.value) : undefined}
+                          onValueChange={(value) => field.onChange(Number(value))}
                         />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <div className="flex justify-end gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.push(ROUTES.TRANSACTIONS.LIST)}
-                >
-                  Hủy
-                </Button>
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? 'Đang xử lý...' : 'Tạo giao dịch'}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </Card>
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Ngày giao dịch</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={'outline'}
+                              className={cn(
+                                'w-full pl-3 text-left font-normal',
+                                !field.value && 'text-muted-foreground',
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, 'dd MMMM, yyyy', {
+                                  locale: vi,
+                                })
+                              ) : (
+                                <span>Chọn ngày</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date: Date) =>
+                              date > new Date() || date < new Date('1900-01-01')
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end gap-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => router.push(ROUTES.TRANSACTIONS.LIST)}
+                  >
+                    Hủy
+                  </Button>
+                  <Button type="submit" disabled={isPending}>
+                    {isPending ? 'Đang xử lý...' : 'Tạo giao dịch'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </Card>
+        </div>
       </div>
-    </div>
+    </Can>
   );
 }

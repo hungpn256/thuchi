@@ -385,4 +385,40 @@ export class AuthController {
       throw new BadRequestException('Không thể tạo profile mới', { error: error.message });
     }
   }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('current-profile-user')
+  @ApiOperation({
+    summary: 'Lấy thông tin profile user hiện tại',
+    description: 'Trả về thông tin profile user ứng với account và profile hiện tại',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Lấy thông tin profile user thành công',
+    schema: {
+      example: {
+        id: 1,
+        profileId: 1,
+        accountId: 1,
+        permission: 'ADMIN',
+        profile: {
+          id: 1,
+          name: 'Profile 1',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Không tìm thấy profile user' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Token không hợp lệ hoặc hết hạn' })
+  async getCurrentProfileUser(@Account('id') accountId: number, @Profile('id') profileId: number) {
+    if (!accountId || !profileId) {
+      throw new UnauthorizedException('Không xác định được account hoặc profile');
+    }
+    const profileUser = await this.authService.getCurrentProfileUser(accountId, profileId);
+    if (!profileUser) {
+      throw new BadRequestException('Không tìm thấy profile user');
+    }
+    return profileUser;
+  }
 }

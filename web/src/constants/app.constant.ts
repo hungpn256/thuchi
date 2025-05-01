@@ -54,6 +54,7 @@ export const API_ENDPOINTS = {
     REFRESH_TOKEN: '/auth/refresh-token',
     SWITCH_PROFILE: '/auth/switch-profile',
     CREATE_PROFILE: '/auth/profiles',
+    CURRENT_PROFILE_USER: '/auth/current-profile-user',
   },
   EVENTS: {
     LIST: '/events',

@@ -27,6 +27,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { getErrorMessage } from '@/utils/error';
+import { Can } from '@/components/Can';
+import { Action } from '@/casl/ability';
 
 export default function EventsPage() {
   const router = useRouter();
@@ -140,15 +142,17 @@ export default function EventsPage() {
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">Xem lịch</span>
             </Button>
-            <Button
-              className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 gap-2 sm:flex-none"
-              size="sm"
-              onClick={openCreateDialog}
-            >
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Tạo sự kiện mới</span>
-              <span className="inline sm:hidden">Tạo mới</span>
-            </Button>
+            <Can action={Action.Create} subject="Event">
+              <Button
+                className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 gap-2 sm:flex-none"
+                size="sm"
+                onClick={openCreateDialog}
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Tạo sự kiện mới</span>
+                <span className="inline sm:hidden">Tạo mới</span>
+              </Button>
+            </Can>
           </div>
         </div>
 
@@ -165,14 +169,16 @@ export default function EventsPage() {
                 <p className="text-muted-foreground text-sm">
                   Bạn chưa có sự kiện nào. Hãy tạo sự kiện đầu tiên!
                 </p>
-                <Button
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 mt-2 gap-2"
-                  size="sm"
-                  onClick={openCreateDialog}
-                >
-                  <Plus className="h-4 w-4" />
-                  Tạo sự kiện
-                </Button>
+                <Can action={Action.Create} subject="Event">
+                  <Button
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 mt-2 gap-2"
+                    size="sm"
+                    onClick={openCreateDialog}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Tạo sự kiện
+                  </Button>
+                </Can>
               </div>
             </div>
           ) : (

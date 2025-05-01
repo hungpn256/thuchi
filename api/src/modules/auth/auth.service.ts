@@ -406,4 +406,17 @@ export class AuthService {
     // Return the new profile with tokens
     return profileUser.profile;
   }
+
+  async getCurrentProfileUser(accountId: number, profileId: number) {
+    return this.prismaService.profile_user.findFirst({
+      where: {
+        accountId,
+        profileId,
+        status: 'ACTIVE',
+      },
+      include: {
+        profile: true,
+      },
+    });
+  }
 }
