@@ -255,8 +255,9 @@ export default function EventCalendarPage() {
             </DialogHeader>
             <EventForm
               defaultValues={{
-                startDate: selectedDate,
-                endDate: selectedDate,
+                startTime: '08:00',
+                endTime: '17:00',
+                date: selectedDate,
               }}
               onSubmit={handleCreateEvent}
               onCancel={closeNewEventDialog}
