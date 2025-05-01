@@ -25,7 +25,11 @@ export function defineAbilityFor(profileUser: ProfileUser | undefined | null): A
   switch (profileUser.permission) {
     case 'ADMIN':
       can(Action.Manage, 'all');
-      can(Action.Invite, 'ProfileMember');
+      can([Action.Invite, Action.Read], 'ProfileMember');
+      can([Action.Read, Action.Create, Action.Update], 'Transaction');
+      can([Action.Read, Action.Create, Action.Update], 'Category');
+      can([Action.Read, Action.Create, Action.Update], 'Event');
+      can(Action.Read, 'Profile');
       break;
     case 'WRITE':
       can([Action.Read, Action.Create, Action.Update], 'Transaction');
