@@ -121,6 +121,11 @@ export function Sidebar({
       icon: <LineChart className="h-5 w-5" />,
     },
     {
+      name: 'Quản lý profile',
+      href: ROUTES.PROFILES.LIST,
+      icon: <User className="h-5 w-5" />,
+    },
+    {
       name: 'Cài đặt',
       href: '/settings',
       icon: <Settings className="h-5 w-5" />,

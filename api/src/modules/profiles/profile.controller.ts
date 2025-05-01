@@ -26,24 +26,24 @@ export class ProfileController {
     return this.profileService.createInvitation(profileId, dto);
   }
 
-  @Post(':profileId/invitations/:invitationId/accept')
+  @Post('/invitations/:profileId/accept')
   @ApiOperation({ summary: 'Accept an invitation' })
   @ApiResponse({
     status: 200,
     description: 'Invitation accepted successfully',
   })
-  async acceptInvitation(@Param('invitationId') invitationId: string, @Account() account: account) {
-    return this.profileService.acceptInvitation(Number(invitationId), account.id);
+  async acceptInvitation(@Param('profileId') profileId: string, @Account() account: account) {
+    return this.profileService.acceptInvitation(Number(profileId), account.id);
   }
 
-  @Post(':profileId/invitations/:invitationId/reject')
+  @Post('/invitations/:profileId/reject')
   @ApiOperation({ summary: 'Reject an invitation' })
   @ApiResponse({
     status: 200,
     description: 'Invitation rejected successfully',
   })
-  async rejectInvitation(@Param('invitationId') invitationId: string, @Account() account: account) {
-    return this.profileService.rejectInvitation(Number(invitationId), account.id);
+  async rejectInvitation(@Param('profileId') profileId: string, @Account() account: account) {
+    return this.profileService.rejectInvitation(Number(profileId), account.id);
   }
 
   @Get('/invitations')
@@ -55,5 +55,15 @@ export class ProfileController {
   })
   async getInvitations(@Account() account: account) {
     return this.profileService.getInvitations(account.id);
+  }
+
+  @Get(':profileId/members')
+  @ApiOperation({ summary: 'Get all users in a profile' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of profile users',
+  })
+  async getProfileUsers(@Param('profileId') profileId: string) {
+    return this.profileService.getProfileUsers(Number(profileId));
   }
 }

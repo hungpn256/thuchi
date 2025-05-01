@@ -17,7 +17,7 @@ export interface AuthResponse {
 }
 
 export interface Account {
-  id: string;
+  id: number;
   email: string;
   createdAt: string;
   updatedAt: string;
@@ -25,7 +25,7 @@ export interface Account {
 }
 
 export interface Profile {
-  id: string;
+  id: number;
   name: string;
   avatar?: string;
   createdAt: string;
@@ -34,8 +34,8 @@ export interface Profile {
 
 export interface ProfileUser {
   id: string;
-  profileId: string;
-  accountId: string;
+  profileId: number;
+  accountId: number;
   createdAt: string;
   updatedAt: string;
   permission: Permission;

@@ -42,4 +42,8 @@ export const QUERY_KEYS = {
     ALL: ['user'],
     PROFILE: () => [...QUERY_KEYS.USER.ALL, 'profile'],
   },
+  PROFILES: {
+    MEMBERS: ['profiles', 'members'] as const,
+    INVITATIONS: ['profiles', 'invitations'] as const,
+  },
 } as const;

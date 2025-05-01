@@ -94,4 +94,28 @@ export class ProfileService {
       },
     });
   }
+
+  async getProfileUsers(profileId: number) {
+    const profile = await this.prisma.profile.findUnique({
+      where: { id: profileId },
+      include: {
+        profileUsers: {
+          include: {
+            account: {
+              select: {
+                id: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Profile not found');
+    }
+
+    return profile.profileUsers;
+  }
 }

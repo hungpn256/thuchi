@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ROUTES, STORAGE_KEYS } from '@/constants/app.constant';
+import { ROUTES } from '@/constants/app.constant';
 import { useUserProfile } from '@/hooks/use-user';
 import { useSwitchProfile } from '@/hooks/use-switch-profile';
 import { LogOut, User, Plus } from 'lucide-react';
@@ -18,12 +18,14 @@ import { ThemeToggle } from '../theme/theme-toggle';
 import { isIOS } from '@/utils/device';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/use-auth';
 
 export function Header() {
   const { data: user } = useUserProfile();
   const switchProfile = useSwitchProfile();
   const router = useRouter();
   const [isIOSDevice, setIsIOSDevice] = useState(false);
+  const { logout } = useAuth();
 
   // Check if device is iOS
   useEffect(() => {
@@ -31,7 +33,7 @@ export function Header() {
   }, []);
 
   function handleLogout(): void {
-    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    logout();
     router.push(ROUTES.AUTH.LOGIN);
   }
 
@@ -78,7 +80,7 @@ export function Header() {
                     key={profileUser.id}
                     className={cn(
                       'cursor-pointer',
-                      profileUser.profileId === user.profile.id && 'bg-accent',
+                      profileUser.profileId === user?.profile?.id && 'bg-accent',
                     )}
                     onClick={() => handleSwitchProfile(Number(profileUser.profileId))}
                   >

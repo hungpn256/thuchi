@@ -17,7 +17,7 @@ interface UpdateProfileDTO {
 // Custom hook for fetching user profile
 export const useUserProfile = (config?: { enabled?: boolean }) => {
   return useQuery<UserProfile>({
-    queryKey: QUERY_KEYS.USER.PROFILE(),
+    queryKey: QUERY_KEYS.AUTH.PROFILE,
     queryFn: async () => {
       const { data } = await axiosClient.get(API_ENDPOINTS.AUTH.PROFILE);
       return data;

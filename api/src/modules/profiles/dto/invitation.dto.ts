@@ -1,5 +1,6 @@
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { profile_permission } from '@prisma/client';
 
 export enum InvitationStatus {
   PENDING = 'PENDING',
@@ -15,6 +16,13 @@ export class CreateInvitationDto {
   @IsEmail()
   @IsNotEmpty()
   email: string;
+
+  @ApiProperty({
+    description: 'Permission of the user to invite',
+    example: 'ADMIN',
+  })
+  @IsEnum(profile_permission)
+  permission: profile_permission;
 }
 
 export class InvitationResponseDto {

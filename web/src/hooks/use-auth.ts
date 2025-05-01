@@ -10,9 +10,10 @@ import {
   RefreshTokenRequest,
 } from '@/types/auth';
 import { STORAGE_KEYS, ROUTES, API_ENDPOINTS } from '@/constants/app.constant';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { clearTokens, updateTokens } from '@/lib/auth';
 
 // Hàm lưu trạng thái đăng nhập cho chế độ redirect
 const saveAuthState = (redirectUrl: string): void => {
@@ -73,6 +74,7 @@ const checkAuthRedirect = async (): Promise<AuthResponse | null> => {
 export const useAuth = (): UseAuthReturn => {
   const router = useRouter();
   const [error, setError] = useState<Error | null>(null);
+  const client = useQueryClient();
 
   const { mutateAsync: login, isPending: isLoginLoading } = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
@@ -83,8 +85,7 @@ export const useAuth = (): UseAuthReturn => {
         );
 
         // Store both tokens in localStorage
-        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken);
-        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken);
+        updateTokens(data.accessToken, data.refreshToken);
 
         // Redirect to dashboard
         router.push(ROUTES.DASHBOARD);
@@ -105,8 +106,7 @@ export const useAuth = (): UseAuthReturn => {
         );
 
         // Store both tokens in localStorage
-        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken);
-        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken);
+        updateTokens(data.accessToken, data.refreshToken);
 
         // Redirect to dashboard
         router.push(ROUTES.DASHBOARD);
@@ -124,8 +124,7 @@ export const useAuth = (): UseAuthReturn => {
       const authData = await checkAuthRedirect();
       if (authData) {
         // Lưu token và redirect
-        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, authData.accessToken);
-        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, authData.refreshToken);
+        updateTokens(authData.accessToken, authData.refreshToken);
         router.push(ROUTES.DASHBOARD);
       }
     },
@@ -165,17 +164,16 @@ export const useAuth = (): UseAuthReturn => {
         } as RefreshTokenRequest);
 
         // Update both tokens in localStorage
-        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken);
-        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken);
+        updateTokens(data.accessToken, data.refreshToken);
 
         return data;
       } catch (err) {
         const error = err as Error;
         setError(error);
+        client.clear();
 
         // If refresh token is invalid, logout
-        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        clearTokens();
         router.push(ROUTES.AUTH.LOGIN);
 
         throw error;
@@ -185,8 +183,8 @@ export const useAuth = (): UseAuthReturn => {
 
   const logout = () => {
     // Clear tokens from localStorage
-    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    clearTokens();
+    client.clear();
 
     // Redirect to login page
     router.push(ROUTES.AUTH.LOGIN);

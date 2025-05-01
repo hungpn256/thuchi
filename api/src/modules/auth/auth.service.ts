@@ -3,7 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { OAuth2Client } from 'google-auth-library';
 import { PrismaService } from '@/shared/services/prisma/prisma.service';
-import { account, account_status, profile, profile_permission } from '@prisma/client';
+import {
+  account,
+  account_status,
+  profile,
+  profile_permission,
+  profile_user_status,
+} from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
 import { CreateProfileDto } from './dto/create-profile.dto';
@@ -273,7 +279,9 @@ export class AuthService {
   async findAccountById(id: number): Promise<account | null> {
     return this.prismaService.account.findUnique({
       where: { id, status: account_status.ACTIVE },
-      include: { profileUsers: { include: { profile: true } } },
+      include: {
+        profileUsers: { include: { profile: true }, where: { status: profile_user_status.ACTIVE } },
+      },
     });
   }
 
@@ -342,6 +350,7 @@ export class AuthService {
       where: {
         accountId,
         profileId,
+        status: profile_user_status.ACTIVE,
       },
       include: {
         profile: true,

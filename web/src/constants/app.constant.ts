@@ -26,6 +26,9 @@ export const ROUTES = {
     TRENDS: '/reports/trends',
   },
   SETTINGS: '/settings',
+  PROFILES: {
+    LIST: '/profiles',
+  },
 } as const;
 
 export const API_ENDPOINTS = {
@@ -64,5 +67,9 @@ export const API_ENDPOINTS = {
     SUMMARY: '/reports/summary',
     CATEGORIES: '/reports/categories',
     TRENDS: '/reports/trends',
+  },
+  PROFILES: {
+    MEMBERS: (profileId: number) => `/profiles/${profileId}/members`,
+    INVITATIONS: (profileId: number) => `/profiles/${profileId}/invitations`,
   },
 } as const;
