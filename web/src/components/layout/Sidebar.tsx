@@ -329,7 +329,7 @@ export function Sidebar({
             <motion.div className="px-4 py-2" variants={childVariants}>
               <div className="flex items-center gap-3 px-2 py-2">
                 <User className="h-5 w-5" />
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1">
                   <p className="truncate text-sm font-medium">{user?.account?.email}</p>
                   <Link href="/profile" className="text-muted-foreground text-xs hover:underline">
                     Thông tin cá nhân
