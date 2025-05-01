@@ -380,7 +380,8 @@ export class AuthService {
             name: createProfileDto.name,
           },
         },
-        permission: profile_permission.ADMIN,
+        permission: createProfileDto.permission,
+        status: createProfileDto.status,
       },
       include: {
         profile: true,

@@ -12,6 +12,7 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { DeviceModule } from './modules/device/device.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ProfileModule } from './modules/profiles/profile.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     SettingsModule,
     DeviceModule,
     NotificationsModule,
+    ProfileModule,
   ],
   providers: [
     {

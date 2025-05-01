@@ -10,11 +10,11 @@ import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { DeviceService } from '../device/device.service';
 import { LogoutDto } from './dto/logout.dto';
-import { account, profile } from '@prisma/client';
 import { Profile } from '@/shared/decorators/profile.decorator';
 import { Account } from '@/shared/decorators/account.decorator';
 import { SwitchProfileDto } from './dto/switch-profile.dto';
 import { CreateProfileDto } from './dto/create-profile.dto';
+import { account, profile } from '@prisma/client';
 
 @ApiTags('Authentication')
 @Controller('auth')

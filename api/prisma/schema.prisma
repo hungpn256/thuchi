@@ -20,6 +20,12 @@ enum profile_status {
     DELETED
 }
 
+enum profile_user_status {
+    ACTIVE
+    PENDING
+    REJECTED
+}
+
 enum profile_permission {
     READ
     WRITE
@@ -57,16 +63,17 @@ model profile {
 }
 
 model profile_user {
-    id         Int                @id @default(autoincrement())
+    id         Int                 @id @default(autoincrement())
     profileId  Int
     accountId  Int
-    permission profile_permission @default(READ)
-    isDefault  Boolean            @default(false)
-    createdAt  DateTime           @default(now()) @db.Timestamp(6)
-    updatedAt  DateTime           @default(now()) @db.Timestamp(6)
-    lastLogin  DateTime?          @db.Timestamp(6)
-    profile    profile            @relation(fields: [profileId], references: [id], onDelete: Cascade)
-    account    account            @relation(fields: [accountId], references: [id], onDelete: Cascade)
+    status     profile_user_status @default(ACTIVE)
+    permission profile_permission  @default(ADMIN)
+    isDefault  Boolean             @default(false)
+    createdAt  DateTime            @default(now()) @db.Timestamp(6)
+    updatedAt  DateTime            @default(now()) @db.Timestamp(6)
+    lastLogin  DateTime?           @db.Timestamp(6)
+    profile    profile             @relation(fields: [profileId], references: [id], onDelete: Cascade)
+    account    account             @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
     @@unique([profileId, accountId])
     @@index([profileId], map: "IDX_PROFILE_USER_PROFILE")
