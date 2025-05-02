@@ -13,17 +13,6 @@ export function NotificationPermissionRequest() {
     // Kiểm tra xem đã request permission chưa
     const hasRequestedBefore = localStorage.getItem('notification_permission_requested') === 'true';
     setHasRequested(hasRequestedBefore);
-
-    // Nếu chưa request và trình duyệt hỗ trợ notifications
-    if (!hasRequestedBefore && isSupported && permission === 'default') {
-      // Đợi 3 giây trước khi hiển thị request
-      const timer = setTimeout(() => {
-        handleRequestPermission();
-      }, 3000);
-
-      return () => clearTimeout(timer);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSupported, permission]);
 
   const handleRequestPermission = async () => {
