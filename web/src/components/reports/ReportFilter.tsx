@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { ReportFilterParams, TransactionType } from '@/types/report';
-import { format, subMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { CalendarIcon, Filter, SearchIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -33,8 +33,8 @@ export function ReportFilter({
   isCollapsed = false,
   onCollapsedChange,
 }: ReportFilterProps) {
-  const [startDate, setStartDate] = useState<Date>(subMonths(new Date(), 1));
-  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [startDate, setStartDate] = useState<Date>(startOfMonth(new Date()));
+  const [endDate, setEndDate] = useState<Date>(endOfMonth(new Date()));
   const [type, setType] = useState<TransactionType | undefined>(
     showTypeFilter ? 'EXPENSE' : undefined,
   );
@@ -94,7 +94,7 @@ export function ReportFilter({
                     <Calendar
                       mode="single"
                       selected={startDate}
-                      onSelect={(date) => setStartDate(date || subMonths(new Date(), 1))}
+                      onSelect={(date) => setStartDate(date || startOfMonth(new Date()))}
                       initialFocus
                       className="rounded-md border"
                     />
@@ -126,7 +126,7 @@ export function ReportFilter({
                     <Calendar
                       mode="single"
                       selected={endDate}
-                      onSelect={(date) => setEndDate(date || new Date())}
+                      onSelect={(date) => setEndDate(date || endOfMonth(new Date()))}
                       initialFocus
                       className="rounded-md border"
                     />

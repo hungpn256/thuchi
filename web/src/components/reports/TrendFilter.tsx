@@ -14,7 +14,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { ComparisonPeriod, TransactionType, TrendFilterParams } from '@/types/report';
-import { format, subMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { CalendarIcon, Filter, SearchIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -34,8 +34,8 @@ export function TrendFilter({
   isCollapsed = false,
   onCollapsedChange,
 }: TrendFilterProps) {
-  const [startDate, setStartDate] = useState<Date>(subMonths(new Date(), 1));
-  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [startDate, setStartDate] = useState<Date>(startOfMonth(new Date()));
+  const [endDate, setEndDate] = useState<Date>(endOfMonth(new Date()));
   const [type, setType] = useState<TransactionType | undefined>(
     showTypeFilter ? 'EXPENSE' : undefined,
   );
@@ -107,7 +107,7 @@ export function TrendFilter({
                     <Calendar
                       mode="single"
                       selected={startDate}
-                      onSelect={(date) => setStartDate(date || subMonths(new Date(), 1))}
+                      onSelect={(date) => setStartDate(date || startOfMonth(new Date()))}
                       initialFocus
                       className="rounded-md border"
                     />
@@ -139,7 +139,7 @@ export function TrendFilter({
                     <Calendar
                       mode="single"
                       selected={endDate}
-                      onSelect={(date) => setEndDate(date || new Date())}
+                      onSelect={(date) => setEndDate(date || endOfMonth(new Date()))}
                       initialFocus
                       className="rounded-md border"
                     />

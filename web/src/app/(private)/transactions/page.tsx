@@ -50,7 +50,7 @@ import { useDeleteTransaction, useTransactionList } from '@/hooks/use-transactio
 import { cn, formatCurrency } from '@/lib/utils';
 import { TransactionType } from '@/types/transaction';
 import { getErrorMessage } from '@/utils/error';
-import { format, subDays } from 'date-fns';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { CalendarIcon, FileEdit, Filter, MoreHorizontal, Plus, Trash, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -62,8 +62,8 @@ export default function TransactionsPage() {
 
   // Filters state
   const [date, setDate] = useState<DateRange | undefined>({
-    from: subDays(new Date(), 30),
-    to: new Date(),
+    from: startOfMonth(new Date()),
+    to: endOfMonth(new Date()),
   });
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);

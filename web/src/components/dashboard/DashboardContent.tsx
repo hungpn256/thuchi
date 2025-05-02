@@ -3,7 +3,15 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
-import { addDays, endOfDay, format, isEqual, parseISO, startOfDay } from 'date-fns';
+import {
+  endOfDay,
+  endOfMonth,
+  format,
+  isEqual,
+  parseISO,
+  startOfDay,
+  startOfMonth,
+} from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { formatCurrency } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
@@ -27,8 +35,8 @@ export default function DashboardContent() {
   const router = useRouter();
   const isMobile = useMediaQuery('(max-width: 640px)');
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: startOfDay(addDays(new Date(), -30)),
-    to: endOfDay(new Date()),
+    from: startOfMonth(new Date()),
+    to: endOfMonth(new Date()),
   });
 
   const { data: summary } = useTransactionSummary({

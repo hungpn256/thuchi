@@ -25,6 +25,7 @@ export const metadata = {
     width: 'device-width',
     initialScale: 1,
     maximumScale: 1,
+    minimumScale: 1,
     userScalable: false,
     viewportFit: 'cover',
   },
@@ -36,7 +37,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <Script src="/pwa-theme.js" strategy="beforeInteractive" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+        />
       </head>
       <body className={`${inter.className} safe-bottom`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
