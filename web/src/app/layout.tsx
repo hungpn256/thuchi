@@ -3,10 +3,8 @@ import { ThemeProvider } from '@/providers/theme-provider';
 import { Inter } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeDetector } from '@/components/theme/theme-detector';
-import { NotificationPermissionRequest } from '@/components/common/NotificationPermissionRequest';
 import './globals.css';
 import Script from 'next/script';
-import { CaslProvider } from '@/contexts/casl-context';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -43,11 +41,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} safe-bottom`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <ThemeDetector />
-          <QueryProvider>
-            <CaslProvider>{children}</CaslProvider>
-          </QueryProvider>
+          <QueryProvider>{children}</QueryProvider>
           <Toaster />
-          <NotificationPermissionRequest />
         </ThemeProvider>
       </body>
     </html>

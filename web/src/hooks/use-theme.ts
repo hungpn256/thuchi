@@ -3,6 +3,8 @@ import { useSettings } from './use-settings';
 
 export function useTheme() {
   const { theme, setTheme: setNextTheme } = useNextTheme();
+
+  console.log('theme', theme);
   const { updateSettings } = useSettings();
 
   // Wrap the original setTheme to also update in API

@@ -338,17 +338,29 @@ export function Sidebar({
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="w-full justify-start gap-2">
                       <User className="h-5 w-5" />
-                      <div className="flex flex-col items-start">
-                        <span className="text-sm font-medium">{user?.account?.email}</span>
-                        <span className="text-muted-foreground text-xs">{user?.profile?.name}</span>
+                      <div className="flex flex-col items-start overflow-hidden">
+                        <span
+                          className="max-w-full truncate text-sm font-medium"
+                          title={user?.account?.email}
+                        >
+                          {user?.account?.email}
+                        </span>
+                        <span
+                          className="text-muted-foreground max-w-full truncate text-xs"
+                          title={user?.profile?.name}
+                        >
+                          {user?.profile?.name}
+                        </span>
                       </div>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="start">
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm leading-none font-medium">{user?.account?.email}</p>
-                        <p className="text-muted-foreground text-xs leading-none">
+                        <p className="text-sm leading-none font-medium break-all">
+                          {user?.account?.email}
+                        </p>
+                        <p className="text-muted-foreground text-xs leading-none break-all">
                           {user?.profile?.name}
                         </p>
                       </div>
