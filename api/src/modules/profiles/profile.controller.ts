@@ -1,11 +1,13 @@
-import { Controller, Post, Body, Param, Get, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Param, Get, UseGuards, Patch } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ProfileService } from './profile.service';
 import { CreateInvitationDto, InvitationResponseDto } from './dto/invitation.dto';
 import { AdminGuard } from '@/modules/auth/guards/admin.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Account } from '@/shared/decorators';
-import { account } from '@prisma/client';
+import { account, profile } from '@prisma/client';
+import { UpdateProfileUserPermissionDto } from './dto/profile-user.dto';
+import { Profile } from '@/shared/decorators/profile.decorator';
 
 @ApiTags('Profiles')
 @Controller('profiles')
@@ -65,5 +67,20 @@ export class ProfileController {
   })
   async getProfileUsers(@Param('profileId') profileId: string) {
     return this.profileService.getProfileUsers(Number(profileId));
+  }
+
+  @Patch('users/:userId')
+  async updateUserPermission(
+    @Profile() profile: profile,
+    @Param('userId') userId: string,
+    @Account() account: account,
+    @Body() dto: UpdateProfileUserPermissionDto,
+  ) {
+    return this.profileService.updateUserPermission(
+      profile.id,
+      Number(userId),
+      account.id,
+      dto.permission,
+    );
   }
 }

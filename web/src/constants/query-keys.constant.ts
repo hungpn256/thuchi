@@ -46,5 +46,6 @@ export const QUERY_KEYS = {
   PROFILES: {
     MEMBERS: ['profiles', 'members'] as const,
     INVITATIONS: ['profiles', 'invitations'] as const,
+    USERS: ['profiles', 'users'] as const,
   },
 } as const;

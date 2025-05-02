@@ -72,5 +72,6 @@ export const API_ENDPOINTS = {
   PROFILES: {
     MEMBERS: (profileId: number) => `/profiles/${profileId}/members`,
     INVITATIONS: (profileId: number) => `/profiles/${profileId}/invitations`,
+    USERS: (userId: number) => `/profiles/users/${userId}`,
   },
 } as const;

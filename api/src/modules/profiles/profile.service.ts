@@ -3,10 +3,11 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CreateInvitationDto } from './dto/invitation.dto';
 import { PrismaService } from '@/shared/services/prisma/prisma.service';
-import { profile_user_status } from '@prisma/client';
+import { profile_user_status, profile_permission } from '@prisma/client';
 
 @Injectable()
 export class ProfileService {
@@ -118,5 +119,65 @@ export class ProfileService {
     }
 
     return profile.profileUsers;
+  }
+
+  async updateUserPermission(
+    profileId: number,
+    userId: number,
+    currentUserId: number,
+    permission: profile_permission,
+  ) {
+    // Check if current user is admin
+    const currentUserProfile = await this.prisma.profile_user.findUnique({
+      where: {
+        profileId_accountId: {
+          profileId,
+          accountId: currentUserId,
+        },
+      },
+    });
+
+    if (!currentUserProfile || currentUserProfile.permission !== profile_permission.ADMIN) {
+      throw new ForbiddenException('Only admin can update permissions');
+    }
+
+    // Check if target user exists in profile
+    const targetUser = await this.prisma.profile_user.findUnique({
+      where: {
+        profileId_accountId: {
+          profileId,
+          accountId: userId,
+        },
+      },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException('User not found in profile');
+    }
+
+    if (targetUser.permission === profile_permission.ADMIN) {
+      throw new BadRequestException('Cannot update admin permission');
+    }
+
+    // Update permission
+    return this.prisma.profile_user.update({
+      where: {
+        profileId_accountId: {
+          profileId,
+          accountId: userId,
+        },
+      },
+      data: {
+        permission,
+      },
+      include: {
+        account: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
+    });
   }
 }

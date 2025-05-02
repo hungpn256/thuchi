@@ -16,6 +16,7 @@ import {
   ShieldAlert,
   Plus,
   ArrowLeftRight,
+  Pencil,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useUserProfile } from '@/hooks/use-user';
@@ -54,6 +55,8 @@ import {
 import { ProfileSwitcher } from '@/components/profile/profile-switcher';
 import { Can } from '@/components/Can';
 import { Action } from '@/casl/ability';
+import { useUpdatePermission } from '@/hooks/use-update-permission';
+import { Permission } from '@/types/auth';
 
 interface ProfileUser {
   id: number;
@@ -66,7 +69,6 @@ interface ProfileUser {
 }
 
 type ProfileStatus = 'ACTIVE' | 'PENDING';
-type Permission = 'ADMIN' | 'WRITE' | 'READ';
 
 interface Invitation {
   id: number;
@@ -215,7 +217,7 @@ export default function ProfilePage() {
           </TabsTrigger>
           <TabsTrigger value="switch" className="flex items-center gap-2">
             <ArrowLeftRight className="h-4 w-4" />
-            Chuyển đổi profile
+            Profile
           </TabsTrigger>
         </TabsList>
 
@@ -362,29 +364,53 @@ export default function ProfilePage() {
 }
 
 function MemberTable({ members }: { members: ProfileUser[] }) {
-  const getPermissionIcon = (permission: string) => {
+  const [selectedUser, setSelectedUser] = useState<ProfileUser | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const { mutateAsync: updatePermission, isPending: isUpdating } = useUpdatePermission();
+  const { toast } = useToast();
+
+  const getPermissionIcon = (permission: Permission) => {
     switch (permission) {
-      case 'ADMIN':
+      case Permission.ADMIN:
         return <ShieldCheck className="text-primary h-4 w-4" />;
-      case 'WRITE':
+      case Permission.WRITE:
         return <Shield className="h-4 w-4 text-blue-500" />;
-      case 'READ':
+      case Permission.READ:
         return <ShieldAlert className="h-4 w-4 text-yellow-500" />;
       default:
         return null;
     }
   };
 
-  const getPermissionLabel = (permission: string) => {
+  const getPermissionLabel = (permission: Permission) => {
     switch (permission) {
-      case 'ADMIN':
+      case Permission.ADMIN:
         return 'Quản trị viên';
-      case 'WRITE':
+      case Permission.WRITE:
         return 'Chỉnh sửa';
-      case 'READ':
+      case Permission.READ:
         return 'Xem';
       default:
         return permission;
+    }
+  };
+
+  const handleUpdatePermission = async (permission: Permission) => {
+    if (!selectedUser) return;
+
+    try {
+      await updatePermission({ userId: selectedUser.account.id, permission });
+      toast({
+        title: 'Thành công',
+        description: 'Đã cập nhật quyền hạn',
+      });
+      setIsEditDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: 'Lỗi',
+        description: getErrorMessage(error, 'Không thể cập nhật quyền hạn'),
+        variant: 'destructive',
+      });
     }
   };
 
@@ -399,6 +425,9 @@ function MemberTable({ members }: { members: ProfileUser[] }) {
                 <TableHead>Email</TableHead>
                 <TableHead>Quyền hạn</TableHead>
                 <TableHead>Trạng thái</TableHead>
+                <Can action={Action.Update} subject="ProfileMember">
+                  <TableHead className="w-[100px]">Thao tác</TableHead>
+                </Can>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -416,6 +445,22 @@ function MemberTable({ members }: { members: ProfileUser[] }) {
                       {user.status === 'ACTIVE' ? 'Đã chấp nhận' : 'Đang chờ xác nhận'}
                     </Badge>
                   </TableCell>
+                  <Can action={Action.Update} subject="ProfileMember">
+                    <TableCell>
+                      {user.permission !== Permission.ADMIN && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setIsEditDialogOpen(true);
+                          }}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </TableCell>
+                  </Can>
                 </TableRow>
               ))}
             </TableBody>
@@ -432,11 +477,27 @@ function MemberTable({ members }: { members: ProfileUser[] }) {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  {getPermissionIcon(user.permission)}
-                  <span className="text-muted-foreground text-sm">
-                    {getPermissionLabel(user.permission)}
-                  </span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {getPermissionIcon(user.permission)}
+                    <span className="text-muted-foreground text-sm">
+                      {getPermissionLabel(user.permission)}
+                    </span>
+                  </div>
+                  <Can action={Action.Update} subject="ProfileMember">
+                    {user.permission !== Permission.ADMIN && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setIsEditDialogOpen(true);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </Can>
                 </div>
                 <Badge
                   className="w-fit"
@@ -449,6 +510,45 @@ function MemberTable({ members }: { members: ProfileUser[] }) {
           </Card>
         ))}
       </div>
+
+      {/* Edit Permission Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cập nhật quyền hạn</DialogTitle>
+            <DialogDescription>
+              Chọn quyền hạn mới cho thành viên {selectedUser?.account.email}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-1 gap-4">
+              <Button
+                variant="outline"
+                className="justify-start gap-2"
+                onClick={() => handleUpdatePermission(Permission.WRITE)}
+                disabled={isUpdating || selectedUser?.permission === Permission.WRITE}
+              >
+                <Shield className="h-4 w-4 text-blue-500" />
+                Chỉnh sửa
+              </Button>
+              <Button
+                variant="outline"
+                className="justify-start gap-2"
+                onClick={() => handleUpdatePermission(Permission.READ)}
+                disabled={isUpdating || selectedUser?.permission === Permission.READ}
+              >
+                <ShieldAlert className="h-4 w-4 text-yellow-500" />
+                Xem
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Hủy
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
