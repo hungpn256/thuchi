@@ -171,8 +171,7 @@ export default function EventCalendarPage() {
             </h1>
             <Can action={Action.Create} subject="Event">
               <Button
-                className="bg-primary text-primary-foreground hover:bg-primary/90 ml-2 h-6 px-1.5 sm:ml-4"
-                size="sm"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 px-1.5 sm:ml-4"
                 onClick={() => {
                   setSelectedDate(new Date());
                   setIsNewEventDialogOpen(true);
