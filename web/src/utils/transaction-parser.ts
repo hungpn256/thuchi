@@ -2,6 +2,7 @@ import { TRANSACTION_REGEX } from '@/constants/app.constant';
 import { Category } from '@/hooks/use-categories';
 import { parse, isValid } from 'date-fns';
 import Fuse from 'fuse.js';
+import { extractVietnameseNumber, replaceVietnameseNumbers } from './vietnamese-number-parser';
 
 export interface ParsedTransaction {
   type: 'INCOME' | 'EXPENSE';
@@ -16,7 +17,33 @@ export interface ParsedTransaction {
  * Parse amount from various formats including k, m, nghìn, triệu
  */
 export const parseAmount = (amountStr: string): number => {
-  let cleanAmount = amountStr.replace(/[,.]/g, '');
+  // Trong mọi trường hợp, xem dấu , hoặc . là dấu thập phân
+  // Lấy dấu thập phân cuối cùng, và loại bỏ tất cả các dấu khác
+  let cleanAmount = amountStr;
+
+  // Nếu có nhiều dấu . hoặc ,
+  const dotsAndCommas = cleanAmount.match(/[.,]/g);
+  if (dotsAndCommas && dotsAndCommas.length > 0) {
+    // Tìm vị trí của dấu thập phân cuối cùng
+    const lastDotIndex = cleanAmount.lastIndexOf('.');
+    const lastCommaIndex = cleanAmount.lastIndexOf(',');
+
+    // Chọn dấu thập phân cuối cùng
+    const lastDecimalIndex = Math.max(lastDotIndex, lastCommaIndex);
+
+    if (lastDecimalIndex >= 0) {
+      // Chia chuỗi thành phần nguyên và phần thập phân
+      const integerPart = cleanAmount.substring(0, lastDecimalIndex).replace(/[.,]/g, '');
+      const decimalPart = cleanAmount.substring(lastDecimalIndex + 1);
+
+      // Nối lại với dấu thập phân là dấu chấm (cho JavaScript)
+      cleanAmount = integerPart + '.' + decimalPart;
+    }
+  } else {
+    // Nếu chỉ có một dấu , thì chuyển thành dấu .
+    cleanAmount = cleanAmount.replace(',', '.');
+  }
+
   let multiplier = 1;
 
   // Handle different currency terms
@@ -33,9 +60,10 @@ export const parseAmount = (amountStr: string): number => {
   }
 
   // Remove currency terms to extract the numeric value
-  cleanAmount = cleanAmount.replace(/k|m|tr|nghìn|nghin|triệu|trieu/i, '').replace(/\s+/g, '');
+  cleanAmount = cleanAmount.replace(/k|m|nghìn|nghin|triệu|trieu/i, '').replace(/\s+/g, '');
 
-  return parseInt(cleanAmount, 10) * multiplier;
+  // Parse as float to handle decimal values correctly
+  return parseFloat(cleanAmount) * multiplier;
 };
 
 /**
@@ -229,22 +257,44 @@ export const parseTransaction = (
   if (!text.trim()) return null;
 
   try {
-    // Extract amount - handle spoken numbers
-    const amountRegex = /(\d+(?:[,.]\d+)?(?:\s*(?:k|m|nghìn|nghin|triệu|trieu))?)/i;
-    const amountMatch = text.match(amountRegex);
-    if (!amountMatch) return null;
+    // First, preprocess the text to convert Vietnamese text numbers to digits
+    const preprocessedText = replaceVietnameseNumbers(text);
 
-    const amount = parseAmount(amountMatch[0]);
+    // Extract amount using regular expression or Vietnamese text numbers
+    let amount = 0;
+    let amountStr = '';
+
+    // Regex để tìm số có thể có hậu tố đơn vị tiền tệ
+    // Ví dụ: 158 triệu, 1,25 triệu, 158triệu, 50k, 200M
+    const amountRegex = /(\d+(?:[,.]\d+)?(?:\s*(?:k|m|nghìn|nghin|triệu|trieu|tỷ))?)/i;
+    const amountMatch = preprocessedText.match(amountRegex);
+
+    if (amountMatch) {
+      amountStr = amountMatch[0];
+      amount = parseAmount(amountStr);
+    } else {
+      // If no numeric amount found, try to find a Vietnamese text number
+      // First in preprocessedText (which should already have converted most numbers)
+      // then in the original text as a fallback
+      const extractedNumber = extractVietnameseNumber(text);
+      if (extractedNumber) {
+        amount = extractedNumber.value;
+        amountStr = extractedNumber.original;
+      } else {
+        // No amount found, cannot proceed
+        return null;
+      }
+    }
 
     // Extract date or use current date
-    const dateMatch = text.match(TRANSACTION_REGEX.DATE);
+    const dateMatch = preprocessedText.match(TRANSACTION_REGEX.DATE);
     const date = dateMatch ? parseDate(dateMatch[0]) : new Date();
 
     // Determine transaction type
-    const type = parseTransactionType(text);
+    const type = parseTransactionType(preprocessedText);
 
     // Extract description - use the text after removing specific patterns
-    let processedText = text;
+    let processedText = preprocessedText;
 
     // Remove transaction indicators
     processedText = processedText
@@ -258,12 +308,17 @@ export const parseTransaction = (
     }
 
     // Remove amount with its suffix carefully
-    const fullAmountMatch = amountMatch[0];
-    const amountIndex = processedText.indexOf(fullAmountMatch);
-    if (amountIndex !== -1) {
-      const beforeAmount = processedText.substring(0, amountIndex);
-      const afterAmount = processedText.substring(amountIndex + fullAmountMatch.length);
-      processedText = beforeAmount + afterAmount;
+    if (amountMatch) {
+      const fullAmountMatch = amountMatch[0];
+      const amountIndex = processedText.indexOf(fullAmountMatch);
+      if (amountIndex !== -1) {
+        const beforeAmount = processedText.substring(0, amountIndex);
+        const afterAmount = processedText.substring(amountIndex + fullAmountMatch.length);
+        processedText = beforeAmount + afterAmount;
+      }
+    } else if (amountStr) {
+      // If we found a Vietnamese text number, remove it from the description
+      processedText = processedText.replace(amountStr, '');
     }
 
     // Clean up any extra spaces

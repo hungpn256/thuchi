@@ -40,6 +40,7 @@ import { Can } from '@/components/Can';
 import { Action } from '@/casl/ability';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QuickInput } from '@/components/transaction/quick-input';
+import { VoiceInput } from '@/components/transaction/voice-input';
 import { Category } from '@/hooks/use-categories';
 
 interface FormValues {
@@ -197,14 +198,10 @@ export default function NewTransactionPage() {
                 </TabsTrigger>
                 <TabsTrigger
                   value={TRANSACTION_INPUT_METHODS.VOICE}
-                  disabled
                   className="flex items-center gap-2"
                 >
                   <Mic className="h-4 w-4" />
-                  Voice{' '}
-                  <span className="bg-muted text-muted-foreground ml-1 rounded-full px-1.5 py-0.5 text-xs">
-                    Soon
-                  </span>
+                  Giọng nói
                 </TabsTrigger>
               </TabsList>
 
@@ -388,14 +385,10 @@ export default function NewTransactionPage() {
               </TabsContent>
 
               <TabsContent value={TRANSACTION_INPUT_METHODS.VOICE}>
-                <div className="flex flex-col items-center justify-center space-y-4 py-12 text-center">
-                  <Mic className="text-muted-foreground/60 h-16 w-16" />
-                  <h3 className="text-xl font-medium">Voice Input Coming Soon</h3>
-                  <p className="text-muted-foreground max-w-md">
-                    Bạn sẽ sớm có thể tạo giao dịch bằng giọng nói. Chức năng này đang được phát
-                    triển.
-                  </p>
-                </div>
+                <VoiceInput
+                  onSubmit={handleQuickInputSubmit}
+                  onComplete={() => router.push('/transactions')}
+                />
               </TabsContent>
             </Tabs>
           </Card>
