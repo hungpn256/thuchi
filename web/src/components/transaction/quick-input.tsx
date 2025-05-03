@@ -84,6 +84,14 @@ export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
     // Check if the browser supports Speech Recognition
     const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
     setIsSpeechRecognitionSupported(!!SpeechRecognition);
+    // Create a new instance for each session
+    if (!SpeechRecognition) return;
+
+    recognitionRef.current = new SpeechRecognition();
+
+    recognitionRef.current.continuous = false; // Only one recognition per session
+    recognitionRef.current.interimResults = true;
+    recognitionRef.current.lang = 'vi-VN';
   }, []);
 
   const handleSubmit = async () => {
@@ -180,54 +188,44 @@ export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
 
     // Clear current line for new recording
     currentLineRef.current = '';
+    if (recognitionRef.current) {
+      recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
+        const lastResult = event.results[event.results.length - 1];
+        const text = lastResult[0].transcript;
+        currentLineRef.current = text;
+      };
 
-    // Create a new instance for each session
-    const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-    if (!SpeechRecognition) return;
+      recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
+        console.error('Speech recognition error', event.error);
 
-    recognitionRef.current = new SpeechRecognition();
-    const recognition = recognitionRef.current;
+        if (event.error !== 'aborted') {
+          toast({
+            title: 'Lỗi nhận diện giọng nói',
+            description: `Đã xảy ra lỗi: ${event.error}`,
+            variant: 'destructive',
+          });
+        }
 
-    recognition.continuous = false; // Only one recognition per session
-    recognition.interimResults = true;
-    recognition.lang = 'vi-VN';
+        setIsListening(false);
+      };
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const lastResult = event.results[event.results.length - 1];
-      const text = lastResult[0].transcript;
-      currentLineRef.current = text;
-    };
+      recognitionRef.current.onend = () => {
+        // Add current line to transcript if it has content
+        if (currentLineRef.current.trim()) {
+          addLineToTranscript(currentLineRef.current);
+        }
 
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      console.error('Speech recognition error', event.error);
+        setIsListening(false);
+      };
 
-      if (event.error !== 'aborted') {
-        toast({
-          title: 'Lỗi nhận diện giọng nói',
-          description: `Đã xảy ra lỗi: ${event.error}`,
-          variant: 'destructive',
-        });
+      // Start recognition
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch (error) {
+        console.error('Error starting speech recognition:', error);
+        setIsListening(false);
       }
-
-      setIsListening(false);
-    };
-
-    recognition.onend = () => {
-      // Add current line to transcript if it has content
-      if (currentLineRef.current.trim()) {
-        addLineToTranscript(currentLineRef.current);
-      }
-
-      setIsListening(false);
-    };
-
-    // Start recognition
-    try {
-      recognition.start();
-      setIsListening(true);
-    } catch (error) {
-      console.error('Error starting speech recognition:', error);
-      setIsListening(false);
     }
   };
 
