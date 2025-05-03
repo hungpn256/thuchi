@@ -1,6 +1,7 @@
 export const STORAGE_KEYS = {
   ACCESS_TOKEN: 'accessToken',
   REFRESH_TOKEN: 'refreshToken',
+  TRANSACTION_INPUT_PREFERENCE: 'transaction-input-preference',
 } as const;
 
 export const ROUTES = {
@@ -74,4 +75,17 @@ export const API_ENDPOINTS = {
     INVITATIONS: (profileId: number) => `/profiles/${profileId}/invitations`,
     USERS: (userId: number) => `/profiles/users/${userId}`,
   },
+} as const;
+
+export const TRANSACTION_INPUT_METHODS = {
+  FORM: 'form',
+  TEXT: 'text',
+  VOICE: 'voice',
+} as const;
+
+export const TRANSACTION_REGEX = {
+  AMOUNT: /(\d+(?:[,.]\d+)?(?:\s*(?:k|m|nghìn|nghin|triệu|trieu))?)/i,
+  DATE: /(\d{1,2}\/\d{1,2}(?:\/\d{4})?)/,
+  INCOME_INDICATORS: /^\+|^thêm/i,
+  EXPENSE_INDICATORS: /chi|tiêu/i,
 } as const;
