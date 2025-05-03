@@ -1,12 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useCategories } from '@/hooks/use-categories';
-import { ArrowDownCircle, ArrowUpCircle, CalendarIcon, ListChecks, Loader2, X } from 'lucide-react';
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  CalendarIcon,
+  ListChecks,
+  Loader2,
+  Mic,
+  MicOff,
+  X,
+} from 'lucide-react';
 import { formatAmount } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
 import { ParsedTransaction, parseMultipleTransactions } from '@/utils/transaction-parser';
@@ -16,6 +25,46 @@ interface QuickInputProps {
   onComplete?: () => void;
 }
 
+// Extend Window interface for Web Speech API
+declare global {
+  interface Window {
+    SpeechRecognition?: {
+      new (): SpeechRecognition;
+    };
+    webkitSpeechRecognition?: {
+      new (): SpeechRecognition;
+    };
+  }
+}
+
+// TypeScript definitions for Web Speech API
+interface SpeechRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+}
+
+// Custom type definitions for Speech Recognition Events
+interface SpeechRecognitionEvent {
+  results: {
+    [index: number]: {
+      [index: number]: {
+        transcript: string;
+      };
+    };
+    length: number;
+  };
+}
+
+interface SpeechRecognitionErrorEvent {
+  error: string;
+}
+
 export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
   const [inputText, setInputText] = useState('');
   const [parsedTransactions, setParsedTransactions] = useState<ParsedTransaction[]>([]);
@@ -23,6 +72,19 @@ export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const { categories } = useCategories();
+
+  // Voice recording state
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const currentLineRef = useRef<string>('');
+  const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(false);
+
+  // Initialize speech recognition on mount
+  useEffect(() => {
+    // Check if the browser supports Speech Recognition
+    const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+    setIsSpeechRecognitionSupported(!!SpeechRecognition);
+  }, []);
 
   const handleSubmit = async () => {
     if (parsedTransactions.length > 0) {
@@ -67,14 +129,11 @@ export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    setInputText(value);
-
-    if (value.trim()) {
+  useEffect(() => {
+    if (inputText.trim()) {
       setIsProcessing(true);
       try {
-        const parsed = parseMultipleTransactions(value, categories);
+        const parsed = parseMultipleTransactions(inputText, categories);
         setParsedTransactions(parsed);
       } catch (error) {
         console.error('Error parsing transactions:', error);
@@ -89,10 +148,105 @@ export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
     } else {
       setParsedTransactions([]);
     }
+  }, [inputText]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setInputText(value);
   };
 
   const handleRemoveTransaction = (index: number) => {
     setParsedTransactions((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Voice input functions
+  const addLineToTranscript = (line: string) => {
+    if (line.trim()) {
+      setInputText((prev) => (prev ? `${prev}\n${line.trim()}` : line.trim()));
+      currentLineRef.current = '';
+    }
+  };
+
+  const startListening = () => {
+    if (!isSpeechRecognitionSupported) {
+      toast({
+        title: 'Trình duyệt không hỗ trợ',
+        description:
+          'Trình duyệt của bạn không hỗ trợ nhận diện giọng nói. Vui lòng sử dụng Chrome, Edge, hoặc Safari.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Clear current line for new recording
+    currentLineRef.current = '';
+
+    // Create a new instance for each session
+    const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    recognitionRef.current = new SpeechRecognition();
+    const recognition = recognitionRef.current;
+
+    recognition.continuous = false; // Only one recognition per session
+    recognition.interimResults = true;
+    recognition.lang = 'vi-VN';
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const lastResult = event.results[event.results.length - 1];
+      const text = lastResult[0].transcript;
+      currentLineRef.current = text;
+    };
+
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      console.error('Speech recognition error', event.error);
+
+      if (event.error !== 'aborted') {
+        toast({
+          title: 'Lỗi nhận diện giọng nói',
+          description: `Đã xảy ra lỗi: ${event.error}`,
+          variant: 'destructive',
+        });
+      }
+
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      // Add current line to transcript if it has content
+      if (currentLineRef.current.trim()) {
+        addLineToTranscript(currentLineRef.current);
+      }
+
+      setIsListening(false);
+    };
+
+    // Start recognition
+    try {
+      recognition.start();
+      setIsListening(true);
+    } catch (error) {
+      console.error('Error starting speech recognition:', error);
+      setIsListening(false);
+    }
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      // Save the current line before stopping
+      if (currentLineRef.current.trim()) {
+        addLineToTranscript(currentLineRef.current);
+      }
+      recognitionRef.current.stop();
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
   };
 
   return (
@@ -105,18 +259,36 @@ export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
             value={inputText}
             onChange={handleInputChange}
             rows={6}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isListening}
           />
-          {isProcessing && (
-            <div className="absolute top-3 right-3">
-              <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
-            </div>
+          <div className="absolute top-3 right-3 flex items-center gap-2">
+            {isProcessing && <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />}
+            {isSpeechRecognitionSupported && (
+              <Button
+                variant="outline"
+                size="sm"
+                className={`h-8 w-8 rounded-full p-0 ${
+                  isListening
+                    ? 'bg-rose-100 text-rose-500 hover:bg-rose-200 dark:bg-rose-900/50'
+                    : ''
+                }`}
+                onClick={toggleListening}
+                disabled={isSubmitting}
+                title={isListening ? 'Dừng ghi âm' : 'Ghi âm giọng nói'}
+              >
+                {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </Button>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <p className="text-muted-foreground text-sm">
+            Mỗi dòng là một giao dịch riêng biệt. Ví dụ: +40k tiền lương, 40k đi ăn bánh cuốn
+          </p>
+          {isListening && (
+            <p className="animate-pulse text-sm font-medium text-rose-500">Đang ghi âm...</p>
           )}
         </div>
-        <p className="text-muted-foreground text-sm">
-          Mỗi dòng là một giao dịch riêng biệt. Ví dụ: +40k tiền lương, 40k đi ăn bánh cuốn (danh
-          mục Ăn uống), 100k đi chợ (danh mục Mua sắm)
-        </p>
       </div>
 
       {parsedTransactions.length > 0 && (

@@ -27,7 +27,6 @@ import {
   CalendarIcon,
   FileText,
   MessageSquare,
-  Mic,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -40,7 +39,6 @@ import { Can } from '@/components/Can';
 import { Action } from '@/casl/ability';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QuickInput } from '@/components/transaction/quick-input';
-import { VoiceInput } from '@/components/transaction/voice-input';
 import { Category } from '@/hooks/use-categories';
 
 interface FormValues {
@@ -181,7 +179,7 @@ export default function NewTransactionPage() {
 
           <Card className="dark:shadow-neumorphic-dark border border-white/20 bg-white/80 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-xl dark:bg-gray-800/80">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="mb-6 grid grid-cols-3">
+              <TabsList className="mb-6 grid grid-cols-2">
                 <TabsTrigger
                   value={TRANSACTION_INPUT_METHODS.FORM}
                   className="flex items-center gap-2"
@@ -195,13 +193,6 @@ export default function NewTransactionPage() {
                 >
                   <MessageSquare className="h-4 w-4" />
                   Nhập nhanh
-                </TabsTrigger>
-                <TabsTrigger
-                  value={TRANSACTION_INPUT_METHODS.VOICE}
-                  className="flex items-center gap-2"
-                >
-                  <Mic className="h-4 w-4" />
-                  Giọng nói
                 </TabsTrigger>
               </TabsList>
 
@@ -381,13 +372,6 @@ export default function NewTransactionPage() {
                 <QuickInput
                   onSubmit={handleQuickInputSubmit}
                   onComplete={() => router.push(ROUTES.TRANSACTIONS.LIST)}
-                />
-              </TabsContent>
-
-              <TabsContent value={TRANSACTION_INPUT_METHODS.VOICE}>
-                <VoiceInput
-                  onSubmit={handleQuickInputSubmit}
-                  onComplete={() => router.push('/transactions')}
                 />
               </TabsContent>
             </Tabs>
