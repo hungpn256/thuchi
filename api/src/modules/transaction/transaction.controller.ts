@@ -27,6 +27,7 @@ import { GetTransactionsDto } from './dto/get-transactions.dto';
 import { Profile } from '@/shared/decorators/profile.decorator';
 import { AdminOrWriteGuard } from '../auth/guards/admin-write.guard';
 import { CreateTransactionsBatchDto } from './dto/create-transaction.dto';
+import { CreateTransactionFromDescriptionDto } from './dto/create-transaction-from-description.dto';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -173,6 +174,16 @@ export class TransactionController {
     }
   }
 
+  @Get('summary-by-month')
+  @ApiOperation({
+    summary: 'Tổng thu/chi 10 tháng gần nhất',
+    description: 'Trả về tổng thu và tổng chi cho 10 tháng gần nhất của user hiện tại',
+  })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Thành công' })
+  async getSummaryByMonth(@Profile() profile) {
+    return this.transactionService.getSummaryByMonth(profile.id, 10);
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Lấy chi tiết giao dịch',
@@ -269,6 +280,22 @@ export class TransactionController {
         throw error;
       }
       throw new BadRequestException('Không thể xóa giao dịch', { error: error.message });
+    }
+  }
+
+  @Post('preview')
+  @ApiOperation({
+    summary: 'Tạo giao dịch từ mô tả',
+    description: 'API tạo giao dịch từ mô tả và số tiền',
+  })
+  @ApiBody({ type: CreateTransactionFromDescriptionDto })
+  async createTransactionFromDescription(@Body() body: CreateTransactionFromDescriptionDto) {
+    try {
+      return await this.transactionService.createFromDescription(body.text);
+    } catch (error) {
+      throw new BadRequestException('Failed to create transaction from description', {
+        error: error.message,
+      });
     }
   }
 }

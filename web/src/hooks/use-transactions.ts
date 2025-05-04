@@ -52,6 +52,12 @@ export interface CategoryExpense {
   total: number;
 }
 
+export interface MonthlySummary {
+  month: string; // '2024-06'
+  totalIncome: number;
+  totalExpense: number;
+}
+
 // Custom hook for fetching transaction list
 export const useTransactionList = (params?: TransactionListParams) => {
   const queryParams = {
@@ -146,7 +152,7 @@ export const useDeleteTransaction = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.TRANSACTIONS.ALL],
+        queryKey: QUERY_KEYS.TRANSACTIONS.ALL,
       });
     },
   });
@@ -181,10 +187,9 @@ export const useCreateTransactionsBatch = () => {
 
   return useMutation({
     mutationFn: async (transactions: CreateTransactionDTO[]) => {
-      const { data } = await axiosClient.post(
-        API_ENDPOINTS.TRANSACTIONS.CREATE_BATCH,
+      const { data } = await axiosClient.post(API_ENDPOINTS.TRANSACTIONS.CREATE_BATCH, {
         transactions,
-      );
+      });
       return data;
     },
     onSuccess: () => {
@@ -192,3 +197,13 @@ export const useCreateTransactionsBatch = () => {
     },
   });
 };
+
+export function useMonthlySummary() {
+  return useQuery<MonthlySummary[]>({
+    queryKey: ['transactions', 'summary-by-month'],
+    queryFn: async () => {
+      const { data } = await axiosClient.get<MonthlySummary[]>('/transactions/summary-by-month');
+      return data;
+    },
+  });
+}

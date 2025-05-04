@@ -41,6 +41,7 @@ export const API_ENDPOINTS = {
     UPDATE: '/transactions',
     DELETE: '/transactions',
     DETAIL: '/transactions',
+    PREVIEW: '/transactions/preview',
   },
   CATEGORIES: {
     LIST: '/categories',

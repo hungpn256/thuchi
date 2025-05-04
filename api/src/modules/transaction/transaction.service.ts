@@ -5,6 +5,10 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from '@/shared/services/prisma/prisma.service';
 import { Prisma, transaction } from '@prisma/client';
 import { GetTransactionsDto } from './dto/get-transactions.dto';
+import { GoogleGenAI, Type } from '@google/genai';
+import { ConfigService } from '@nestjs/config';
+import { subMonths, startOfMonth, endOfMonth, format } from 'date-fns';
+
 export interface PaginatedTransactions {
   items: transaction[];
   total: number;
@@ -13,9 +17,21 @@ export interface PaginatedTransactions {
   totalPages: number;
 }
 
+export interface MonthlySummary {
+  month: string; // '2024-06'
+  totalIncome: number;
+  totalExpense: number;
+}
+
 @Injectable()
 export class TransactionService {
-  constructor(private prismaService: PrismaService) {}
+  private readonly genAI: GoogleGenAI;
+  constructor(
+    private prismaService: PrismaService,
+    private readonly configService: ConfigService,
+  ) {
+    this.genAI = new GoogleGenAI({ apiKey: this.configService.get('GOOGLE_GENAI_API_KEY') });
+  }
 
   async create(data: CreateTransactionDto & { profileId: number }): Promise<transaction> {
     const transaction = this.prismaService.transaction.create({
@@ -49,6 +65,9 @@ export class TransactionService {
       },
       skip,
       take: limit,
+      orderBy: {
+        date: 'desc',
+      },
     });
     const total = await this.prismaService.transaction.count({
       where: where,
@@ -167,5 +186,76 @@ export class TransactionService {
       data: data.transactions.map((t) => ({ ...t, profileId: data.profileId })),
       skipDuplicates: false,
     });
+  }
+
+  async createFromDescription(text: string) {
+    const prompt = `Hãy phân tích đoạn text sau thành danh sách các giao dịch tài chính. Mỗi giao dịch gồm: type (INCOME/EXPENSE), amount (number), description (string), date ${new Date().toISOString()}, giờ hiện tại là ${new Date().toString()}. Trả về kết quả dạng JSON array để có thể dùng js JSON.parse thành object được.\n\nText: ${text}`;
+    const response = await this.genAI.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [{ parts: [{ text: prompt }] }],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              type: {
+                type: Type.STRING,
+                description: 'Type of the transaction',
+                nullable: false,
+                enum: ['INCOME', 'EXPENSE'],
+              },
+              amount: {
+                type: Type.NUMBER,
+                description: 'Amount of the transaction',
+                nullable: false,
+              },
+              description: {
+                type: Type.STRING,
+                description: 'Description of the transaction',
+                nullable: true,
+              },
+              date: {
+                type: Type.STRING,
+                description: `Date of the transaction in format ${new Date().toISOString()}`,
+                nullable: false,
+              },
+            },
+            required: ['type', 'amount', 'date'],
+          },
+        },
+      },
+    });
+    const data = JSON.parse(response?.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]');
+    return data;
+  }
+
+  async getSummaryByMonth(profileId: number, months: number): Promise<MonthlySummary[]> {
+    const now = new Date();
+    const results: MonthlySummary[] = [];
+    for (let i = months - 1; i >= 0; i--) {
+      const monthDate = subMonths(now, i);
+      const month = format(monthDate, 'yyyy-MM');
+      const start = startOfMonth(monthDate);
+      const end = endOfMonth(monthDate);
+      const transactions = await this.prismaService.transaction.findMany({
+        where: {
+          profileId,
+          date: {
+            gte: start,
+            lte: end,
+          },
+        },
+      });
+      const totalIncome = transactions
+        .filter((t) => t.type === 'INCOME')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+      const totalExpense = transactions
+        .filter((t) => t.type === 'EXPENSE')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+      results.push({ month, totalIncome, totalExpense });
+    }
+    return results;
   }
 }

@@ -30,6 +30,7 @@ import { OverviewCard } from './OverviewCard';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { Can } from '@/components/Can';
 import { Action } from '@/casl/ability';
+import { MonthlySummaryChart } from './MonthlySummaryChart';
 
 export default function DashboardContent() {
   const router = useRouter();
@@ -65,7 +66,7 @@ export default function DashboardContent() {
   return (
     <div className="from-background/95 via-background/80 to-primary/10 relative min-h-screen bg-gradient-to-br">
       <div className="from-primary/10 pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] via-transparent to-transparent" />
-      <div className="relative container mx-auto max-w-6xl p-2 md:p-4">
+      <div className="relative mx-auto p-2 md:p-4">
         <div className="space-y-4 py-4">
           <div className="from-background/90 via-background/70 to-background/50 flex flex-col justify-between gap-3 rounded-xl border bg-gradient-to-r p-4 shadow-lg backdrop-blur-md sm:flex-row sm:items-center">
             <div className="flex items-center gap-4">
@@ -188,8 +189,14 @@ export default function DashboardContent() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Card className="from-background/80 via-background/60 to-background/40 group relative overflow-hidden border bg-gradient-to-br shadow-lg backdrop-blur-md">
                 <div className="from-primary/5 absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                <div className="relative p-4">
+                <div className="relative px-4 pt-4">
                   <ExpensesChart startDate={dateRange?.from} endDate={dateRange?.to} />
+                </div>
+              </Card>
+              <Card className="from-background/80 via-background/60 to-background/40 group relative overflow-hidden border bg-gradient-to-br shadow-lg backdrop-blur-md">
+                <div className="from-primary/5 absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                <div className="relative px-4 pt-4">
+                  <MonthlySummaryChart />
                 </div>
               </Card>
 

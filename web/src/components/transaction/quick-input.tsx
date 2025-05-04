@@ -107,7 +107,7 @@ export function QuickInput({ onComplete }: QuickInputProps) {
           type: t.type,
           amount: t.amount,
           description: t.description,
-          date: format(t.date, 'yyyy-MM-dd'),
+          date: t.date.toISOString(),
           categoryId: t.categoryId!,
         }));
         await createBatch(payload);
