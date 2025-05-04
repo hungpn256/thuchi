@@ -169,10 +169,6 @@ export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
     setInputText(value);
   };
 
-  const handleRemoveTransaction = (index: number) => {
-    setParsedTransactions((prev) => prev.filter((_, i) => i !== index));
-  };
-
   // Voice input functions
   const addLineToTranscript = (line: string) => {
     if (line.trim()) {
@@ -310,15 +306,6 @@ export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
             <div className="space-y-4">
               {parsedTransactions.map((transaction, index) => (
                 <Card key={index} className="relative p-3">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-1 right-1 h-6 w-6 p-0"
-                    onClick={() => handleRemoveTransaction(index)}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="flex items-center gap-2">
                       {transaction.type === 'EXPENSE' ? (
