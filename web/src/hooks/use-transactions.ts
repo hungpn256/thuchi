@@ -41,7 +41,7 @@ interface TransactionSummaryParams {
 interface CreateTransactionDTO {
   type: TransactionType;
   amount: number;
-  description: string;
+  description?: string;
   date: string;
   categoryId: number;
 }
@@ -175,3 +175,20 @@ export function useExpensesByCategory(params?: { startDate?: Date; endDate?: Dat
     },
   });
 }
+
+export const useCreateTransactionsBatch = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (transactions: CreateTransactionDTO[]) => {
+      const { data } = await axiosClient.post(
+        API_ENDPOINTS.TRANSACTIONS.CREATE_BATCH,
+        transactions,
+      );
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TRANSACTIONS.ALL });
+    },
+  });
+};

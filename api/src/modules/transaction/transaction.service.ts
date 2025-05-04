@@ -158,4 +158,14 @@ export class TransactionService {
       })
       .sort((a, b) => b.total - a.total);
   }
+
+  async createBatch(data: {
+    transactions: CreateTransactionDto[];
+    profileId: number;
+  }): Promise<void> {
+    await this.prismaService.transaction.createMany({
+      data: data.transactions.map((t) => ({ ...t, profileId: data.profileId })),
+      skipDuplicates: false,
+    });
+  }
 }

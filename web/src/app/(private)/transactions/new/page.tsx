@@ -39,7 +39,6 @@ import { Can } from '@/components/Can';
 import { Action } from '@/casl/ability';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QuickInput } from '@/components/transaction/quick-input';
-import { Category } from '@/hooks/use-categories';
 
 interface FormValues {
   type: 'INCOME' | 'EXPENSE';
@@ -47,15 +46,6 @@ interface FormValues {
   description: string;
   date: Date;
   categoryId: number;
-}
-
-interface ParsedTransaction {
-  type: 'INCOME' | 'EXPENSE';
-  amount: number;
-  description: string;
-  date: Date;
-  categoryId?: number;
-  category?: Category;
 }
 
 const formSchema = yup.object<FormValues>().shape({
@@ -130,39 +120,6 @@ export default function NewTransactionPage() {
         },
       },
     );
-  };
-
-  const handleQuickInputSubmit = async (
-    transaction: Omit<ParsedTransaction, 'category'>,
-  ): Promise<void> => {
-    // Ensure categoryId is provided, default to 1 if not present
-    const validTransaction = {
-      ...transaction,
-      categoryId: transaction.categoryId || 1, // Default category ID if none found
-    };
-
-    return new Promise<void>((resolve, reject) => {
-      createTransaction(
-        {
-          ...validTransaction,
-          date: formatISO(validTransaction.date),
-        },
-        {
-          onSuccess: () => {
-            // Don't navigate away - we're creating multiple transactions
-            resolve();
-          },
-          onError: (error) => {
-            console.error('Lỗi khi tạo giao dịch:', error);
-            toast({
-              title: 'Có lỗi xảy ra',
-              description: getErrorMessage(error, 'Không thể tạo giao dịch'),
-            });
-            reject(error);
-          },
-        },
-      );
-    });
   };
 
   return (
@@ -369,10 +326,7 @@ export default function NewTransactionPage() {
               </TabsContent>
 
               <TabsContent value={TRANSACTION_INPUT_METHODS.TEXT}>
-                <QuickInput
-                  onSubmit={handleQuickInputSubmit}
-                  onComplete={() => router.push(ROUTES.TRANSACTIONS.LIST)}
-                />
+                <QuickInput onComplete={() => router.push(ROUTES.TRANSACTIONS.LIST)} />
               </TabsContent>
             </Tabs>
           </Card>

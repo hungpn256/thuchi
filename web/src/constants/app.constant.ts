@@ -37,6 +37,7 @@ export const API_ENDPOINTS = {
     LIST: '/transactions',
     SUMMARY: '/transactions/summary',
     CREATE: '/transactions',
+    CREATE_BATCH: '/transactions/batch',
     UPDATE: '/transactions',
     DELETE: '/transactions',
     DETAIL: '/transactions',

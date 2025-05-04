@@ -14,14 +14,15 @@ import {
   Loader2,
   Mic,
   MicOff,
-  X,
 } from 'lucide-react';
 import { formatAmount } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
-import { ParsedTransaction, parseMultipleTransactions } from '@/utils/transaction-parser';
+import { ParsedTransaction } from '@/utils/transaction-parser';
+import { useParseTransactionsAI } from '@/hooks/useParseTransactionsAI';
+import { findBestCategoryMatch } from '@/utils/transaction-parser';
+import { useCreateTransactionsBatch } from '@/hooks/use-transactions';
 
 interface QuickInputProps {
-  onSubmit: (transaction: Omit<ParsedTransaction, 'category'>) => Promise<void>;
   onComplete?: () => void;
 }
 
@@ -65,13 +66,12 @@ interface SpeechRecognitionErrorEvent {
   error: string;
 }
 
-export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
+export function QuickInput({ onComplete }: QuickInputProps) {
   const [inputText, setInputText] = useState('');
   const [parsedTransactions, setParsedTransactions] = useState<ParsedTransaction[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState({ current: 0, total: 0 });
   const { categories } = useCategories();
+  const { parseTransactions, isLoading: isParsingAI, error: aiError } = useParseTransactionsAI();
+  const { mutateAsync: createBatch, isPending: isBatchLoading } = useCreateTransactionsBatch();
 
   // Voice recording state
   const [isListening, setIsListening] = useState(false);
@@ -103,66 +103,58 @@ export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
   const handleSubmit = async () => {
     if (parsedTransactions.length > 0) {
       try {
-        setIsSubmitting(true);
-        setProgress({ current: 0, total: parsedTransactions.length });
-        const total = parsedTransactions.length;
-
-        // Create each transaction one by one
-        for (let i = 0; i < parsedTransactions.length; i++) {
-          // Destructure and ignore 'category' to satisfy linter
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { category, ...transactionData } = parsedTransactions[i];
-
-          // Update progress before submitting
-          setProgress({ current: i + 1, total: parsedTransactions.length });
-
-          // Submit the transaction and wait for it to complete
-          await onSubmit(transactionData);
-        }
-
-        // Reset form after all transactions are created
+        const payload = parsedTransactions.map((t) => ({
+          type: t.type,
+          amount: t.amount,
+          description: t.description,
+          date: format(t.date, 'yyyy-MM-dd'),
+          categoryId: t.categoryId!,
+        }));
+        await createBatch(payload);
         setInputText('');
         setParsedTransactions([]);
-
-        // Show success message
         toast({
           title: 'Tạo giao dịch thành công',
-          description: `Đã tạo ${total} giao dịch thành công.`,
+          description: `Đã tạo ${payload.length} giao dịch thành công.`,
         });
-
-        // Trigger onComplete callback if provided
-        if (onComplete) {
-          onComplete();
-        }
+        if (onComplete) onComplete();
       } catch (error) {
         console.error('Error creating transactions:', error);
-      } finally {
-        setIsSubmitting(false);
-        setProgress({ current: 0, total: 0 });
+        toast({
+          title: 'Lỗi tạo giao dịch',
+          description: 'Không thể tạo giao dịch',
+          variant: 'destructive',
+        });
       }
     }
   };
 
-  useEffect(() => {
-    if (inputText.trim()) {
-      setIsProcessing(true);
-      try {
-        const parsed = parseMultipleTransactions(inputText, categories);
-        setParsedTransactions(parsed);
-      } catch (error) {
-        console.error('Error parsing transactions:', error);
-        toast({
-          title: 'Lỗi xử lý',
-          description: 'Không thể phân tích văn bản thành giao dịch',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsProcessing(false);
-      }
-    } else {
-      setParsedTransactions([]);
+  const handlePreview = async () => {
+    if (!inputText.trim()) return;
+    setParsedTransactions([]);
+    try {
+      const aiResult = await parseTransactions(inputText);
+      const mapped = aiResult.map((item) => {
+        const category = findBestCategoryMatch(item.description, categories);
+        return {
+          type: item.type,
+          amount: item.amount,
+          description: item.description,
+          date: new Date(item.date),
+          categoryId: category?.id,
+          category,
+        };
+      });
+      setParsedTransactions(mapped);
+    } catch (error) {
+      console.error('Error parsing transactions:', error);
+      toast({
+        title: 'Lỗi AI',
+        description: aiError || 'Không thể phân tích giao dịch',
+        variant: 'destructive',
+      });
     }
-  }, [inputText]);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -259,10 +251,10 @@ export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
             value={inputText}
             onChange={handleInputChange}
             rows={6}
-            disabled={isSubmitting || isListening}
+            disabled={isBatchLoading || isParsingAI || isListening}
           />
           <div className="absolute top-3 right-3 flex items-center gap-2">
-            {isProcessing && <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />}
+            {isParsingAI && <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />}
             {isSpeechRecognitionSupported && (
               <Button
                 variant="outline"
@@ -273,7 +265,7 @@ export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
                     : ''
                 }`}
                 onClick={toggleListening}
-                disabled={isSubmitting}
+                disabled={isBatchLoading || isParsingAI}
                 title={isListening ? 'Dừng ghi âm' : 'Ghi âm giọng nói'}
               >
                 {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
@@ -288,6 +280,16 @@ export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
           {isListening && (
             <p className="animate-pulse text-sm font-medium text-rose-500">Đang ghi âm...</p>
           )}
+        </div>
+        <div className="mt-2 flex justify-end">
+          <Button
+            onClick={handlePreview}
+            disabled={isParsingAI || isBatchLoading || !inputText.trim()}
+            variant="secondary"
+          >
+            {isParsingAI ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Preview
+          </Button>
         </div>
       </div>
 
@@ -353,19 +355,19 @@ export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
             <Button
               variant="outline"
               onClick={() => setParsedTransactions([])}
-              disabled={isSubmitting || isProcessing}
+              disabled={isBatchLoading || isParsingAI}
             >
               Huỷ
             </Button>
             <Button
               className="gap-2"
               onClick={handleSubmit}
-              disabled={isSubmitting || isProcessing}
+              disabled={isBatchLoading || isParsingAI}
             >
-              {isSubmitting ? (
+              {isBatchLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Đang tạo {progress.current}/{progress.total}
+                  Đang tạo giao dịch
                 </>
               ) : (
                 <>

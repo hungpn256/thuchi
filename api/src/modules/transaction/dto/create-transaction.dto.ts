@@ -9,6 +9,8 @@ import {
   IsString,
   IsOptional,
   Min,
+  ArrayNotEmpty,
+  ValidateNested,
 } from 'class-validator';
 
 export class CreateTransactionDto {
@@ -56,4 +58,12 @@ export class CreateTransactionDto {
   @IsNumber()
   @Type(() => Number)
   categoryId: number;
+}
+
+export class CreateTransactionsBatchDto {
+  @ApiProperty({ type: [CreateTransactionDto] })
+  @ArrayNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => CreateTransactionDto)
+  transactions: CreateTransactionDto[];
 }

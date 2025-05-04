@@ -26,6 +26,7 @@ import { TransactionService } from './transaction.service';
 import { GetTransactionsDto } from './dto/get-transactions.dto';
 import { Profile } from '@/shared/decorators/profile.decorator';
 import { AdminOrWriteGuard } from '../auth/guards/admin-write.guard';
+import { CreateTransactionsBatchDto } from './dto/create-transaction.dto';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -80,6 +81,30 @@ export class TransactionController {
         throw error;
       }
       throw new BadRequestException('Failed to create transaction', { error: error.message });
+    }
+  }
+
+  @Post('batch')
+  @UseGuards(AdminOrWriteGuard)
+  @ApiOperation({
+    summary: 'Tạo nhiều giao dịch cùng lúc',
+    description: 'API tạo nhiều giao dịch thu/chi mới',
+  })
+  @ApiBody({ type: CreateTransactionsBatchDto })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Tạo nhiều giao dịch thành công' })
+  async createTransactionsBatch(@Profile() profile, @Body() dto: CreateTransactionsBatchDto) {
+    try {
+      return await this.transactionService.createBatch({
+        transactions: dto.transactions,
+        profileId: profile.id,
+      });
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        throw error;
+      }
+      throw new BadRequestException('Failed to create transactions batch', {
+        error: error.message,
+      });
     }
   }
 
