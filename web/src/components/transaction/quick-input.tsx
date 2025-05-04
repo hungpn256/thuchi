@@ -92,6 +92,12 @@ export function QuickInput({ onSubmit, onComplete }: QuickInputProps) {
     recognitionRef.current.continuous = false; // Only one recognition per session
     recognitionRef.current.interimResults = true;
     recognitionRef.current.lang = 'vi-VN';
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+      }
+    };
   }, []);
 
   const handleSubmit = async () => {

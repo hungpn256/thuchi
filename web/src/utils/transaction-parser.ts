@@ -39,9 +39,6 @@ export const parseAmount = (amountStr: string): number => {
       // Nối lại với dấu thập phân là dấu chấm (cho JavaScript)
       cleanAmount = integerPart + '.' + decimalPart;
     }
-  } else {
-    // Nếu chỉ có một dấu , thì chuyển thành dấu .
-    cleanAmount = cleanAmount.replace(',', '.');
   }
 
   let multiplier = 1;
