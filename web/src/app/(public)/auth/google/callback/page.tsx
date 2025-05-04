@@ -4,6 +4,7 @@ import axiosClient from '@/lib/axios-client';
 import { useEffect } from 'react';
 import { ROUTES, STORAGE_KEYS } from '@/constants/app.constant';
 import { useRouter } from 'next/navigation';
+import { registerWebPush } from '@/utils/web-push';
 
 export default function GoogleCallback() {
   const router = useRouter();
@@ -30,7 +31,7 @@ export default function GoogleCallback() {
 
         // Clean URL by removing the code parameter
         window.history.replaceState({}, document.title, window.location.pathname);
-
+        registerWebPush();
         // Redirect to dashboard
         router.push(ROUTES.DASHBOARD);
       } catch (error) {

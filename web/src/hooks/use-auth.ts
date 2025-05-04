@@ -14,6 +14,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { clearTokens, updateTokens } from '@/lib/auth';
+import { registerWebPush, unregisterWebPush } from '@/utils/web-push';
 
 // Hàm lưu trạng thái đăng nhập cho chế độ redirect
 const saveAuthState = (redirectUrl: string): void => {
@@ -87,6 +88,14 @@ export const useAuth = (): UseAuthReturn => {
         // Store both tokens in localStorage
         updateTokens(data.accessToken, data.refreshToken);
 
+        // Đăng ký push notification
+        try {
+          await registerWebPush();
+        } catch (pushErr) {
+          // eslint-disable-next-line no-console
+          console.warn('Push registration failed:', pushErr);
+        }
+
         // Redirect to dashboard
         router.push(ROUTES.DASHBOARD);
       } catch (err) {
@@ -108,6 +117,14 @@ export const useAuth = (): UseAuthReturn => {
         // Store both tokens in localStorage
         updateTokens(data.accessToken, data.refreshToken);
 
+        // Đăng ký push notification
+        try {
+          await registerWebPush();
+        } catch (pushErr) {
+          // eslint-disable-next-line no-console
+          console.warn('Push registration failed:', pushErr);
+        }
+
         // Redirect to dashboard
         router.push(ROUTES.DASHBOARD);
       } catch (err) {
@@ -125,6 +142,13 @@ export const useAuth = (): UseAuthReturn => {
       if (authData) {
         // Lưu token và redirect
         updateTokens(authData.accessToken, authData.refreshToken);
+        // Đăng ký push notification
+        try {
+          await registerWebPush();
+        } catch (pushErr) {
+          // eslint-disable-next-line no-console
+          console.warn('Push registration failed:', pushErr);
+        }
         router.push(ROUTES.DASHBOARD);
       }
     },
@@ -185,6 +209,12 @@ export const useAuth = (): UseAuthReturn => {
     // Clear tokens from localStorage
     clearTokens();
     client.clear();
+
+    // Hủy đăng ký push notification (không chặn logout nếu lỗi)
+    unregisterWebPush().catch((err) => {
+      // eslint-disable-next-line no-console
+      console.warn('Push unregister failed:', err);
+    });
 
     // Redirect to login page
     router.push(ROUTES.AUTH.LOGIN);
