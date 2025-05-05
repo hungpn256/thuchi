@@ -207,14 +207,16 @@ export const useAuth = (): UseAuthReturn => {
 
   const logout = () => {
     // Clear tokens from localStorage
-    clearTokens();
-    client.clear();
+    unregisterWebPush()
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.warn('Push unregister failed:', err);
+      })
+      .finally(() => {
+        clearTokens();
+      });
 
-    // Hủy đăng ký push notification (không chặn logout nếu lỗi)
-    unregisterWebPush().catch((err) => {
-      // eslint-disable-next-line no-console
-      console.warn('Push unregister failed:', err);
-    });
+    client.clear();
 
     // Redirect to login page
     router.push(ROUTES.AUTH.LOGIN);

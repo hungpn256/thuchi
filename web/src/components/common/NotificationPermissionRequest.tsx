@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useNotifications } from '@/hooks/use-notifications';
 import { Button } from '@/components/ui/button';
 import { Bell } from 'lucide-react';
+import { registerWebPush } from '@/utils/web-push';
 
 export function NotificationPermissionRequest() {
   const { isSupported, permission, requestPermission } = useNotifications();
@@ -22,12 +23,7 @@ export function NotificationPermissionRequest() {
       localStorage.setItem('notification_permission_requested', 'true');
       setHasRequested(true);
 
-      // Gửi thông báo test
-      new Notification('Thông báo test', {
-        body: 'Bạn đã bật thông báo thành công!',
-        icon: '/icons/icon-192x192.png',
-        badge: '/icons/icon-192x192.png',
-      });
+      registerWebPush();
     }
   };
 

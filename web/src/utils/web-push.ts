@@ -49,7 +49,6 @@ export async function getOrCreateSubscription(): Promise<PushSubscriptionPayload
 
 export async function registerWebPush(): Promise<void> {
   const payload = await getOrCreateSubscription();
-  console.log('🚀 ~ registerWebPush ~ payload:', payload);
   if (!payload) return;
   await axiosClient.post('/notifications/subscribe', payload);
 }
