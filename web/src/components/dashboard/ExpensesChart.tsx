@@ -1,6 +1,6 @@
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useExpensesByCategory } from '@/hooks/use-transactions';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatShortNumber } from '@/lib/utils';
 import {
   Bar,
   BarChart,
@@ -59,7 +59,7 @@ export function ExpensesChart({ startDate, endDate }: ExpensesChartProps) {
           </defs>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="categoryName" tick={{ fontSize: isMobile ? 10 : 12 }} />
-          <YAxis tickFormatter={formatCurrency} tick={{ fontSize: isMobile ? 10 : 12 }} />
+          <YAxis tickFormatter={formatShortNumber} tick={{ fontSize: isMobile ? 10 : 12 }} />
           <Tooltip
             formatter={(value: number) => formatCurrency(value)}
             labelFormatter={(label) => `Danh mục: ${label}`}

@@ -1,5 +1,5 @@
 import { useMonthlySummary } from '@/hooks/use-transactions';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatShortNumber } from '@/lib/utils';
 import {
   LineChart,
   Line,
@@ -11,9 +11,11 @@ import {
   ResponsiveContainer,
   DotProps,
 } from 'recharts';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 export function MonthlySummaryChart() {
   const { data, isLoading } = useMonthlySummary();
+  const isMobile = useMediaQuery('(max-width: 640px)');
 
   if (isLoading) {
     return (
@@ -74,13 +76,13 @@ export function MonthlySummaryChart() {
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis
             dataKey="month"
-            tick={{ fontSize: 13, fill: '#64748b', fontWeight: 500 }}
+            tick={{ fontSize: isMobile ? 10 : 12 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
-            tickFormatter={formatCurrency}
-            tick={{ fontSize: 13, fill: '#64748b', fontWeight: 500 }}
+            tickFormatter={formatShortNumber}
+            tick={{ fontSize: isMobile ? 10 : 12 }}
             axisLine={false}
             tickLine={false}
           />
