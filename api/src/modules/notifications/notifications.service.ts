@@ -3,7 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../shared/services/prisma/prisma.service';
 import * as webpush from 'web-push';
 import { CreateSubscriptionDto } from './dto/subscription.dto';
-import { SendNotificationDto } from './dto/send-notification.dto';
+import { SendNotificationDto, SendBulkNotificationDto } from './dto/send-notification.dto';
+import { DateTime } from 'luxon';
 
 interface WebPushSubscription {
   endpoint: string;
@@ -218,7 +219,7 @@ export class NotificationsService implements OnModuleInit {
       const deviceTokens = await this.prisma.device_token.findMany({
         where: {
           accountId,
-          deviceType: 'web',
+          lastActiveAt: { gt: DateTime.now().minus({ days: 30 }).toJSDate() },
         },
       });
 
@@ -261,7 +262,7 @@ export class NotificationsService implements OnModuleInit {
     // Get all active web device tokens
     const deviceTokens = await this.prisma.device_token.findMany({
       where: {
-        deviceType: 'web',
+        lastActiveAt: { gt: DateTime.now().minus({ days: 30 }).toJSDate() },
       },
     });
 
@@ -289,5 +290,58 @@ export class NotificationsService implements OnModuleInit {
     }
 
     return { sent, failed };
+  }
+
+  async sendBulkNotification(
+    bulkDto: SendBulkNotificationDto,
+  ): Promise<{ sent: number; failed: number }> {
+    this.checkInitialization();
+    const { accountIds, title, body, icon, badge, url, image, tag, data, actions, ttl } = bulkDto;
+    let sent = 0;
+    let failed = 0;
+    try {
+      // Get all active web device tokens for the accounts
+      const deviceTokens = await this.prisma.device_token.findMany({
+        where: {
+          accountId: { in: accountIds },
+          lastActiveAt: { gt: DateTime.now().minus({ days: 30 }).toJSDate() },
+        },
+      });
+      if (!deviceTokens.length) {
+        this.logger.warn(`No web devices found for accounts ${accountIds.join(',')}`);
+        return { sent: 0, failed: 0 };
+      }
+      for (const device of deviceTokens) {
+        try {
+          const subscription = JSON.parse(device.token) as WebPushSubscription;
+          await this.sendNotification(subscription, {
+            title,
+            body,
+            icon,
+            badge,
+            url,
+            image,
+            tag,
+            data,
+            actions,
+            ttl,
+          });
+          sent++;
+        } catch (error) {
+          failed++;
+          this.logger.error(
+            `Failed to send notification to device ${device.deviceId} for account ${device.accountId}: ${error.message}`,
+            error.stack,
+          );
+        }
+      }
+      return { sent, failed };
+    } catch (error) {
+      this.logger.error(
+        `Failed to send bulk notification to accounts ${accountIds.join(',')}: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
   }
 }

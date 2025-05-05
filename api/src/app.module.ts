@@ -13,6 +13,8 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { DeviceModule } from './modules/device/device.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ProfileModule } from './modules/profiles/profile.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CronModule } from './modules/cron/cron.module';
 
 @Module({
   imports: [
@@ -20,6 +22,7 @@ import { ProfileModule } from './modules/profiles/profile.module';
       envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     ThrottlerModule.forRoot({
       throttlers: [
@@ -37,6 +40,7 @@ import { ProfileModule } from './modules/profiles/profile.module';
     DeviceModule,
     NotificationsModule,
     ProfileModule,
+    CronModule,
   ],
   providers: [
     {

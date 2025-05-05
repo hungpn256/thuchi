@@ -77,3 +77,17 @@ export class SendNotificationDto {
   @IsOptional()
   ttl?: number;
 }
+
+export interface SendBulkNotificationDto {
+  accountIds: number[];
+  title: string;
+  body: string;
+  icon?: string;
+  badge?: string;
+  url?: string;
+  image?: string;
+  tag?: string;
+  data?: Record<string, unknown>;
+  actions?: NotificationAction[];
+  ttl?: number;
+}

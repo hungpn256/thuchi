@@ -16,7 +16,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { ConfigService } from '@nestjs/config';
 import { NotificationsService } from './notifications.service';
 import { CreateSubscriptionDto } from './dto/subscription.dto';
-import { SendNotificationDto } from './dto/send-notification.dto';
+import { SendNotificationDto, SendBulkNotificationDto } from './dto/send-notification.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Account } from '@/shared/decorators/account.decorator';
 
@@ -150,6 +150,19 @@ export class NotificationsController {
         throw error;
       }
       throw new BadRequestException(`Failed to send broadcast: ${error.message}`);
+    }
+  }
+
+  @Post('bulk')
+  @ApiOperation({ summary: 'Send a notification to multiple accounts' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Bulk notification sent' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Failed to send bulk notification' })
+  @HttpCode(HttpStatus.OK)
+  async sendBulkNotification(@Body() bulkDto: SendBulkNotificationDto) {
+    try {
+      return await this.notificationsService.sendBulkNotification(bulkDto);
+    } catch (error) {
+      throw new BadRequestException(`Failed to send bulk notification: ${error.message}`);
     }
   }
 }
