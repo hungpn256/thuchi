@@ -2,7 +2,7 @@
 import { useSplitBillGroups } from '@/hooks/use-split-bill-groups';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, X } from 'lucide-react';
+import { Plus, Trash2, X, Download } from 'lucide-react';
 import { useState } from 'react';
 import { SplitBillExpenseForm } from './SplitBillExpenseForm';
 import { SplitBillExpense } from '@/hooks/use-split-bill-groups';
@@ -26,6 +26,8 @@ import {
 import { formatCurrency } from '@/lib/utils';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import ExcelJS from 'exceljs';
+import { toast } from '@/components/ui/use-toast';
 
 export function SplitBillGroupDetail() {
   const { groups, updateGroup, calculateSummary, calculateSettlements } = useSplitBillGroups();
@@ -52,20 +54,101 @@ export function SplitBillGroupDetail() {
     setShowExpenseModal(false);
   };
 
+  const handleExportExcel = async (): Promise<void> => {
+    const workbook = new ExcelJS.Workbook();
+    // Sheet 1: Expenses
+    const expensesSheet = workbook.addWorksheet('Khoản chi');
+    expensesSheet.addRow(['Người chi', 'Số tiền', 'Mô tả', 'Ngày']);
+    group.expenses.forEach((e) => {
+      expensesSheet.addRow([
+        group.members.find((m) => m.id === e.payerId)?.name || '',
+        e.amount,
+        e.description || '',
+        format(new Date(e.createdAt), 'dd/MM/yyyy', { locale: vi }),
+      ]);
+    });
+    // Set column widths
+    expensesSheet.columns = [
+      { width: 20 }, // Người chi
+      { width: 16 }, // Số tiền
+      { width: 30 }, // Mô tả
+      { width: 14 }, // Ngày
+    ];
+    expensesSheet.getColumn(2).numFmt = '#,##0 [$₫-vi-VN]';
+
+    // Sheet 2: Số dư
+    const summarySheet = workbook.addWorksheet('Tổng kết & số dư');
+    summarySheet.addRow(['Thành viên', 'Đã trả', 'Nên trả', 'Chênh lệch']);
+    summary.balances.forEach((b) => {
+      summarySheet.addRow([b.member.name, b.paid, b.shouldPay, b.balance]);
+    });
+    // Set column widths
+    summarySheet.columns = [
+      { width: 20 }, // Thành viên
+      { width: 16 }, // Đã trả
+      { width: 16 }, // Nên trả
+      { width: 16 }, // Chênh lệch
+    ];
+    summarySheet.getColumn(2).numFmt = '#,##0 [$₫-vi-VN]';
+    summarySheet.getColumn(3).numFmt = '#,##0 [$₫-vi-VN]';
+    summarySheet.getColumn(4).numFmt = '#,##0 [$₫-vi-VN]';
+
+    // Sheet 3: Gợi ý chuyển tiền
+    const settlementsSheet = workbook.addWorksheet('Gợi ý chuyển tiền');
+    settlementsSheet.addRow(['Từ', 'Đến', 'Số tiền']);
+    settlements.forEach((s) => {
+      settlementsSheet.addRow([s.from.name, s.to.name, s.amount]);
+    });
+    // Set column widths
+    settlementsSheet.columns = [
+      { width: 20 }, // Từ
+      { width: 20 }, // Đến
+      { width: 16 }, // Số tiền
+    ];
+    settlementsSheet.getColumn(3).numFmt = '#,##0 [$₫-vi-VN]';
+
+    // Download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${group.name.replace(/\s+/g, '_')}_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    toast({ title: 'Xuất Excel thành công', description: 'File đã được tải về.' });
+  };
+
   return (
     <div className="from-background/10 via-background/50 to-background/80 min-h-screen bg-gradient-to-b">
       <div className="container mx-auto space-y-6 px-4 py-6 md:space-y-8 md:py-10">
         <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
           <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{group.name}</h1>
-          <Button
-            variant="default"
-            size="sm"
-            className="gap-2"
-            onClick={() => setShowExpenseModal(true)}
-          >
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Thêm khoản chi</span>
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="default"
+              size="sm"
+              className="gap-2"
+              onClick={() => setShowExpenseModal(true)}
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Thêm khoản chi</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportExcel}
+              title="Xuất Excel"
+              className="gap-2"
+            >
+              <Download className="h-5 w-5" />
+              <span className="hidden sm:inline">Xuất Excel</span>
+            </Button>
+          </div>
         </div>
         <Card className="overflow-hidden p-0 md:p-2">
           <CardHeader className="px-4 py-4 md:px-6 md:pt-6">
@@ -172,7 +255,7 @@ export function SplitBillGroupDetail() {
         </Card>
         {/* Summary section styled like transaction summary */}
         <Card className="mt-6">
-          <CardHeader className="px-4 py-4 md:px-6 md:pt-6">
+          <CardHeader className="flex flex-row items-center justify-between px-4 py-4 md:px-6 md:pt-6">
             <CardTitle className="text-xl">Tổng kết & chia tiền</CardTitle>
           </CardHeader>
           <CardContent className="text-muted-foreground space-y-6 px-4 pb-6 md:px-6">

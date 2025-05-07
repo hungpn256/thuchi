@@ -131,7 +131,7 @@ export function Sidebar({
     {
       name: 'Chia tiền nhóm',
       href: ROUTES.SPLIT_BILL.LIST,
-      icon: <HandCoins className="h-5 w-5 text-amber-500" />,
+      icon: <HandCoins className="text-foreground h-5 w-5" />,
     },
     {
       name: 'Quản lý hồ sơ',
