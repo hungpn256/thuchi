@@ -61,8 +61,17 @@ export function MonthlySummaryChart() {
 
   return (
     <div className="relative aspect-[16/9] w-full">
+      <div className="absolute top-0 left-0 z-10 w-full text-center">
+        <h2
+          className={
+            isMobile ? 'mt-2 mb-2 text-base font-semibold' : 'mt-2 mb-4 text-xl font-semibold'
+          }
+        >
+          Biểu đồ thu/chi theo tháng
+        </h2>
+      </div>
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 16, right: 24, left: 8, bottom: 36 }}>
+        <LineChart data={chartData} margin={{ top: 48, right: 24, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="income-gradient" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0%" stopColor="#6ee7b7" />

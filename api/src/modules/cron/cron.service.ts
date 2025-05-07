@@ -27,7 +27,9 @@ export class CronService {
       const nowVN = DateTime.now().setZone('Asia/Ho_Chi_Minh');
       const yesterday = nowVN.minus({ days: 1 }).startOf('day');
       const yesterdayStart = yesterday.toJSDate();
+      this.logger.log(`yesterdayStart: ${yesterdayStart}`);
       const yesterdayEnd = yesterday.endOf('day').toJSDate();
+      this.logger.log(`yesterdayEnd: ${yesterdayEnd}`);
       const profiles: ProfileWithUsers[] = await this.prisma.profile.findMany({
         where: {
           status: 'ACTIVE',

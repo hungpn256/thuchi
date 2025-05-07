@@ -189,13 +189,13 @@ export default function DashboardContent() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Card className="from-background/80 via-background/60 to-background/40 group relative overflow-hidden border bg-gradient-to-br shadow-lg backdrop-blur-md">
                 <div className="from-primary/5 absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                <div className="relative px-4 pt-4">
+                <div className="relative px-0 pt-0 sm:px-4 sm:pt-4">
                   <ExpensesChart startDate={dateRange?.from} endDate={dateRange?.to} />
                 </div>
               </Card>
               <Card className="from-background/80 via-background/60 to-background/40 group relative overflow-hidden border bg-gradient-to-br shadow-lg backdrop-blur-md">
                 <div className="from-primary/5 absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                <div className="relative px-4 pt-4">
+                <div className="relative px-0 pt-0 sm:px-4 sm:pt-4">
                   <MonthlySummaryChart />
                 </div>
               </Card>

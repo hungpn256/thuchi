@@ -46,9 +46,18 @@ export function ExpensesChart({ startDate, endDate }: ExpensesChartProps) {
 
   return (
     <div className="relative aspect-[16/9] w-full">
+      <div className="absolute top-0 left-0 z-10 w-full text-center">
+        <h2
+          className={
+            isMobile ? 'mt-2 mb-2 text-base font-semibold' : 'mt-2 mb-4 text-xl font-semibold'
+          }
+        >
+          Biểu đồ chi tiêu theo danh mục
+        </h2>
+      </div>
       <div className="from-background/60 to-background/20 absolute inset-0 rounded-xl bg-gradient-to-br backdrop-blur-sm" />
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={expenses} margin={{ top: 24, right: 24, left: 8, bottom: 24 }}>
+        <BarChart data={expenses} margin={{ top: 48, right: 24, left: 0, bottom: 0 }}>
           <defs>
             {GRADIENTS.map((g) => (
               <linearGradient key={g.id} id={g.id} x1="0" y1="0" x2="0" y2="1">
@@ -75,7 +84,6 @@ export function ExpensesChart({ startDate, endDate }: ExpensesChartProps) {
             itemStyle={{ color: 'inherit', fontSize: isMobile ? '0.875rem' : '1rem' }}
             labelStyle={{
               fontSize: isMobile ? '0.75rem' : '0.875rem',
-              color: 'rgba(255,255,255,0.7)',
             }}
           />
           <Legend
