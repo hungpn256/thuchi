@@ -192,6 +192,7 @@ export function EventForm({
                 <FormControl>
                   <div className="relative">
                     <Input
+                      inputMode="numeric"
                       placeholder="Nhập số tiền"
                       value={formatAmount(field.value?.toString() || '')}
                       onChange={(e) => {

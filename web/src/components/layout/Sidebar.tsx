@@ -12,6 +12,7 @@ import {
   PieChart,
   Plus,
   User,
+  HandCoins,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -127,11 +128,11 @@ export function Sidebar({
       href: '/reports',
       icon: <PieChart className="h-5 w-5" />,
     },
-    // {
-    //   name: 'Phân tích',
-    //   href: '/analytics',
-    //   icon: <LineChart className="h-5 w-5" />,
-    // },
+    {
+      name: 'Chia tiền nhóm',
+      href: ROUTES.SPLIT_BILL.LIST,
+      icon: <HandCoins className="h-5 w-5 text-amber-500" />,
+    },
     {
       name: 'Quản lý hồ sơ',
       href: ROUTES.PROFILES.LIST,

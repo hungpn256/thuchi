@@ -30,6 +30,9 @@ export const ROUTES = {
   PROFILES: {
     LIST: '/profiles',
   },
+  SPLIT_BILL: {
+    LIST: '/split-bill',
+  },
 } as const;
 
 export const API_ENDPOINTS = {

@@ -204,6 +204,7 @@ export function TransactionForm({
               <FormControl>
                 <div className="relative">
                   <Input
+                    inputMode="numeric"
                     placeholder="Nhập số tiền"
                     {...field}
                     value={formatAmount(field.value?.toString() || '')}
