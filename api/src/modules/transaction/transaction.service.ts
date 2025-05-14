@@ -23,6 +23,19 @@ export interface MonthlySummary {
   totalExpense: number;
 }
 
+// Add a transaction create input interface that includes createdById
+export interface TransactionCreateInput extends CreateTransactionDto {
+  profileId: number;
+  createdById: number;
+}
+
+// Add a batch create input interface
+export interface TransactionBatchCreateInput {
+  transactions: CreateTransactionDto[];
+  profileId: number;
+  createdById: number;
+}
+
 @Injectable()
 export class TransactionService {
   private readonly genAI: GoogleGenAI;
@@ -33,11 +46,12 @@ export class TransactionService {
     this.genAI = new GoogleGenAI({ apiKey: this.configService.get('GOOGLE_GENAI_API_KEY') });
   }
 
-  async create(data: CreateTransactionDto & { profileId: number }): Promise<transaction> {
+  async create(data: TransactionCreateInput): Promise<transaction> {
     const transaction = this.prismaService.transaction.create({
       data: {
         ...data,
         profileId: data.profileId,
+        createdById: data.createdById,
       },
     });
     return transaction;
@@ -178,17 +192,18 @@ export class TransactionService {
       .sort((a, b) => b.total - a.total);
   }
 
-  async createBatch(data: {
-    transactions: CreateTransactionDto[];
-    profileId: number;
-  }): Promise<void> {
+  async createBatch(data: TransactionBatchCreateInput): Promise<void> {
     await this.prismaService.transaction.createMany({
-      data: data.transactions.map((t) => ({ ...t, profileId: data.profileId })),
+      data: data.transactions.map((t) => ({
+        ...t,
+        profileId: data.profileId,
+        createdById: data.createdById,
+      })),
       skipDuplicates: false,
     });
   }
 
-  async createFromDescription(text: string) {
+  async createFromDescription(text: string, createdById: number) {
     const prompt = `Hãy phân tích đoạn text sau thành danh sách các giao dịch tài chính. Mỗi giao dịch gồm: type (INCOME/EXPENSE), amount (number), description (string), date ${new Date().toISOString()}, giờ hiện tại là ${new Date().toString()}. Trả về kết quả dạng JSON array để có thể dùng js JSON.parse thành object được.\n\nText: ${text}`;
     const response = await this.genAI.models.generateContent({
       model: 'gemini-2.0-flash',
@@ -227,8 +242,14 @@ export class TransactionService {
         },
       },
     });
-    const data = JSON.parse(response?.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]');
-    return data;
+
+    const transactions = JSON.parse(response?.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]');
+
+    // Add createdById to each transaction
+    return transactions.map((transaction) => ({
+      ...transaction,
+      createdById,
+    }));
   }
 
   async getSummaryByMonth(profileId: number, months: number): Promise<MonthlySummary[]> {

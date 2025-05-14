@@ -42,6 +42,7 @@ model account {
     updatedAt    DateTime       @default(now()) @db.Timestamp(6)
     deviceTokens device_token[]
     profileUsers profile_user[]
+    transactions transaction[]  @relation("createdByAccount")
 
     @@index([email], map: "IDX_ACCOUNT_EMAIL")
 }
@@ -104,11 +105,14 @@ model transaction {
     categoryId  Int?
     eventId     Int?
     id          Int                   @id(map: "PK_a219afd8dd77ed80f5a862f1db9") @default(autoincrement())
+    createdById Int?
+    createdBy   account?              @relation("createdByAccount", fields: [createdById], references: [id], onDelete: SetNull)
     profile     profile               @relation(fields: [profileId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6bb58f2b6e30cb51a6504599f41")
     category    category?             @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_86e965e74f9cc66149cf6c90f64")
     event       event?                @relation(fields: [eventId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_event_transaction")
 
     @@index([profileId, date], map: "IDX_TRANSACTION_PROFILE_DATE")
+    @@index([createdById], map: "IDX_TRANSACTION_CREATED_BY")
 }
 
 model event {

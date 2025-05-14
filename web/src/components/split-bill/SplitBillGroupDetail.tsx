@@ -125,7 +125,7 @@ export function SplitBillGroupDetail() {
 
   return (
     <div className="from-background/10 via-background/50 to-background/80 min-h-screen bg-gradient-to-b">
-      <div className="container mx-auto space-y-6 px-4 py-6 md:space-y-8 md:py-10">
+      <div className="container mx-auto space-y-6 px-2 py-2 md:space-y-6 md:py-4">
         <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
           <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{group.name}</h1>
           <div className="flex gap-2">

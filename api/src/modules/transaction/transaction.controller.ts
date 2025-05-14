@@ -25,9 +25,11 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { TransactionService } from './transaction.service';
 import { GetTransactionsDto } from './dto/get-transactions.dto';
 import { Profile } from '@/shared/decorators/profile.decorator';
+import { Account } from '@/shared/decorators/account.decorator';
 import { AdminOrWriteGuard } from '../auth/guards/admin-write.guard';
 import { CreateTransactionsBatchDto } from './dto/create-transaction.dto';
 import { CreateTransactionFromDescriptionDto } from './dto/create-transaction-from-description.dto';
+import { account } from '@prisma/client';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -70,12 +72,17 @@ export class TransactionController {
     description: 'Tạo giao dịch thành công',
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Dữ liệu không hợp lệ' })
-  async createTransaction(@Profile() profile, @Body() createTransactionDto: CreateTransactionDto) {
+  async createTransaction(
+    @Profile() profile,
+    @Account() account: account,
+    @Body() createTransactionDto: CreateTransactionDto,
+  ) {
     try {
       // Validation is handled by class-validator through CreateTransactionDto
       return await this.transactionService.create({
         ...createTransactionDto,
         profileId: profile.id,
+        createdById: account.id,
       });
     } catch (error) {
       if (error instanceof ValidationException) {
@@ -93,11 +100,16 @@ export class TransactionController {
   })
   @ApiBody({ type: CreateTransactionsBatchDto })
   @ApiResponse({ status: HttpStatus.CREATED, description: 'Tạo nhiều giao dịch thành công' })
-  async createTransactionsBatch(@Profile() profile, @Body() dto: CreateTransactionsBatchDto) {
+  async createTransactionsBatch(
+    @Profile() profile,
+    @Account() account: account,
+    @Body() dto: CreateTransactionsBatchDto,
+  ) {
     try {
       return await this.transactionService.createBatch({
         transactions: dto.transactions,
         profileId: profile.id,
+        createdById: account.id,
       });
     } catch (error) {
       if (error instanceof ValidationException) {
@@ -289,9 +301,12 @@ export class TransactionController {
     description: 'API tạo giao dịch từ mô tả và số tiền',
   })
   @ApiBody({ type: CreateTransactionFromDescriptionDto })
-  async createTransactionFromDescription(@Body() body: CreateTransactionFromDescriptionDto) {
+  async createTransactionFromDescription(
+    @Account() account: account,
+    @Body() body: CreateTransactionFromDescriptionDto,
+  ) {
     try {
-      return await this.transactionService.createFromDescription(body.text);
+      return await this.transactionService.createFromDescription(body.text, account.id);
     } catch (error) {
       throw new BadRequestException('Failed to create transaction from description', {
         error: error.message,
