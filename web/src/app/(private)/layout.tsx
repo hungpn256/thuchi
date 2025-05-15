@@ -98,7 +98,7 @@ export default function PrivateLayout({ children }: PrivateLayoutProps) {
         {/* Mobile toggle button (bottom left) */}
         {isMobile && (
           <div
-            className={`fixed bottom-4 left-4 z-30 ${
+            className={`fixed bottom-8 left-4 z-30 ${
               sidebarOpen ? 'left-64 ml-4' : 'left-4'
             } transition-all duration-300`}
           >
@@ -106,9 +106,9 @@ export default function PrivateLayout({ children }: PrivateLayoutProps) {
               variant="outline"
               size="icon"
               onClick={toggleSidebar}
-              className="bg-background hover:bg-primary hover:text-primary-foreground h-10 w-10 rounded-full shadow-md"
+              className="bg-background hover:bg-primary hover:text-primary-foreground h-12 w-12 rounded-full shadow-md"
             >
-              {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
+              {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </Button>
           </div>
         )}
