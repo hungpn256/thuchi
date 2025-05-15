@@ -45,6 +45,7 @@ export const API_ENDPOINTS = {
     DELETE: '/transactions',
     DETAIL: '/transactions',
     PREVIEW: '/transactions/preview',
+    ACCOUNTS_TOTAL: '/transactions/accounts-total',
   },
   CATEGORIES: {
     LIST: '/categories',

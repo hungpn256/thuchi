@@ -15,7 +15,6 @@ import {
   Post,
   Put,
   Query,
-  Request,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -30,6 +29,8 @@ import { AdminOrWriteGuard } from '../auth/guards/admin-write.guard';
 import { CreateTransactionsBatchDto } from './dto/create-transaction.dto';
 import { CreateTransactionFromDescriptionDto } from './dto/create-transaction-from-description.dto';
 import { account } from '@prisma/client';
+import { AccountsTotalQueryDto } from './dto/accounts-total-query.dto';
+import { AccountTotalDto } from './dto/account-total.dto';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -141,6 +142,20 @@ export class TransactionController {
       categoryName: item.categoryname,
       total: Number(item.total),
     }));
+  }
+
+  @Get('accounts-total')
+  @ApiOperation({ summary: 'Lấy tổng thu chi theo tài khoản' })
+  @ApiResponse({
+    status: 200,
+    description: 'Danh sách tổng thu chi theo tài khoản',
+    type: [AccountTotalDto],
+  })
+  async getAccountsTotal(
+    @Profile() profile,
+    @Query() query: AccountsTotalQueryDto,
+  ): Promise<AccountTotalDto[]> {
+    return this.transactionService.getAccountsTotal(profile.id, query);
   }
 
   @Get()
@@ -312,5 +327,15 @@ export class TransactionController {
         error: error.message,
       });
     }
+  }
+
+  @Get('total')
+  @ApiOperation({ summary: 'Lấy tổng thu chi của profile hiện tại' })
+  @ApiResponse({
+    status: 200,
+    description: 'Trả về tổng thu, tổng chi và số dư của profile hiện tại',
+  })
+  async getProfileTotal(@Profile() profile) {
+    return this.transactionService.getProfileTotal(profile.id);
   }
 }

@@ -132,11 +132,8 @@ export const useUpdateTransaction = () => {
       const response = await axiosClient.put(`${API_ENDPOINTS.TRANSACTIONS.UPDATE}/${id}`, data);
       return response.data;
     },
-    onSuccess: (_, { id }) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.TRANSACTIONS.ALL });
-      queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.TRANSACTIONS.DETAIL(id),
-      });
     },
   });
 };
@@ -203,6 +200,23 @@ export function useMonthlySummary() {
     queryKey: ['transactions', 'summary-by-month'],
     queryFn: async () => {
       const { data } = await axiosClient.get<MonthlySummary[]>('/transactions/summary-by-month');
+      return data;
+    },
+  });
+}
+
+export function useAccountsTotal(params?: { startDate?: Date; endDate?: Date }) {
+  const queryParams = {
+    startDate: params?.startDate?.toISOString(),
+    endDate: params?.endDate?.toISOString(),
+  };
+
+  return useQuery({
+    queryKey: [QUERY_KEYS.TRANSACTIONS.ACCOUNTS_TOTAL, queryParams],
+    queryFn: async () => {
+      const { data } = await axiosClient.get(API_ENDPOINTS.TRANSACTIONS.ACCOUNTS_TOTAL, {
+        params: queryParams,
+      });
       return data;
     },
   });

@@ -3,11 +3,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from '@/shared/services/prisma/prisma.service';
-import { Prisma, transaction } from '@prisma/client';
+import { Prisma, profile_status, transaction, transaction_type_enum } from '@prisma/client';
 import { GetTransactionsDto } from './dto/get-transactions.dto';
 import { GoogleGenAI, Type } from '@google/genai';
 import { ConfigService } from '@nestjs/config';
 import { subMonths, startOfMonth, endOfMonth, format } from 'date-fns';
+import { AccountsTotalQueryDto } from './dto/accounts-total-query.dto';
+import { AccountTotalDto } from './dto/account-total.dto';
 
 export interface PaginatedTransactions {
   items: transaction[];
@@ -79,9 +81,14 @@ export class TransactionService {
       },
       skip,
       take: limit,
-      orderBy: {
-        date: 'desc',
-      },
+      orderBy: [
+        {
+          date: 'desc',
+        },
+        {
+          createdAt: 'desc',
+        },
+      ],
     });
     const total = await this.prismaService.transaction.count({
       where: where,
@@ -278,5 +285,147 @@ export class TransactionService {
       results.push({ month, totalIncome, totalExpense });
     }
     return results;
+  }
+
+  async getProfileTotal(profileId: number) {
+    const [totalIncome, totalExpense] = await Promise.all([
+      this.prismaService.transaction.aggregate({
+        where: {
+          profileId,
+          type: 'INCOME',
+        },
+        _sum: {
+          amount: true,
+        },
+      }),
+      this.prismaService.transaction.aggregate({
+        where: {
+          profileId,
+          type: 'EXPENSE',
+        },
+        _sum: {
+          amount: true,
+        },
+      }),
+    ]);
+
+    return {
+      totalIncome: Number(totalIncome._sum.amount || 0),
+      totalExpense: Number(totalExpense._sum.amount || 0),
+      balance: Number(totalIncome._sum.amount || 0) - Number(totalExpense._sum.amount || 0),
+    };
+  }
+
+  async getProfileAccountsTotal(profileId: number) {
+    // Get all transactions in the profile
+    const transactions = await this.prismaService.transaction.findMany({
+      where: {
+        profileId,
+      },
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    interface AccountTotal {
+      accountId: number;
+      email: string;
+      totalIncome: number;
+      totalExpense: number;
+    }
+
+    // Group transactions by account
+    const accountTotals = transactions.reduce<Record<number, AccountTotal>>((acc, transaction) => {
+      const accountId = transaction.createdById;
+      if (!accountId) return acc;
+
+      if (!acc[accountId]) {
+        acc[accountId] = {
+          accountId,
+          email: transaction.createdBy?.email || 'Unknown',
+          totalIncome: 0,
+          totalExpense: 0,
+        };
+      }
+
+      if (transaction.type === transaction_type_enum.INCOME) {
+        acc[accountId].totalIncome += Number(transaction.amount);
+      } else {
+        acc[accountId].totalExpense += Number(transaction.amount);
+      }
+
+      return acc;
+    }, {});
+
+    // Calculate balance for each account and convert to array
+    return Object.values(accountTotals).map((account) => ({
+      ...account,
+      balance: account.totalIncome - account.totalExpense,
+    }));
+  }
+
+  async getAccountsTotal(
+    profileId: number,
+    query: AccountsTotalQueryDto,
+  ): Promise<AccountTotalDto[]> {
+    const { startDate, endDate } = query;
+    const where: Prisma.transactionWhereInput = {
+      type: {
+        in: [transaction_type_enum.INCOME, transaction_type_enum.EXPENSE],
+      },
+    };
+
+    where.date = {
+      lte: endDate ? new Date(endDate) : undefined,
+      gte: startDate ? new Date(startDate) : undefined,
+    };
+
+    const accounts = await this.prismaService.account.findMany({
+      where: {
+        profileUsers: {
+          some: {
+            profileId,
+            status: profile_status.ACTIVE,
+          },
+        },
+      },
+      select: {
+        id: true,
+        email: true,
+        transactions: {
+          where: {
+            ...where,
+            profileId,
+          },
+          select: {
+            type: true,
+            amount: true,
+          },
+        },
+      },
+    });
+
+    return accounts.map((account) => {
+      const totalIncome = account.transactions
+        .filter((t) => t.type === transaction_type_enum.INCOME)
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+      const totalExpense = account.transactions
+        .filter((t) => t.type === transaction_type_enum.EXPENSE)
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+      return {
+        accountId: account.id,
+        email: account.email,
+        totalIncome,
+        totalExpense,
+        balance: totalIncome - totalExpense,
+      };
+    });
   }
 }
