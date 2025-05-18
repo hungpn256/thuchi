@@ -208,7 +208,7 @@ export class AuthService {
 
       let account = await this.prismaService.account.findUnique({
         where: { email: payload.email },
-        include: { profileUsers: { include: { profile: true } } },
+        include: { profileUsers: { include: { profile: true }, orderBy: { lastLogin: 'desc' } } },
       });
       if (!account) {
         account = await this.prismaService.account.create({

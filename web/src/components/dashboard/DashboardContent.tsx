@@ -55,8 +55,8 @@ export default function DashboardContent() {
 
   const handleDateRangeChange = (date: DateRange | undefined) => {
     setDateRange({
-      from: date?.from ? startOfDay(date.from) : new Date(),
-      to: date?.to ? endOfDay(date.to) : new Date(),
+      from: date?.from,
+      to: date?.to,
     });
   };
 
