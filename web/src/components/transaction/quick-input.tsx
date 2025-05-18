@@ -10,6 +10,7 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   CalendarIcon,
+  HelpCircle,
   ListChecks,
   Loader2,
   Mic,
@@ -21,9 +22,13 @@ import { ParsedTransaction } from '@/utils/transaction-parser';
 import { useParseTransactionsAI } from '@/hooks/useParseTransactionsAI';
 import { findBestCategoryMatch } from '@/utils/transaction-parser';
 import { useCreateTransactionsBatch } from '@/hooks/use-transactions';
+import { CategoryCombobox } from '@/components/category-combobox';
+import { useQuickInputTour } from '@/hooks/useQuickInputTour';
+import { CustomJoyride } from '@/components/custom-joyride';
 
 interface QuickInputProps {
   onComplete?: () => void;
+  startInTourMode?: boolean;
 }
 
 // Extend Window interface for Web Speech API
@@ -79,6 +84,11 @@ export function QuickInput({ onComplete }: QuickInputProps) {
   const currentLineRef = useRef<string>('');
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(false);
 
+  // Initialize the tour with autoStart explicitly set to false
+  const { run, steps, startTour, handleJoyrideCallback } = useQuickInputTour({
+    autoStart: true,
+  });
+
   // Initialize speech recognition on mount
   useEffect(() => {
     // Check if the browser supports Speech Recognition
@@ -92,13 +102,60 @@ export function QuickInput({ onComplete }: QuickInputProps) {
     recognitionRef.current.continuous = false; // Only one recognition per session
     recognitionRef.current.interimResults = true;
     recognitionRef.current.lang = 'vi-VN';
+
     return () => {
+      // Ensure recording is stopped when component unmounts
       if (recognitionRef.current) {
-        recognitionRef.current.stop();
-        recognitionRef.current = null;
+        try {
+          if (isListening) {
+            recognitionRef.current.stop();
+            setIsListening(false);
+          }
+          // Remove all event listeners by resetting the reference
+          recognitionRef.current.onresult = null;
+          recognitionRef.current.onerror = null;
+          recognitionRef.current.onend = null;
+          recognitionRef.current = null;
+        } catch (error) {
+          console.error('Error stopping speech recognition:', error);
+        }
+      }
+    };
+  }, [isListening]);
+
+  // Additional cleanup effect to handle component unmount regardless of isListening state
+  useEffect(() => {
+    return () => {
+      // This is a backup cleanup in case the component unmounts without isListening changing
+      if (recognitionRef.current && isListening) {
+        try {
+          recognitionRef.current.stop();
+          // Don't need to update state here as the component is being unmounted
+        } catch (error) {
+          console.error('Error stopping speech recognition during unmount:', error);
+        }
       }
     };
   }, []);
+
+  // Add a beforeunload event handler to ensure cleanup
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (recognitionRef.current && isListening) {
+        try {
+          recognitionRef.current.stop();
+        } catch (error) {
+          console.error('Error stopping speech recognition on page unload:', error);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isListening]);
 
   const handleSubmit = async () => {
     if (parsedTransactions.length > 0) {
@@ -141,8 +198,8 @@ export function QuickInput({ onComplete }: QuickInputProps) {
           amount: item.amount,
           description: item.description,
           date: new Date(item.date),
-          categoryId: category?.id,
-          category,
+          categoryId: item.categoryId || category?.id || null,
+          category: item.category || category || null,
         };
       });
       setParsedTransactions(mapped);
@@ -225,11 +282,15 @@ export function QuickInput({ onComplete }: QuickInputProps) {
 
   const stopListening = () => {
     if (recognitionRef.current) {
-      // Save the current line before stopping
-      if (currentLineRef.current.trim()) {
-        addLineToTranscript(currentLineRef.current);
+      try {
+        // Save the current line before stopping
+        if (currentLineRef.current.trim()) {
+          addLineToTranscript(currentLineRef.current);
+        }
+        recognitionRef.current.stop();
+      } catch (error) {
+        console.error('Error stopping speech recognition:', error);
       }
-      recognitionRef.current.stop();
     }
   };
 
@@ -241,144 +302,192 @@ export function QuickInput({ onComplete }: QuickInputProps) {
     }
   };
 
+  const handleCategoryChange = (index: number, categoryId: number) => {
+    setParsedTransactions((prev) => {
+      const updated = [...prev];
+      const category = categories.find((c) => c.id === categoryId);
+      updated[index] = {
+        ...updated[index],
+        categoryId,
+        category,
+      };
+      return updated;
+    });
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <div className="border-input bg-background relative rounded-md border">
-          <textarea
-            className="ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[150px] w-full resize-none rounded-md bg-transparent px-3 py-2 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-            placeholder={`+40k tiền lương\n+500 triệu tiền bán nhà\n40k đi ăn bánh cuốn\n100k đi chợ\n11/02 50k ăn ốc`}
-            value={inputText}
-            onChange={handleInputChange}
-            rows={6}
-            disabled={isBatchLoading || isParsingAI || isListening}
-          />
-          <div className="absolute top-3 right-3 flex items-center gap-2">
-            {isParsingAI && <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />}
-            {isSpeechRecognitionSupported && (
-              <Button
-                variant="outline"
-                size="sm"
-                className={`h-8 w-8 rounded-full p-0 ${
-                  isListening
-                    ? 'bg-rose-100 text-rose-500 hover:bg-rose-200 dark:bg-rose-900/50'
-                    : ''
-                }`}
-                onClick={toggleListening}
-                disabled={isBatchLoading || isParsingAI}
-                title={isListening ? 'Dừng ghi âm' : 'Ghi âm giọng nói'}
-              >
-                {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-              </Button>
-            )}
-          </div>
-        </div>
+    <>
+      {/* Replace Joyride with CustomJoyride */}
+      <CustomJoyride
+        callback={handleJoyrideCallback}
+        continuous
+        hideCloseButton
+        run={run}
+        scrollToFirstStep
+        showProgress
+        showSkipButton
+        steps={steps}
+      />
+
+      <div className="quick-input-container space-y-6">
         <div className="flex items-center justify-between">
-          <p className="text-muted-foreground text-sm">
-            Mỗi dòng là một giao dịch riêng biệt. Ví dụ: +40k tiền lương, 40k đi ăn bánh cuốn
-          </p>
-          {isListening && (
-            <p className="animate-pulse text-sm font-medium text-rose-500">Đang ghi âm...</p>
-          )}
-        </div>
-        <div className="mt-2 flex justify-end">
+          <p className="text-lg font-medium">Nhập nhanh giao dịch</p>
           <Button
-            onClick={handlePreview}
-            disabled={isParsingAI || isBatchLoading || !inputText.trim()}
-            variant="secondary"
+            variant="outline"
+            size="sm"
+            onClick={startTour}
+            className="flex items-center gap-1"
+            title="Xem hướng dẫn"
           >
-            {isParsingAI ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Preview
+            <HelpCircle className="h-4 w-4" />
+            <span>Hướng dẫn</span>
           </Button>
         </div>
-      </div>
 
-      {parsedTransactions.length > 0 && (
-        <Card className="space-y-4 p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h3 className="font-medium">Xem trước giao dịch</h3>
-              <span className="bg-muted rounded-full px-2 py-0.5 text-xs">
-                {parsedTransactions.length} giao dịch
-              </span>
-            </div>
-          </div>
-
-          <div className="max-h-[300px] overflow-auto pr-2">
-            <div className="space-y-4">
-              {parsedTransactions.map((transaction, index) => (
-                <Card key={index} className="relative p-3">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="flex items-center gap-2">
-                      {transaction.type === 'EXPENSE' ? (
-                        <ArrowDownCircle className="h-5 w-5 flex-shrink-0 text-rose-500" />
-                      ) : (
-                        <ArrowUpCircle className="h-5 w-5 flex-shrink-0 text-emerald-500" />
-                      )}
-                      <span className="truncate">
-                        {transaction.type === 'EXPENSE' ? 'Chi tiêu' : 'Thu nhập'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium whitespace-nowrap">Số tiền:</span>
-                      <span className="truncate">
-                        {formatAmount(transaction.amount.toString())} VND
-                      </span>
-                    </div>
-
-                    <div className="col-span-2 flex items-center gap-2">
-                      <span className="font-medium whitespace-nowrap">Mô tả:</span>
-                      <span className="truncate">{transaction.description}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <CalendarIcon className="h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">
-                        {format(transaction.date, 'dd/MM/yyyy', { locale: vi })}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium whitespace-nowrap">Danh mục:</span>
-                      <span className="truncate">
-                        {transaction.category?.name || 'Không xác định'}
-                      </span>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setParsedTransactions([])}
-              disabled={isBatchLoading || isParsingAI}
-            >
-              Huỷ
-            </Button>
-            <Button
-              className="gap-2"
-              onClick={handleSubmit}
-              disabled={isBatchLoading || isParsingAI}
-            >
-              {isBatchLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Đang tạo giao dịch
-                </>
-              ) : (
-                <>
-                  <ListChecks className="h-4 w-4" />
-                  Tạo {parsedTransactions.length} giao dịch
-                </>
+        <div className="space-y-2">
+          <div className="border-input bg-background relative rounded-md border">
+            <textarea
+              className="ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring quick-input-textarea flex min-h-[150px] w-full resize-none rounded-md bg-transparent px-3 py-2 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder={`+40k tiền lương\n+500 triệu tiền bán nhà\n40k đi ăn bánh cuốn\n100k đi chợ\n11/02 50k ăn ốc`}
+              value={inputText}
+              onChange={handleInputChange}
+              rows={6}
+              disabled={isBatchLoading || isParsingAI || isListening}
+            />
+            <div className="absolute top-3 right-3 flex items-center gap-2">
+              {isParsingAI && <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />}
+              {isSpeechRecognitionSupported && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`quick-input-voice h-8 w-8 rounded-full p-0 ${
+                    isListening
+                      ? 'bg-rose-100 text-rose-500 hover:bg-rose-200 dark:bg-rose-900/50'
+                      : ''
+                  }`}
+                  onClick={toggleListening}
+                  disabled={isBatchLoading || isParsingAI}
+                  title={isListening ? 'Dừng ghi âm' : 'Ghi âm giọng nói'}
+                >
+                  {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                </Button>
               )}
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-muted-foreground text-sm">
+              Mỗi dòng là một giao dịch riêng biệt. Ví dụ: +40k tiền lương, 40k đi ăn bánh cuốn
+            </p>
+            {isListening && (
+              <p className="animate-pulse text-sm font-medium text-rose-500">Đang ghi âm...</p>
+            )}
+          </div>
+          <div className="mt-2 flex justify-end">
+            <Button
+              onClick={handlePreview}
+              disabled={isParsingAI || isBatchLoading || !inputText.trim()}
+              variant="secondary"
+              className="quick-input-preview"
+            >
+              {isParsingAI ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Preview
             </Button>
           </div>
-        </Card>
-      )}
-    </div>
+        </div>
+
+        {parsedTransactions.length > 0 && (
+          <Card className="space-y-4 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium">Xem trước giao dịch</h3>
+                <span className="bg-muted rounded-full px-2 py-0.5 text-xs">
+                  {parsedTransactions.length} giao dịch
+                </span>
+              </div>
+            </div>
+
+            <div className="max-h-[300px] overflow-auto pr-2">
+              <div className="space-y-4">
+                {parsedTransactions.map((transaction, index) => (
+                  <Card key={index} className="relative p-3">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="flex items-center gap-2">
+                        {transaction.type === 'EXPENSE' ? (
+                          <ArrowDownCircle className="h-5 w-5 flex-shrink-0 text-rose-500" />
+                        ) : (
+                          <ArrowUpCircle className="h-5 w-5 flex-shrink-0 text-emerald-500" />
+                        )}
+                        <span className="truncate">
+                          {transaction.type === 'EXPENSE' ? 'Chi tiêu' : 'Thu nhập'}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium whitespace-nowrap">Số tiền:</span>
+                        <span className="truncate">
+                          {formatAmount(transaction.amount.toString())} VND
+                        </span>
+                      </div>
+
+                      <div className="col-span-2 flex items-center gap-2">
+                        <span className="font-medium whitespace-nowrap">Mô tả:</span>
+                        <span className="truncate">{transaction.description}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <CalendarIcon className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">
+                          {format(transaction.date, 'dd/MM/yyyy', { locale: vi })}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="flex-shrink-0 font-medium whitespace-nowrap">
+                          Danh mục:
+                        </span>
+                        <div className="quick-input-category w-full">
+                          <CategoryCombobox
+                            value={transaction.categoryId || undefined}
+                            onValueChange={(value) => handleCategoryChange(index, value)}
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setParsedTransactions([])}
+                disabled={isBatchLoading || isParsingAI}
+              >
+                Huỷ
+              </Button>
+              <Button
+                className="quick-input-submit gap-2"
+                onClick={handleSubmit}
+                disabled={isBatchLoading || isParsingAI}
+              >
+                {isBatchLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Đang tạo giao dịch
+                  </>
+                ) : (
+                  <>
+                    <ListChecks className="h-4 w-4" />
+                    Tạo {parsedTransactions.length} giao dịch
+                  </>
+                )}
+              </Button>
+            </div>
+          </Card>
+        )}
+      </div>
+    </>
   );
 }

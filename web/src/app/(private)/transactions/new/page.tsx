@@ -138,18 +138,18 @@ export default function NewTransactionPage() {
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
               <TabsList className="mb-6 grid grid-cols-2">
                 <TabsTrigger
-                  value={TRANSACTION_INPUT_METHODS.FORM}
-                  className="flex items-center gap-2"
-                >
-                  <FileText className="h-4 w-4" />
-                  Form nhập
-                </TabsTrigger>
-                <TabsTrigger
                   value={TRANSACTION_INPUT_METHODS.TEXT}
                   className="flex items-center gap-2"
                 >
                   <MessageSquare className="h-4 w-4" />
                   Nhập nhanh
+                </TabsTrigger>
+                <TabsTrigger
+                  value={TRANSACTION_INPUT_METHODS.FORM}
+                  className="flex items-center gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  Form nhập
                 </TabsTrigger>
               </TabsList>
 

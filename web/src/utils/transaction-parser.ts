@@ -9,8 +9,8 @@ export interface ParsedTransaction {
   amount: number;
   description: string;
   date: Date;
-  categoryId?: number;
-  category?: Category;
+  categoryId?: number | null;
+  category?: Category | null;
 }
 
 /**

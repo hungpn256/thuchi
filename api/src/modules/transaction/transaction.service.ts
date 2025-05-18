@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { subMonths, startOfMonth, endOfMonth, format } from 'date-fns';
 import { AccountsTotalQueryDto } from './dto/accounts-total-query.dto';
 import { AccountTotalDto } from './dto/account-total.dto';
+import { CategoryService } from './category.service';
 
 export interface PaginatedTransactions {
   items: transaction[];
@@ -44,6 +45,7 @@ export class TransactionService {
   constructor(
     private prismaService: PrismaService,
     private readonly configService: ConfigService,
+    private readonly categoryService: CategoryService,
   ) {
     this.genAI = new GoogleGenAI({ apiKey: this.configService.get('GOOGLE_GENAI_API_KEY') });
   }
@@ -210,8 +212,14 @@ export class TransactionService {
     });
   }
 
-  async createFromDescription(text: string, createdById: number) {
-    const prompt = `Hãy phân tích đoạn text sau thành danh sách các giao dịch tài chính. Mỗi giao dịch gồm: type (INCOME/EXPENSE), amount (number), description (string), date ${new Date().toISOString()}, giờ hiện tại là ${new Date().toString()}. Trả về kết quả dạng JSON array để có thể dùng js JSON.parse thành object được.\n\nText: ${text}`;
+  async createFromDescription(text: string, createdById: number, profileId: number) {
+    const categories = await this.categoryService.findAll(profileId);
+    console.log(
+      '🚀 ~ TransactionService ~ createFromDescription ~ categories:',
+      categories.map((c) => c.name),
+    );
+
+    const prompt = `Hãy phân tích đoạn text sau thành danh sách các giao dịch tài chính. Mỗi giao dịch gồm: type (INCOME/EXPENSE), amount (number), description (string), date ${new Date().toISOString()}, category (string), giờ hiện tại là ${new Date().toString()}. Trả về kết quả dạng JSON array để có thể dùng js JSON.parse thành object được.\n\nText: ${text}`;
     const response = await this.genAI.models.generateContent({
       model: 'gemini-2.0-flash',
       contents: [{ parts: [{ text: prompt }] }],
@@ -243,8 +251,14 @@ export class TransactionService {
                 description: `Date of the transaction in format ${new Date().toISOString()}`,
                 nullable: false,
               },
+              category: {
+                type: Type.STRING,
+                description: 'Category of the transaction',
+                nullable: true,
+                enum: categories.map((c) => c.name),
+              },
             },
-            required: ['type', 'amount', 'date'],
+            required: ['type', 'amount', 'date', 'category'],
           },
         },
       },
@@ -253,10 +267,15 @@ export class TransactionService {
     const transactions = JSON.parse(response?.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]');
 
     // Add createdById to each transaction
-    return transactions.map((transaction) => ({
-      ...transaction,
-      createdById,
-    }));
+    const categoryMap = new Map(categories.map((c) => [c.name, c]));
+    return transactions.map((transaction) => {
+      return {
+        ...transaction,
+        createdById,
+        categoryId: categoryMap.get(transaction.category)?.id || null,
+        category: categoryMap.get(transaction.category),
+      };
+    });
   }
 
   async getSummaryByMonth(profileId: number, months: number): Promise<MonthlySummary[]> {

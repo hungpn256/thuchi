@@ -318,10 +318,11 @@ export class TransactionController {
   @ApiBody({ type: CreateTransactionFromDescriptionDto })
   async createTransactionFromDescription(
     @Account() account: account,
+    @Profile() profile,
     @Body() body: CreateTransactionFromDescriptionDto,
   ) {
     try {
-      return await this.transactionService.createFromDescription(body.text, account.id);
+      return await this.transactionService.createFromDescription(body.text, account.id, profile.id);
     } catch (error) {
       throw new BadRequestException('Failed to create transaction from description', {
         error: error.message,

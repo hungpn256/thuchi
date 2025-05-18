@@ -1,12 +1,15 @@
 import { API_ENDPOINTS } from '@/constants/app.constant';
 import axiosClient from '@/lib/axios-client';
 import { useMutation } from '@tanstack/react-query';
+import { Category } from './use-categories';
 
 export interface AIParsedTransaction {
   type: 'INCOME' | 'EXPENSE';
   amount: number;
   description: string;
   date: string;
+  categoryId?: number | null;
+  category?: Category | null;
 }
 
 interface UseParseTransactionsAIResult {

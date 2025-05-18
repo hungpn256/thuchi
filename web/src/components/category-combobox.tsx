@@ -21,9 +21,10 @@ import { Action } from '@/casl/ability';
 interface CategoryComboboxProps {
   value?: number;
   onValueChange?: (value: number) => void;
+  className?: string;
 }
 
-export function CategoryCombobox({ value, onValueChange }: CategoryComboboxProps) {
+export function CategoryCombobox({ value, onValueChange, className }: CategoryComboboxProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const { categories, createCategory } = useCategories();
@@ -58,7 +59,7 @@ export function CategoryCombobox({ value, onValueChange }: CategoryComboboxProps
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          className={cn('w-full justify-between', className)}
           onClick={(e) => e.stopPropagation()}
           onPointerDownCapture={(e) => e.stopPropagation()}
         >
