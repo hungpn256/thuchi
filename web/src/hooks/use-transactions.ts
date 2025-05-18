@@ -128,7 +128,7 @@ export const useUpdateTransaction = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateTransactionDTO> }) => {
+    mutationFn: async ({ id, data }: { id: number; data: Partial<CreateTransactionDTO> }) => {
       const response = await axiosClient.put(`${API_ENDPOINTS.TRANSACTIONS.UPDATE}/${id}`, data);
       return response.data;
     },
@@ -143,7 +143,7 @@ export const useDeleteTransaction = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       const response = await axiosClient.delete(`${API_ENDPOINTS.TRANSACTIONS.DELETE}/${id}`);
       return response.data;
     },

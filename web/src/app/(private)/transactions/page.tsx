@@ -73,7 +73,7 @@ export default function TransactionsPage() {
 
   // UI state
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
+  const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -144,12 +144,12 @@ export default function TransactionsPage() {
     }
   };
 
-  const handleEditClick = (id: string) => {
+  const handleEditClick = (id: number) => {
     setSelectedTransactionId(id);
     setIsTransactionDialogOpen(true);
   };
 
-  const handleDeleteClick = (id: string) => {
+  const handleDeleteClick = (id: number) => {
     setSelectedTransactionId(id);
     setIsDeleteDialogOpen(true);
   };
@@ -370,15 +370,11 @@ export default function TransactionsPage() {
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() => handleEditClick(transaction.id.toString())}
-                                >
+                                <DropdownMenuItem onClick={() => handleEditClick(transaction.id)}>
                                   <FileEdit className="mr-2 h-4 w-4" />
                                   Chỉnh sửa
                                 </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => handleDeleteClick(transaction.id.toString())}
-                                >
+                                <DropdownMenuItem onClick={() => handleDeleteClick(transaction.id)}>
                                   <Trash className="mr-2 h-4 w-4" />
                                   Xóa
                                 </DropdownMenuItem>
@@ -425,7 +421,7 @@ export default function TransactionsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleEditClick(transaction.id.toString())}
+                          onClick={() => handleEditClick(transaction.id)}
                           className="h-8 w-8 p-0"
                         >
                           <FileEdit className="h-4 w-4" />
@@ -434,7 +430,7 @@ export default function TransactionsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDeleteClick(transaction.id.toString())}
+                          onClick={() => handleDeleteClick(transaction.id)}
                           className="h-8 w-8 p-0"
                         >
                           <Trash className="h-4 w-4" />

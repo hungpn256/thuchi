@@ -37,7 +37,7 @@ interface FormValues {
 }
 
 interface TransactionFormProps {
-  transactionId?: string;
+  transactionId?: number;
   onSuccess?: () => void;
   mode?: 'create' | 'update';
 }
@@ -84,9 +84,9 @@ export function TransactionForm({
   const isPending = isCreating || isUpdating;
 
   const { data: transaction, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.TRANSACTIONS.DETAIL(transactionId || ''),
+    queryKey: QUERY_KEYS.TRANSACTIONS.DETAIL(transactionId),
     queryFn: async () => {
-      if (!transactionId) return null;
+      if (typeof transactionId !== 'number') return null;
       const { data } = await axiosClient.get(
         `${API_ENDPOINTS.TRANSACTIONS.DETAIL}/${transactionId}`,
       );
