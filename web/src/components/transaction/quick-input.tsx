@@ -102,60 +102,21 @@ export function QuickInput({ onComplete }: QuickInputProps) {
     recognitionRef.current.continuous = false; // Only one recognition per session
     recognitionRef.current.interimResults = true;
     recognitionRef.current.lang = 'vi-VN';
-
-    return () => {
-      // Ensure recording is stopped when component unmounts
-      if (recognitionRef.current) {
-        try {
-          if (isListening) {
-            recognitionRef.current.stop();
-            setIsListening(false);
-          }
-          // Remove all event listeners by resetting the reference
-          recognitionRef.current.onresult = null;
-          recognitionRef.current.onerror = null;
-          recognitionRef.current.onend = null;
-          recognitionRef.current = null;
-        } catch (error) {
-          console.error('Error stopping speech recognition:', error);
-        }
-      }
-    };
   }, [isListening]);
 
   // Additional cleanup effect to handle component unmount regardless of isListening state
   useEffect(() => {
     return () => {
       // This is a backup cleanup in case the component unmounts without isListening changing
-      if (recognitionRef.current && isListening) {
+      if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
-          // Don't need to update state here as the component is being unmounted
         } catch (error) {
           console.error('Error stopping speech recognition during unmount:', error);
         }
       }
     };
   }, []);
-
-  // Add a beforeunload event handler to ensure cleanup
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (recognitionRef.current && isListening) {
-        try {
-          recognitionRef.current.stop();
-        } catch (error) {
-          console.error('Error stopping speech recognition on page unload:', error);
-        }
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [isListening]);
 
   const handleSubmit = async () => {
     if (parsedTransactions.length > 0) {
