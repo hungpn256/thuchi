@@ -13,6 +13,7 @@ import {
   Plus,
   User,
   HandCoins,
+  PiggyBank,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -122,6 +123,11 @@ export function Sidebar({
       name: 'Lịch',
       href: ROUTES.EVENTS.CALENDAR,
       icon: <Calendar className="h-5 w-5" />,
+    },
+    {
+      name: 'Tiết kiệm',
+      href: ROUTES.SAVINGS.LIST,
+      icon: <PiggyBank className="h-5 w-5" />,
     },
     {
       name: 'Báo cáo',

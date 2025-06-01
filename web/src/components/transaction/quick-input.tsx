@@ -83,6 +83,7 @@ export function QuickInput({ onComplete }: QuickInputProps) {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const currentLineRef = useRef<string>('');
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(false);
+  const recordingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize the tour with autoStart explicitly set to false
   const { run, steps, startTour, handleJoyrideCallback } = useQuickInputTour({
@@ -115,6 +116,13 @@ export function QuickInput({ onComplete }: QuickInputProps) {
           console.error('Error stopping speech recognition during unmount:', error);
         }
       }
+
+      // Clear any pending timeouts
+      if (recordingTimeoutRef.current) {
+        clearTimeout(recordingTimeoutRef.current);
+      }
+
+      setIsListening(false);
     };
   }, []);
 
@@ -200,6 +208,13 @@ export function QuickInput({ onComplete }: QuickInputProps) {
 
     // Clear current line for new recording
     currentLineRef.current = '';
+
+    // Clear any existing timeout
+    if (recordingTimeoutRef.current) {
+      clearTimeout(recordingTimeoutRef.current);
+      recordingTimeoutRef.current = null;
+    }
+
     if (recognitionRef.current) {
       recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
         const lastResult = event.results[event.results.length - 1];
@@ -218,7 +233,14 @@ export function QuickInput({ onComplete }: QuickInputProps) {
           });
         }
 
+        // Ensure isListening is set to false on error
         setIsListening(false);
+
+        // Clear any existing timeout
+        if (recordingTimeoutRef.current) {
+          clearTimeout(recordingTimeoutRef.current);
+          recordingTimeoutRef.current = null;
+        }
       };
 
       recognitionRef.current.onend = () => {
@@ -227,13 +249,29 @@ export function QuickInput({ onComplete }: QuickInputProps) {
           addLineToTranscript(currentLineRef.current);
         }
 
+        // Ensure isListening is set to false
         setIsListening(false);
+
+        // Clear any existing timeout
+        if (recordingTimeoutRef.current) {
+          clearTimeout(recordingTimeoutRef.current);
+          recordingTimeoutRef.current = null;
+        }
       };
 
       // Start recognition
       try {
         recognitionRef.current.start();
         setIsListening(true);
+
+        // Set a safety timeout (10 seconds max) to reset isListening state
+        // in case the onend event doesn't fire properly
+        recordingTimeoutRef.current = setTimeout(() => {
+          if (isListening) {
+            console.log('Safety timeout: resetting recording state');
+            stopListening();
+          }
+        }, 10000);
       } catch (error) {
         console.error('Error starting speech recognition:', error);
         setIsListening(false);
@@ -242,6 +280,12 @@ export function QuickInput({ onComplete }: QuickInputProps) {
   };
 
   const stopListening = () => {
+    // Clear any existing timeout
+    if (recordingTimeoutRef.current) {
+      clearTimeout(recordingTimeoutRef.current);
+      recordingTimeoutRef.current = null;
+    }
+
     if (recognitionRef.current) {
       try {
         // Save the current line before stopping
@@ -253,6 +297,9 @@ export function QuickInput({ onComplete }: QuickInputProps) {
         console.error('Error stopping speech recognition:', error);
       }
     }
+
+    // Force update the listening state regardless of whether the stop method succeeds
+    setIsListening(false);
   };
 
   const toggleListening = () => {

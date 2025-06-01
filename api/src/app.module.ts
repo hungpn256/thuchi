@@ -15,6 +15,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { ProfileModule } from './modules/profiles/profile.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CronModule } from './modules/cron/cron.module';
+import { SavingsModule } from './modules/savings/savings.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { CronModule } from './modules/cron/cron.module';
     NotificationsModule,
     ProfileModule,
     CronModule,
+    SavingsModule,
   ],
   providers: [
     {

@@ -20,6 +20,9 @@ export const ROUTES = {
     NEW: '/events/new',
     CALENDAR: '/events/calendar',
   },
+  SAVINGS: {
+    LIST: '/savings',
+  },
   REPORTS: {
     ROOT: '/reports',
     SUMMARY: '/reports',
@@ -50,6 +53,14 @@ export const API_ENDPOINTS = {
   CATEGORIES: {
     LIST: '/categories',
     CREATE: '/categories',
+  },
+  SAVINGS: {
+    LIST: '/savings',
+    TOTAL: '/savings/total',
+    CREATE: '/savings',
+    UPDATE: '/savings',
+    DELETE: '/savings',
+    DETAIL: '/savings',
   },
   AUTH: {
     LOGIN: '/auth/login',
@@ -94,4 +105,48 @@ export const TRANSACTION_REGEX = {
   DATE: /(\d{1,2}\/\d{1,2}(?:\/\d{4})?)/,
   INCOME_INDICATORS: /^\+|^thêm/i,
   EXPENSE_INDICATORS: /chi|tiêu/i,
+} as const;
+
+export const ASSET_TYPES = {
+  MONEY: 'MONEY',
+  GOLD: 'GOLD',
+  LAND: 'LAND',
+  STOCK: 'STOCK',
+  CRYPTO: 'CRYPTO',
+  PROPERTY: 'PROPERTY',
+  JEWELRY: 'JEWELRY',
+  OTHER: 'OTHER',
+} as const;
+
+export const ASSET_TYPE_LABELS = {
+  [ASSET_TYPES.MONEY]: 'Tiền mặt',
+  [ASSET_TYPES.GOLD]: 'Vàng',
+  [ASSET_TYPES.LAND]: 'Đất đai',
+  [ASSET_TYPES.STOCK]: 'Cổ phiếu',
+  [ASSET_TYPES.CRYPTO]: 'Tiền điện tử',
+  [ASSET_TYPES.PROPERTY]: 'Bất động sản',
+  [ASSET_TYPES.JEWELRY]: 'Trang sức',
+  [ASSET_TYPES.OTHER]: 'Khác',
+} as const;
+
+export const ASSET_UNITS = {
+  MONEY: ['VND', 'USD', 'EUR', 'JPY'],
+  GOLD: ['chỉ', 'lượng', 'oz'],
+  LAND: ['m²', 'ha', 'sào'],
+  STOCK: ['cổ phiếu', 'lot'],
+  CRYPTO: ['coin', 'token'],
+  PROPERTY: ['căn', 'tòa', 'dự án'],
+  JEWELRY: ['chiếc', 'bộ', 'gram'],
+  OTHER: ['đơn vị', 'cái', 'chiếc'],
+} as const;
+
+export const DEFAULT_UNITS = {
+  [ASSET_TYPES.MONEY]: 'VND',
+  [ASSET_TYPES.GOLD]: 'chỉ',
+  [ASSET_TYPES.LAND]: 'm²',
+  [ASSET_TYPES.STOCK]: 'cổ phiếu',
+  [ASSET_TYPES.CRYPTO]: 'coin',
+  [ASSET_TYPES.PROPERTY]: 'căn',
+  [ASSET_TYPES.JEWELRY]: 'chiếc',
+  [ASSET_TYPES.OTHER]: 'đơn vị',
 } as const;

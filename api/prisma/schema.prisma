@@ -43,6 +43,7 @@ model account {
     deviceTokens device_token[]
     profileUsers profile_user[]
     transactions transaction[]  @relation("createdByAccount")
+    savings      savings[]      @relation("savingsCreatedBy")
 
     @@index([email], map: "IDX_ACCOUNT_EMAIL")
 }
@@ -59,6 +60,7 @@ model profile {
     events       event[]
     settings     settings?
     profileUsers profile_user[]
+    savings      savings[]
 
     @@index([name], map: "IDX_PROFILE_NAME")
 }
@@ -144,6 +146,25 @@ model settings {
     profile              profile  @relation(fields: [profileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
     @@index([profileId], map: "IDX_SETTINGS_PROFILE_ID")
+}
+
+model savings {
+    id          Int      @id @default(autoincrement())
+    name        String   @db.VarChar(255)
+    amount      Decimal  @db.Decimal(15, 3)
+    assetType   String   @default("MONEY") @db.VarChar(50) // MONEY, GOLD, LAND, STOCK, CRYPTO, etc.
+    unit        String   @default("VND") @db.VarChar(20) // VND, USD, gram, m2, share, etc.
+    description String?  @db.VarChar(500)
+    color       String?  @db.VarChar(7)
+    profileId   Int
+    createdById Int
+    createdAt   DateTime @default(now()) @db.Timestamp(6)
+    updatedAt   DateTime @default(now()) @db.Timestamp(6)
+    profile     profile  @relation(fields: [profileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    createdBy   account  @relation("savingsCreatedBy", fields: [createdById], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@index([profileId], map: "IDX_SAVINGS_PROFILE_ID")
+    @@index([assetType], map: "IDX_SAVINGS_ASSET_TYPE")
 }
 
 model device_token {
