@@ -17,7 +17,7 @@ import { ComparisonPeriod, TransactionType, TrendFilterParams } from '@/types/re
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { CalendarIcon, Filter, SearchIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface TrendFilterProps {
   onFilterChange: (filter: TrendFilterParams) => void;
@@ -71,6 +71,11 @@ export function TrendFilter({
 
     onFilterChange(filter);
   };
+
+  // Auto-apply filter with default values on mount
+  useEffect(() => {
+    handleApplyFilter();
+  }, []); // Run only once on mount
 
   return (
     <div className={className}>

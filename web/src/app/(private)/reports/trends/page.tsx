@@ -4,13 +4,13 @@ import { TrendFilter } from '@/components/reports/TrendFilter';
 import { TrendReport } from '@/components/reports/TrendReport';
 import { TrendFilterParams } from '@/types/report';
 import { useTrendReport } from '@/hooks/use-reports';
-import { format, subMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { useState, useEffect } from 'react';
 
 export default function TrendReportPage() {
   const [filter, setFilter] = useState<TrendFilterParams>({
-    startDate: format(subMonths(new Date(), 1), 'yyyy-MM-dd'),
-    endDate: format(new Date(), 'yyyy-MM-dd'),
+    startDate: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+    endDate: format(endOfMonth(new Date()), 'yyyy-MM-dd'),
   });
   const [isFilterCollapsed, setIsFilterCollapsed] = useState(false);
 

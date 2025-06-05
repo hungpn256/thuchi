@@ -10,7 +10,7 @@ import {
   Category,
 } from '@/types/report';
 import { useCategoryReport } from '@/hooks/use-reports';
-import { subMonths } from 'date-fns';
+import { startOfMonth, endOfMonth } from 'date-fns';
 import { useState, useMemo } from 'react';
 
 // Hàm chuyển đổi từ CategoryReport sang CategoryReportData
@@ -32,8 +32,8 @@ const convertToReportData = (report?: CategoryReportType): CategoryReportData | 
 
 export default function CategoryReportPage() {
   const [filter, setFilter] = useState<CategoryReportFilters>({
-    startDate: subMonths(new Date(), 1),
-    endDate: new Date(),
+    startDate: startOfMonth(new Date()),
+    endDate: endOfMonth(new Date()),
     type: 'EXPENSE',
   });
 

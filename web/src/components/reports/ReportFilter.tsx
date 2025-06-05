@@ -16,7 +16,7 @@ import { ReportFilterParams, TransactionType } from '@/types/report';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { CalendarIcon, Filter, SearchIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ReportFilterProps {
   onFilterChange: (filter: ReportFilterParams) => void;
@@ -58,6 +58,11 @@ export function ReportFilter({
       type,
     });
   };
+
+  // Auto-apply filter with default values on mount
+  useEffect(() => {
+    handleApplyFilter();
+  }, []); // Run only once on mount
 
   return (
     <div className={className}>

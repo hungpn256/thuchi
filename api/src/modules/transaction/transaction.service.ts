@@ -39,6 +39,21 @@ export interface TransactionBatchCreateInput {
   createdById: number;
 }
 
+// UTC month utility functions
+function getStartOfMonthUTC(date: Date | string): Date {
+  const utcDate = typeof date === 'string' ? new Date(date) : new Date(date);
+  // Tạo UTC date với năm và tháng, ngày = 1
+  return new Date(Date.UTC(utcDate.getUTCFullYear(), utcDate.getUTCMonth(), 1));
+}
+
+function getEndOfMonthUTC(date: Date | string): Date {
+  const utcDate = typeof date === 'string' ? new Date(date) : new Date(date);
+  // Tạo UTC date với tháng tiếp theo, ngày = 0 (= ngày cuối tháng hiện tại)
+  return new Date(
+    Date.UTC(utcDate.getUTCFullYear(), utcDate.getUTCMonth() + 1, 0, 23, 59, 59, 999),
+  );
+}
+
 @Injectable()
 export class TransactionService {
   private readonly genAI: GoogleGenAI;
@@ -284,8 +299,11 @@ export class TransactionService {
     for (let i = months - 1; i >= 0; i--) {
       const monthDate = subMonths(now, i);
       const month = format(monthDate, 'yyyy-MM');
-      const start = startOfMonth(monthDate);
-      const end = endOfMonth(monthDate);
+
+      // Sử dụng UTC month boundaries
+      const start = getStartOfMonthUTC(monthDate);
+      const end = getEndOfMonthUTC(monthDate);
+
       const transactions = await this.prismaService.transaction.findMany({
         where: {
           profileId,

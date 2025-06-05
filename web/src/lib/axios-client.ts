@@ -2,6 +2,8 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { STORAGE_KEYS, ROUTES, API_ENDPOINTS } from '@/constants/app.constant';
 import { AuthResponse, RefreshTokenRequest } from '@/types/auth';
 import { clearTokens, updateTokens } from './auth';
+import { getTimezoneHeader } from './timezone';
+import { TIMEZONE_HEADERS } from '@/constants/timezone.constant';
 
 // Extended request config with _retry property
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -12,16 +14,21 @@ const axiosClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers: {
     'Content-Type': 'application/json',
+    [TIMEZONE_HEADERS.X_TIMEZONE]: getTimezoneHeader(),
   },
 });
 
-// Add request interceptor for authentication
+// Add request interceptor for authentication and timezone
 axiosClient.interceptors.request.use(
   (config) => {
+    // Add authentication token
     const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Add timezone header (always get latest timezone)
+
     return config;
   },
   (error) => {

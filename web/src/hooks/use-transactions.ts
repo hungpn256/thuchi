@@ -3,6 +3,7 @@ import { QUERY_KEYS } from '@/constants/query-keys.constant';
 import { API_ENDPOINTS } from '@/constants/app.constant';
 import axiosClient from '@/lib/axios-client';
 import { TransactionType } from '@/types/transaction';
+import { startOfDayPureUTC, endOfDayPureUTC } from '@/lib/timezone';
 
 export interface Transaction {
   id: number;
@@ -61,8 +62,8 @@ export interface MonthlySummary {
 // Custom hook for fetching transaction list
 export const useTransactionList = (params?: TransactionListParams) => {
   const queryParams = {
-    startDate: params?.startDate?.toISOString(),
-    endDate: params?.endDate?.toISOString(),
+    startDate: params?.startDate ? startOfDayPureUTC(params.startDate) : undefined,
+    endDate: params?.endDate ? endOfDayPureUTC(params.endDate) : undefined,
     limit: params?.limit || 10,
     page: params?.page || 1,
     ...(params?.categoryIds?.length ? { categoryIds: params.categoryIds.join(',') } : {}),
@@ -91,8 +92,8 @@ export const useTransactionList = (params?: TransactionListParams) => {
 // Custom hook for fetching transaction summary
 export const useTransactionSummary = (params?: TransactionSummaryParams) => {
   const queryParams = {
-    startDate: params?.startDate?.toISOString(),
-    endDate: params?.endDate?.toISOString(),
+    startDate: params?.startDate ? startOfDayPureUTC(params.startDate) : undefined,
+    endDate: params?.endDate ? endOfDayPureUTC(params.endDate) : undefined,
   };
 
   return useQuery<TransactionSummary>({
@@ -157,18 +158,18 @@ export const useDeleteTransaction = () => {
 
 export function useExpensesByCategory(params?: { startDate?: Date; endDate?: Date }) {
   const queryParams = {
-    startDate: params?.startDate?.toISOString(),
-    endDate: params?.endDate?.toISOString(),
+    startDate: params?.startDate ? startOfDayPureUTC(params.startDate) : undefined,
+    endDate: params?.endDate ? endOfDayPureUTC(params.endDate) : undefined,
   };
   return useQuery<CategoryExpense[]>({
     queryKey: [QUERY_KEYS.TRANSACTIONS.CATEGORY(queryParams)],
     queryFn: async () => {
       const searchParams = new URLSearchParams();
       if (params?.startDate) {
-        searchParams.append('startDate', params.startDate.toISOString());
+        searchParams.append('startDate', startOfDayPureUTC(params.startDate));
       }
       if (params?.endDate) {
-        searchParams.append('endDate', params.endDate.toISOString());
+        searchParams.append('endDate', endOfDayPureUTC(params.endDate));
       }
 
       const { data } = await axiosClient.get<CategoryExpense[]>(
@@ -207,8 +208,8 @@ export function useMonthlySummary() {
 
 export function useAccountsTotal(params?: { startDate?: Date; endDate?: Date }) {
   const queryParams = {
-    startDate: params?.startDate?.toISOString(),
-    endDate: params?.endDate?.toISOString(),
+    startDate: params?.startDate ? startOfDayPureUTC(params.startDate) : undefined,
+    endDate: params?.endDate ? endOfDayPureUTC(params.endDate) : undefined,
   };
 
   return useQuery({

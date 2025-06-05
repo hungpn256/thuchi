@@ -14,7 +14,14 @@ async function bootstrap() {
     origin: ['http://localhost:3000', 'https://thuchi-web.vercel.app'], // Frontend URL
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'x-timezone', // Custom timezone header
+      'timezone', // Fallback timezone header
+      'time-zone', // Alternative timezone header
+    ],
   });
 
   app.setGlobalPrefix(appConst.baseUrl);
